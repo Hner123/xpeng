@@ -1,0 +1,53 @@
+[Unit]
+# systemd unit for the Future Night campaign API.
+# Install:  sudo cp xpeng-future-night.service /etc/systemd/system/
+#           sudo systemctl daemon-reload && sudo systemctl enable --now xpeng-future-night
+Description=XPENG Future Night campaign API
+Documentation=https://github.com/Hner123/xpeng
+After=network-online.target mysql.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=xpeng
+Group=xpeng
+WorkingDirectory=/srv/xpeng
+
+# Node 22.5+ is required (node:sqlite). `which node` on the server if
+# this path is wrong — nvm installs land elsewhere.
+ExecStart=/usr/bin/node backend/server.js
+
+# Config lives in the env file, never in this unit — it holds APP_KEY,
+# the database password and the admin credentials.
+EnvironmentFile=/srv/xpeng/backend/.env
+Environment=NODE_ENV=production
+
+Restart=always
+RestartSec=2
+# If it crash-loops more than 5 times in 60s, stop and alert rather
+# than hammering MySQL.
+StartLimitBurst=5
+StartLimitIntervalSec=60
+
+# Logs go to the journal:  journalctl -u xpeng-future-night -f
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=xpeng-fn
+
+# ---- hardening ----
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+LockPersonality=true
+MemoryDenyWriteExecute=true
+# The only path the service may write to: SQLite file, outbox.log and
+# the APP_KEY it generates on first run.
+ReadWritePaths=/srv/xpeng/backend/data /srv/xpeng/backend/.env
+
+[Install]
+WantedBy=multi-user.target

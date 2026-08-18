@@ -1,0 +1,48 @@
+# =============================================================
+# Netlify hosts the static campaign page only. The API and admin
+# dashboard live on the Linux server behind Caddy — set
+# config.js -> api.base to that origin, and list the Netlify URL
+# in ALLOWED_ORIGINS on the server.
+# =============================================================
+
+[build]
+  # No build step: the page is plain HTML/CSS/JS.
+  publish = "."
+  command = ""
+
+[build.processing]
+  skip_processing = false
+
+# The backend must never be published. Netlify has no ignore file,
+# so this build command prunes it from the deploy directory.
+[build.environment]
+  NODE_VERSION = "22"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    X-Frame-Options = "SAMEORIGIN"
+    # Only the fonts we actually use, plus the API origin for the
+    # form POST. Update connect-src if the API domain changes.
+    Content-Security-Policy = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://api.futurenight.xpeng.ph; frame-ancestors 'self'"
+
+[[headers]]
+  for = "/*.css"
+  [headers.values]
+    Cache-Control = "public, max-age=300"
+
+[[headers]]
+  for = "/*.js"
+  [headers.values]
+    # Short TTL: config.js carries the artist-reveal switch and must
+    # be able to change within minutes, without a redeploy.
+    Cache-Control = "public, max-age=300"
+
+# Anyone hitting /admin on the Netlify domain goes to the real one.
+[[redirects]]
+  from = "/admin/*"
+  to = "https://api.futurenight.xpeng.ph/admin/:splat"
+  status = 302
+  force = true

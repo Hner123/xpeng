@@ -12,6 +12,13 @@
   var BRANDS= window.XPENG_BRANDS || [];
   var $ = function (id) { return document.getElementById(id); };
 
+  /* Absolute when config.api.base is set (page and API on different
+     hosts), relative when it isn't. */
+  function endpoint(name) {
+    var api = CFG.api || {};
+    return (api.base || '') + (api[name] || '/api/' + name);
+  }
+
   /* ---------- tracking helper (Section 9) ---------------------- */
   function track(event, data) {
     data = data || {};
@@ -94,7 +101,7 @@
     var c = CFG.counter || {};
     if (!c.show) return;
     var floor = c.minToShow || 0;
-    fetch('/api/waitlist/count', { headers: { Accept: 'application/json' } })
+    fetch(endpoint('count'), { headers: { Accept: 'application/json' } })
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (d) {
         if (!d || !d.ok || typeof d.total !== 'number') return;
@@ -328,7 +335,7 @@
      sees the confirmation state, so the queue is invisible.     */
   function post(body, attempt) {
     attempt = attempt || 0;
-    return fetch((CFG.api || {}).submit || '/api/waitlist', {
+    return fetch(endpoint('submit'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),

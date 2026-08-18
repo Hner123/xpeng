@@ -58,9 +58,18 @@ window.XPENG_CONFIG = {
     url:  "https://futurenight.xpeng.ph"
   },
 
-  /* Form endpoint. Submissions queue client-side and retry so they
-     never fail under spike load (Section 9). */
-  api: { submit: "/api/waitlist" },
+  /* Where the API lives.
+     base = "" when the page is served by the backend (local dev, or
+     one-server production). Set it to the API origin when the page
+     is hosted separately, e.g. on Netlify:
+       base: "https://api.futurenight.xpeng.ph"
+     That origin must also be listed in ALLOWED_ORIGINS on the
+     server, or the browser will block the request. */
+  api: {
+    base:   "",
+    submit: "/api/waitlist",
+    count:  "/api/waitlist/count"
+  },
 
   contact: {
     email:  "futurenight@xpeng.ph",

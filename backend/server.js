@@ -56,6 +56,13 @@ const DRY_RUN  = process.env.COMMS_DRY_RUN !== 'false';
 /* Set COOKIE_SECURE=true once the app is behind HTTPS, so the
    session cookie is never sent over plain http. */
 const SECURE_COOKIES = process.env.COOKIE_SECURE === 'true';
+/* Origins allowed to call the PUBLIC endpoints cross-site — set this
+   to the Netlify URL when the page and API live on different hosts.
+   Comma-separated, exact origins only, never '*'. Admin routes are
+   deliberately excluded: the dashboard is same-origin on this server
+   so its cookie can stay SameSite=Strict. */
+const ALLOWED_ORIGINS = String(process.env.ALLOWED_ORIGINS || '')
+  .split(',').map(o => o.trim()).filter(Boolean);
 
 /* Province/city whitelist is shared with the page — one source. */
 function loadGeo() {
@@ -127,6 +134,24 @@ const loginLimit = limiter(20, 60_000);   // per IP; lib/auth adds per-account l
 function clientIp(req) {
   const fwd = req.headers['x-forwarded-for'];
   return (fwd ? String(fwd).split(',')[0] : req.socket.remoteAddress || '').trim();
+}
+
+/* Adds CORS headers when the caller's Origin is on the allow-list.
+   Returns true if the request was a preflight and is now answered. */
+function cors(req, res) {
+  const origin = req.headers.origin;
+  if (origin && ALLOWED_ORIGINS.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Vary', 'Origin');               // so caches don't cross-serve
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    res.setHeader('Access-Control-Max-Age', '86400');
+  }
+  if (req.method === 'OPTIONS') {
+    send(res, origin && ALLOWED_ORIGINS.includes(origin) ? 204 : 403, '');
+    return true;
+  }
+  return false;
 }
 
 /* Unauthenticated: send browsers to the login page, APIs a 401. */
@@ -219,6 +244,11 @@ async function main() {
     const q = Object.fromEntries(url.searchParams);
 
     try {
+      /* Public API is CORS-aware; preflights end here. */
+      if (p.startsWith('/api/waitlist')) {
+        if (cors(req, res)) return;
+      }
+
       /* ---- public: static page ---- */
       if (req.method === 'GET' && serveStatic(req, res, p)) return;
 

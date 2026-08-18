@@ -1,0 +1,82 @@
+# =============================================================
+# Caddy config for XPENG Future Night.
+# Caddy provisions and renews TLS automatically — no certbot.
+#
+# Install:  sudo cp Caddyfile /etc/caddy/Caddyfile
+#           sudo caddy validate --config /etc/caddy/Caddyfile
+#           sudo systemctl reload caddy
+#
+# Two options below. Use ONE of them.
+# =============================================================
+
+# -------------------------------------------------------------
+# OPTION A — API only (page hosted on Netlify)
+# Point api.futurenight.xpeng.ph at this server, set
+# ALLOWED_ORIGINS in backend/.env to the Netlify origin, and set
+# api.base in config.js to https://api.futurenight.xpeng.ph
+# -------------------------------------------------------------
+api.futurenight.xpeng.ph {
+	encode zstd gzip
+
+	# The admin dashboard lives here too, same origin as its API, so
+	# the session cookie stays SameSite=Strict.
+	reverse_proxy 127.0.0.1:3000 {
+		header_up X-Forwarded-For {remote_host}
+		header_up X-Forwarded-Proto {scheme}
+	}
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+
+	# Never let search engines index the admin surface.
+	@admin path /admin*
+	header @admin X-Robots-Tag "noindex, nofollow"
+
+	log {
+		output file /var/log/caddy/xpeng-api.log {
+			roll_size 50MiB
+			roll_keep 10
+		}
+	}
+}
+
+# -------------------------------------------------------------
+# OPTION B — everything on this server (simpler: no CORS, one
+# origin, one deploy). Put Cloudflare in front for CDN caching.
+# Comment out OPTION A if you use this.
+# -------------------------------------------------------------
+# futurenight.xpeng.ph {
+# 	encode zstd gzip
+#
+# 	# Static campaign page straight off disk, so a backend restart
+# 	# never takes the landing page down.
+# 	root * /srv/xpeng
+# 	@static {
+# 		path /index.html / /styles.css /app.js /config.js /geo.js /favicon.ico /og.jpg
+# 	}
+# 	handle @static {
+# 		file_server
+# 		header Cache-Control "public, max-age=300"
+# 	}
+#
+# 	# Everything else — the API and the dashboard — to Node.
+# 	handle {
+# 		reverse_proxy 127.0.0.1:3000 {
+# 			header_up X-Forwarded-For {remote_host}
+# 			header_up X-Forwarded-Proto {scheme}
+# 		}
+# 	}
+#
+# 	header {
+# 		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+# 		X-Content-Type-Options "nosniff"
+# 		Referrer-Policy "strict-origin-when-cross-origin"
+# 		-Server
+# 	}
+# 	@admin path /admin*
+# 	header @admin X-Robots-Tag "noindex, nofollow"
+# }
