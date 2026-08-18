@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Future Night · Admin</title>
+<style>
+  :root{
+    --bg:#0E0C0A; --panel:#17130F; --line:#2A231C; --ink:#F5F1EC; --mute:#9A9084;
+    --orange:#F47920; --amber:#FF9A3D; --green:#3FB27F; --red:#D9541F;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  /* beats class-level display rules on elements using [hidden] */
+  [hidden]{display:none!important}
+  body{background:var(--bg);color:var(--ink);font:14px/1.5 'Inter',system-ui,sans-serif}
+  code,.mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
+  a{color:var(--amber)}
+
+  header{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
+    padding:14px 20px;border-bottom:1px solid var(--line);background:var(--panel);position:sticky;top:0;z-index:5}
+  header h1{font-size:14px;letter-spacing:.24em;font-weight:700}
+  header .sub{font-size:11px;letter-spacing:.16em;color:var(--mute)}
+  .btn{font:600 12px/1 'Inter',sans-serif;letter-spacing:.06em;color:#180B00;
+    background:linear-gradient(135deg,var(--amber),var(--orange));border:none;border-radius:7px;
+    padding:10px 14px;cursor:pointer;text-decoration:none;display:inline-block}
+  .btn.ghost{background:none;color:var(--ink);border:1px solid var(--line)}
+  .btn:disabled{opacity:.45;cursor:not-allowed}
+
+  main{padding:20px;max-width:1500px;margin:0 auto}
+  .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+  .tile{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+  .tile b{display:block;font-size:26px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+  .tile span{font-size:10px;letter-spacing:.16em;color:var(--mute);text-transform:uppercase}
+  .tile.good b{color:var(--green)} .tile.hot b{color:var(--amber)}
+
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+  @media (max-width:1000px){.grid2{grid-template-columns:1fr}}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px}
+  .panel h2{font-size:11px;letter-spacing:.2em;color:var(--mute);text-transform:uppercase;margin-bottom:12px}
+
+  .bars{display:grid;gap:7px}
+  .bar{display:grid;grid-template-columns:130px 1fr 46px;gap:10px;align-items:center;font-size:12px}
+  .bar .t{color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .bar .track{height:7px;background:#221C16;border-radius:4px;overflow:hidden}
+  .bar .fill{height:100%;background:linear-gradient(90deg,var(--orange),var(--amber));border-radius:4px}
+  .bar .n{text-align:right;font-variant-numeric:tabular-nums;color:var(--ink)}
+  .spark{display:flex;align-items:flex-end;gap:3px;height:70px}
+  .spark i{flex:1;background:linear-gradient(var(--amber),rgba(244,121,32,.25));border-radius:3px 3px 0 0;min-height:2px}
+  .spark-x{display:flex;justify-content:space-between;font-size:9px;color:var(--mute);margin-top:6px}
+
+  .toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:18px 0 10px}
+  select,input[type=text],input[type=date],input[type=number]{
+    font:13px 'Inter',sans-serif;color:var(--ink);background:#12100D;border:1px solid var(--line);
+    border-radius:8px;padding:9px 10px;outline:none}
+  select:focus,input:focus{border-color:var(--orange)}
+  .toolbar .spacer{flex:1}
+  .count{font-size:12px;color:var(--mute)}
+
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--panel)}
+  table{width:100%;border-collapse:collapse;font-size:12.5px;white-space:nowrap}
+  th{text-align:left;font-size:10px;letter-spacing:.14em;color:var(--mute);text-transform:uppercase;
+     padding:11px 12px;border-bottom:1px solid var(--line);position:sticky;top:0;background:#1B1611}
+  td{padding:10px 12px;border-bottom:1px solid #201A15}
+  tr:last-child td{border-bottom:none}
+  tr:hover td{background:#1C1712}
+  .pill{display:inline-block;font-size:10px;letter-spacing:.1em;padding:3px 8px;border-radius:999px;border:1px solid var(--line)}
+  .pill.REGISTERED{color:var(--mute)}
+  .pill.INVITED{color:var(--amber);border-color:rgba(255,154,61,.4)}
+  .pill.CLAIMED{color:var(--green);border-color:rgba(63,178,127,.4)}
+  .pill.ATTENDED{color:#7FD4FF;border-color:rgba(127,212,255,.4)}
+  .score{font-variant-numeric:tabular-nums;font-weight:600}
+  .score.hi{color:var(--amber)} .score.lo{color:var(--mute)}
+  .yes{color:var(--green)} .no{color:#5C534A}
+  .partial{color:var(--red);font-size:10px;letter-spacing:.1em}
+  .empty{padding:40px 20px;text-align:center;color:var(--mute)}
+  .pager{display:flex;gap:8px;align-items:center;justify-content:flex-end;margin-top:12px;font-size:12px;color:var(--mute)}
+  .toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#1F1913;border:1px solid var(--line);
+    border-radius:10px;padding:12px 18px;font-size:13px;z-index:20;display:none}
+  .toast.on{display:block}
+  .tabs{display:flex;gap:4px;margin:18px 0 0}
+  .tab{font:600 11px/1 'Inter',sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);
+    background:none;border:1px solid var(--line);border-bottom:none;border-radius:8px 8px 0 0;padding:11px 14px;cursor:pointer}
+  .tab.on{color:var(--ink);background:var(--panel)}
+  .view{display:none} .view.on{display:block}
+  .who{display:flex;flex-direction:column;line-height:1.25;margin-right:6px;text-align:right}
+  .who b{font-size:12.5px}
+  .who i{font-style:normal;font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--mute)}
+  .who i.admin{color:var(--amber)}
+  body.viewer .admin-only{display:none!important}
+  .readonly-note{font-size:11.5px;color:var(--mute);border:1px solid var(--line);border-radius:8px;padding:8px 11px}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>FUTURE NIGHT · ADMIN</h1>
+    <div class="sub" id="dbline">registrations · selection · dealer exports</div>
+  </div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+    <span class="who" id="who" hidden><b id="who-name">—</b><i id="who-role">—</i></span>
+    <button class="btn ghost" id="refresh">Refresh</button>
+    <a class="btn ghost" href="/" target="_blank">View landing page</a>
+    <a class="btn admin-only" id="export-all" href="#">Export CSV</a>
+    <button class="btn ghost" id="pwd">Password</button>
+    <button class="btn ghost" id="logout">Sign out</button>
+  </div>
+</header>
+
+<main>
+  <div class="tiles" id="tiles"></div>
+
+  <div class="grid2">
+    <div class="panel">
+      <h2>Registrations per day</h2>
+      <div class="spark" id="spark"></div>
+      <div class="spark-x" id="spark-x"></div>
+    </div>
+    <div class="panel">
+      <h2>Intent mix — completed registrations</h2>
+      <div class="bars" id="intents"></div>
+    </div>
+    <div class="panel">
+      <h2>Top cities</h2>
+      <div class="bars" id="cities"></div>
+    </div>
+    <div class="panel">
+      <h2>Traffic source</h2>
+      <div class="bars" id="sources"></div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab on" data-view="regs">Registrations</button>
+    <button class="tab" data-view="comms">Comms queue</button>
+    <button class="tab" data-view="dealers">Dealer territories</button>
+    <button class="tab" data-view="exports">Export log</button>
+  </div>
+
+  <!-- ===== REGISTRATIONS ===== -->
+  <div class="view on" id="view-regs">
+    <div class="toolbar">
+      <select id="f-status">
+        <option value="">All statuses</option>
+        <option>REGISTERED</option><option>INVITED</option><option>CLAIMED</option><option>ATTENDED</option>
+      </select>
+      <select id="f-complete">
+        <option value="">Complete + partial</option>
+        <option value="1">Completed only</option>
+        <option value="0">Partial (Step 1 only)</option>
+      </select>
+      <select id="f-city"><option value="">All cities</option></select>
+      <select id="f-intent">
+        <option value="">Any intent</option>
+        <option>Within 3 months</option><option>3–6 months</option><option>6–12 months</option>
+        <option>Over a year</option><option>Just exploring</option>
+      </select>
+      <select id="f-source"><option value="">Any source</option></select>
+      <input type="number" id="f-score" placeholder="Min score" min="0" max="100" style="width:110px">
+      <select id="f-sort">
+        <option value="recent">Newest first</option>
+        <option value="score">Lead score</option>
+        <option value="city">City</option>
+      </select>
+      <div class="spacer"></div>
+      <span class="count" id="count">—</span>
+      <button class="btn admin-only" id="invite" disabled>Invite selected</button>
+      <span class="readonly-note" id="ro-note" hidden>Read-only account — selection, invitations and exports are disabled.</span>
+    </div>
+
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr>
+            <th><input type="checkbox" id="all"></th>
+            <th>#</th><th>Registered</th><th>Name</th><th>Mobile</th><th>Email</th>
+            <th>City</th><th>Dealer</th><th>Score</th><th>Intent</th><th>Budget</th>
+            <th>Model</th><th>Segment</th><th>Drives</th><th>EV</th>
+            <th>Dealer OK</th><th>Mktg</th><th>Source</th><th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+    <div class="pager">
+      <button class="btn ghost" id="prev">Prev</button>
+      <span id="range">—</span>
+      <button class="btn ghost" id="next">Next</button>
+    </div>
+  </div>
+
+  <!-- ===== COMMS ===== -->
+  <div class="view" id="view-comms">
+    <div class="toolbar">
+      <span class="count">Messages the system generated. Providers aren't wired yet — the worker drains these to <code>backend/data/outbox.log</code>.</span>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>ID</th><th>Reg</th><th>Channel</th><th>Template</th><th>Recipient</th><th>Payload</th><th>Status</th><th>Created</th><th>Sent</th></tr></thead>
+        <tbody id="comms-rows"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ===== DEALERS ===== -->
+  <div class="view" id="view-dealers">
+    <div class="toolbar">
+      <input class="admin-only" type="text" id="d-city" placeholder="City / Municipality (exact)">
+      <input class="admin-only" type="text" id="d-name" placeholder="Dealer name">
+      <button class="btn admin-only" id="d-save">Map city → dealer</button>
+      <span class="count">Saving remaps every existing registration in that city.</span>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>City</th><th>Dealer</th></tr></thead>
+        <tbody id="dealer-rows"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ===== EXPORT LOG ===== -->
+  <div class="view" id="view-exports">
+    <div class="toolbar">
+      <select class="admin-only" id="e-dealer"><option value="">Choose a dealer for a consent-gated export…</option></select>
+      <a class="btn admin-only" id="e-go" href="#">Export dealer CSV</a>
+      <span class="count">Dealer exports include only records with the dealer-sharing consent ticked. Every export is logged.</span>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>When</th><th>Actor</th><th>Scope</th><th>Dealer</th><th>Rows</th><th>Filters</th></tr></thead>
+        <tbody id="export-rows"></tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---------- helpers ---------- */
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const api = (p, opt) => fetch(p, opt).then(r => r.json());
+let toastTimer;
+function toast(msg) {
+  $('toast').textContent = msg;
+  $('toast').classList.add('on');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => $('toast').classList.remove('on'), 3200);
+}
+
+/* ---------- state ---------- */
+const state = { offset: 0, limit: 50, total: 0, selected: new Set() };
+
+function filters() {
+  const q = {
+    status: $('f-status').value, complete: $('f-complete').value, city: $('f-city').value,
+    intent: $('f-intent').value, source: $('f-source').value,
+    min_score: $('f-score').value, sort: $('f-sort').value
+  };
+  Object.keys(q).forEach(k => { if (!q[k]) delete q[k]; });
+  return q;
+}
+const qs = extra => new URLSearchParams(Object.assign(filters(), extra || {})).toString();
+
+/* ---------- dashboard ---------- */
+async function loadStats() {
+  const s = await api('/api/admin/stats');
+  const t = s.tiles;
+  $('tiles').innerHTML = [
+    ['total registrations', t.total, ''],
+    ['completed', t.complete, 'good'],
+    ['partial (step 1)', t.partial, ''],
+    ['invited', t.invited, 'hot'],
+    ['claimed', t.claimed, 'good'],
+    ['claim rate', t.claim_rate + '%', ''],
+    ['dealer consent', t.dealer_consented, ''],
+    ['comms pending', t.comms_pending, '']
+  ].map(([label, val, cls]) =>
+    '<div class="tile ' + cls + '"><b>' + esc(typeof val === 'number' ? val.toLocaleString() : val) + '</b><span>' + label + '</span></div>'
+  ).join('');
+
+  const max = Math.max(1, ...s.daily.map(d => d.n));
+  $('spark').innerHTML = s.daily.map(d =>
+    '<i style="height:' + Math.round((d.n / max) * 100) + '%" title="' + d.day + ': ' + d.n + '"></i>').join('');
+  $('spark-x').innerHTML = s.daily.length
+    ? '<span>' + s.daily[0].day + '</span><span>' + s.daily[s.daily.length - 1].day + '</span>' : '';
+
+  bars('cities', s.cities.map(c => [c.city, c.n]));
+  bars('sources', s.sources.map(c => [c.source, c.n]));
+  bars('intents', s.intents.map(c => [c.intent, c.n]));
+
+  fillOnce($('f-city'), s.cities.map(c => c.city));
+  fillOnce($('f-source'), s.sources.map(c => c.source));
+}
+
+function bars(id, pairs) {
+  const max = Math.max(1, ...pairs.map(p => p[1]));
+  $(id).innerHTML = pairs.length ? pairs.map(([t, n]) =>
+    '<div class="bar"><div class="t" title="' + esc(t) + '">' + esc(t) + '</div>' +
+    '<div class="track"><div class="fill" style="width:' + Math.round((n / max) * 100) + '%"></div></div>' +
+    '<div class="n">' + n + '</div></div>').join('') : '<div class="count">No data yet.</div>';
+}
+
+function fillOnce(sel, values) {
+  if (sel.dataset.filled) return;
+  if (!values.length) return;
+  sel.dataset.filled = '1';
+  values.forEach(v => {
+    const o = document.createElement('option');
+    o.value = o.textContent = v;
+    sel.appendChild(o);
+  });
+}
+
+/* ---------- registrations ---------- */
+async function loadRows() {
+  const res = await api('/api/admin/registrations?' + qs({ limit: state.limit, offset: state.offset }));
+  state.total = res.total;
+  $('count').textContent = res.total.toLocaleString() + ' matching';
+  $('range').textContent = res.total
+    ? (state.offset + 1) + '–' + Math.min(state.offset + state.limit, res.total) + ' of ' + res.total.toLocaleString()
+    : '0';
+  $('prev').disabled = state.offset === 0;
+  $('next').disabled = state.offset + state.limit >= res.total;
+
+  if (!res.rows.length) {
+    $('rows').innerHTML = '<tr><td colspan="19" class="empty">Nothing here yet. Register on the landing page and refresh.</td></tr>';
+    return;
+  }
+
+  $('rows').innerHTML = res.rows.map(r => {
+    const yn = v => v ? '<span class="yes">✓</span>' : '<span class="no">—</span>';
+    return '<tr>' +
+      '<td><input type="checkbox" class="pick" data-id="' + r.id + '"' +
+        (r.complete ? '' : ' disabled title="Partial records cannot be invited"') +
+        (state.selected.has(r.id) ? ' checked' : '') + '></td>' +
+      '<td class="mono">' + r.sequence + '</td>' +
+      '<td class="mono" style="color:var(--mute)">' + esc(r.created_at) + '</td>' +
+      '<td>' + esc(r.name) + (r.complete ? '' : ' <span class="partial">PARTIAL</span>') + '</td>' +
+      '<td class="mono">' + esc(r.mobile_masked) + '</td>' +
+      '<td style="color:var(--mute)">' + esc(r.email) + '</td>' +
+      '<td>' + esc(r.city) + '</td>' +
+      '<td>' + (r.dealer ? esc(r.dealer) : '<span class="no">unmapped</span>') + '</td>' +
+      '<td class="score ' + (r.lead_score >= 60 ? 'hi' : 'lo') + '">' + r.lead_score + '</td>' +
+      '<td>' + esc(r.intent || '—') + '</td><td>' + esc(r.budget || '—') + '</td>' +
+      '<td>' + esc(r.model_interest || '—') + '</td><td>' + esc(r.segment || '—') + '</td>' +
+      '<td>' + esc(r.drives || '—') + '</td><td>' + esc(r.ev_experience || '—') + '</td>' +
+      '<td>' + yn(r.consent_dealer) + '</td><td>' + yn(r.consent_marketing) + '</td>' +
+      '<td style="color:var(--mute)">' + esc(r.utm_source || 'direct') + '</td>' +
+      '<td><span class="pill ' + r.status + '">' + r.status + '</span></td>' +
+      '</tr>';
+  }).join('');
+
+  document.querySelectorAll('.pick').forEach(cb => {
+    cb.addEventListener('change', () => {
+      const id = Number(cb.dataset.id);
+      cb.checked ? state.selected.add(id) : state.selected.delete(id);
+      syncInvite();
+    });
+  });
+  syncInvite();
+}
+
+function syncInvite() {
+  $('invite').disabled = state.selected.size === 0;
+  $('invite').textContent = state.selected.size
+    ? 'Invite ' + state.selected.size + ' selected' : 'Invite selected';
+}
+
+/* ---------- other tabs ---------- */
+async function loadComms() {
+  const res = await api('/api/admin/comms');
+  $('comms-rows').innerHTML = res.rows.length ? res.rows.map(r =>
+    '<tr><td class="mono">' + r.id + '</td><td class="mono">' + (r.registration_id || '—') + '</td>' +
+    '<td>' + r.channel + '</td><td>' + esc(r.template) + '</td>' +
+    '<td class="mono" style="color:var(--mute)">' + esc(r.recipient) + '</td>' +
+    '<td class="mono" style="color:var(--amber)">' + esc(r.payload ? JSON.stringify(r.payload) : '') + '</td>' +
+    '<td><span class="pill">' + r.status + '</span></td>' +
+    '<td class="mono" style="color:var(--mute)">' + esc(r.created_at) + '</td>' +
+    '<td class="mono" style="color:var(--mute)">' + esc(r.sent_at || '—') + '</td></tr>'
+  ).join('') : '<tr><td colspan="9" class="empty">No messages queued yet.</td></tr>';
+}
+
+async function loadDealers() {
+  const res = await api('/api/admin/dealers');
+  $('dealer-rows').innerHTML = res.rows.length ? res.rows.map(r =>
+    '<tr><td>' + esc(r.city) + '</td><td>' + esc(r.dealer) + '</td></tr>').join('')
+    : '<tr><td colspan="2" class="empty">No territories mapped yet.</td></tr>';
+
+  const sel = $('e-dealer');
+  const names = [...new Set(res.rows.map(r => r.dealer))];
+  sel.innerHTML = '<option value="">Choose a dealer for a consent-gated export…</option>' +
+    names.map(n => '<option>' + esc(n) + '</option>').join('');
+}
+
+async function loadExports() {
+  const res = await api('/api/admin/exports');
+  $('export-rows').innerHTML = res.rows.length ? res.rows.map(r =>
+    '<tr><td class="mono">' + esc(r.at) + '</td><td>' + esc(r.actor) + '</td><td>' + esc(r.scope) + '</td>' +
+    '<td>' + esc(r.dealer || '—') + '</td><td class="mono">' + r.row_count + '</td>' +
+    '<td class="mono" style="color:var(--mute)">' + esc(r.filters) + '</td></tr>').join('')
+    : '<tr><td colspan="6" class="empty">No exports yet.</td></tr>';
+}
+
+/* ---------- wiring ---------- */
+['f-status','f-complete','f-city','f-intent','f-source','f-sort'].forEach(id =>
+  $(id).addEventListener('change', () => { state.offset = 0; loadRows(); }));
+$('f-score').addEventListener('input', () => { state.offset = 0; loadRows(); });
+
+$('all').addEventListener('change', e => {
+  document.querySelectorAll('.pick:not(:disabled)').forEach(cb => {
+    cb.checked = e.target.checked;
+    const id = Number(cb.dataset.id);
+    e.target.checked ? state.selected.add(id) : state.selected.delete(id);
+  });
+  syncInvite();
+});
+
+$('prev').addEventListener('click', () => { state.offset = Math.max(0, state.offset - state.limit); loadRows(); });
+$('next').addEventListener('click', () => { state.offset += state.limit; loadRows(); });
+
+$('invite').addEventListener('click', async () => {
+  const ids = [...state.selected];
+  if (!confirm('Issue invitations to ' + ids.length + ' registrant(s)?\n\nEach gets a single-use code valid 72 hours, and email + SMS are queued.')) return;
+  $('invite').disabled = true;
+  const res = await api('/api/admin/invite', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ids: ids, hours: 72 })
+  });
+  const bits = [];
+  if (res.invited) bits.push(res.invited + ' invited');
+  if (res.alreadySent) bits.push(res.alreadySent + ' already had a code (not re-sent)');
+  if (res.skipped) bits.push(res.skipped + ' skipped (partial)');
+  toast(bits.join(' · ') || 'Nothing to send.');
+  state.selected.clear();
+  await Promise.all([loadRows(), loadStats(), loadComms()]);
+});
+
+$('refresh').addEventListener('click', refreshAll);
+$('export-all').addEventListener('click', e => {
+  e.preventDefault();
+  window.location = '/api/admin/export.csv?' + qs();
+  setTimeout(loadExports, 900);
+});
+$('e-go').addEventListener('click', e => {
+  e.preventDefault();
+  const d = $('e-dealer').value;
+  if (!d) return toast('Pick a dealer first.');
+  window.location = '/api/admin/export.csv?dealer=' + encodeURIComponent(d);
+  setTimeout(loadExports, 900);
+});
+$('d-save').addEventListener('click', async () => {
+  const city = $('d-city').value.trim(), dealer = $('d-name').value.trim();
+  if (!city || !dealer) return toast('City and dealer are both required.');
+  const res = await api('/api/admin/dealers', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ city, dealer })
+  });
+  if (res.ok) { toast('Mapped ' + city + ' → ' + dealer); $('d-city').value = $('d-name').value = ''; loadDealers(); loadRows(); }
+  else toast(res.error || 'Could not save.');
+});
+
+document.querySelectorAll('.tab').forEach(t => {
+  t.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(x => x.classList.remove('on'));
+    document.querySelectorAll('.view').forEach(x => x.classList.remove('on'));
+    t.classList.add('on');
+    $('view-' + t.dataset.view).classList.add('on');
+    ({ comms: loadComms, dealers: loadDealers, exports: loadExports }[t.dataset.view] || (() => {}))();
+  });
+});
+
+/* ---------- session ---------- */
+let ME = null;
+
+async function loadMe() {
+  const res = await fetch('/api/admin/me');
+  if (res.status === 401) { location.replace('/admin/login'); return false; }
+  const d = await res.json();
+  ME = d.user;
+  $('who-name').textContent = ME.name || ME.username;
+  $('who-role').textContent = ME.role === 'admin' ? 'full access' : 'read-only';
+  $('who-role').className = ME.role === 'admin' ? 'admin' : '';
+  $('who').hidden = false;
+  if (ME.role !== 'admin') {
+    document.body.classList.add('viewer');
+    $('ro-note').hidden = false;
+    $('all').disabled = true;
+  }
+  return true;
+}
+
+$('logout').addEventListener('click', async () => {
+  await fetch('/api/auth/logout', { method: 'POST' });
+  location.replace('/admin/login');
+});
+
+$('pwd').addEventListener('click', async () => {
+  const current = prompt('Current password:');
+  if (current === null) return;
+  const next = prompt('New password (at least 10 characters):');
+  if (next === null) return;
+  const res = await fetch('/api/admin/password', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ current, next })
+  });
+  const d = await res.json();
+  if (d.ok) { alert('Password changed. Signing you out.'); location.replace('/admin/login'); }
+  else alert(d.error === 'too_short' ? 'That password is too short.' : 'Current password is wrong.');
+});
+
+/* Any 401 mid-session (expired cookie) bounces to the login page. */
+const _fetch = window.fetch;
+window.fetch = function (...a) {
+  return _fetch.apply(this, a).then(r => {
+    if (r.status === 401 && String(a[0]).startsWith('/api/admin')) location.replace('/admin/login');
+    return r;
+  });
+};
+
+function refreshAll() { loadStats(); loadRows(); }
+loadMe().then(ok => { if (ok) refreshAll(); });
+setInterval(() => { if (ME) refreshAll(); }, 20000);   // live-ish view during the campaign
+</script>
+</body>
+</html>

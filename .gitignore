@@ -1,0 +1,13 @@
+# --- never commit secrets or personal data ---
+backend/.env
+backend/data/          # SQLite database + outbox.log (real registrant data)
+*.db
+*.db-shm
+*.db-wal
+*.log
+
+# --- local noise ---
+node_modules/
+.DS_Store
+Thumbs.db
+*.local

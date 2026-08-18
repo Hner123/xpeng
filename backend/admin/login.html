@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Sign in · Future Night Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0B0907; --panel:#17130F; --line:#2A231C; --ink:#F5F1EC; --mute:#9A9084;
+    --orange:#F47920; --amber:#FF9A3D; --red:#D9541F; --field:#12100D;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{min-height:100vh;background:var(--bg);color:var(--ink);
+    font:15px/1.55 'Inter',system-ui,sans-serif;display:grid;place-items:center;padding:24px;
+    -webkit-font-smoothing:antialiased;overflow:hidden}
+
+  /* same arena glow as the landing page, so this reads as one product */
+  .glow{position:fixed;inset:0;z-index:0;pointer-events:none;background:
+    radial-gradient(900px 420px at 50% 108%, rgba(244,121,32,.42), transparent 62%),
+    radial-gradient(600px 300px at 50% 112%, rgba(255,154,61,.4), transparent 60%),
+    linear-gradient(#070605 0%, #14100A 62%, #241205 100%)}
+  .floor{position:fixed;left:0;right:0;bottom:0;height:32vh;z-index:0;opacity:.32;pointer-events:none;
+    background:repeating-linear-gradient(90deg, rgba(255,154,61,.14) 0 1px, transparent 1px 92px),
+               repeating-linear-gradient(0deg, rgba(255,154,61,.11) 0 1px, transparent 1px 46px);
+    transform:perspective(560px) rotateX(58deg);transform-origin:bottom}
+
+  .wrap{position:relative;z-index:2;width:100%;max-width:392px}
+  .brand{display:flex;align-items:center;gap:11px;justify-content:center;margin-bottom:26px}
+  .brand span{font-family:'Space Grotesk',sans-serif;font-weight:700;letter-spacing:.42em;font-size:15px}
+
+  form{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:28px 26px 24px;
+    box-shadow:0 30px 80px rgba(0,0,0,.6)}
+  h1{font-family:'Space Grotesk',sans-serif;font-size:22px;letter-spacing:-.01em;margin-bottom:5px}
+  .sub{font-size:13px;color:var(--mute);margin-bottom:22px}
+
+  label{display:block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);margin:0 0 7px}
+  .field{margin-bottom:14px;position:relative}
+  input{width:100%;font:15px 'Inter',sans-serif;color:var(--ink);background:var(--field);
+    border:1px solid var(--line);border-radius:9px;padding:13px 14px;outline:none;
+    transition:border-color .15s,box-shadow .15s}
+  input:focus{border-color:var(--orange);box-shadow:0 0 0 3px rgba(244,121,32,.16)}
+  .peek{position:absolute;right:6px;bottom:5px;background:none;border:none;color:var(--mute);
+    font:600 10.5px 'IBM Plex Mono',monospace;letter-spacing:.1em;padding:9px 8px;cursor:pointer}
+  .peek:hover{color:var(--ink)}
+
+  .row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:4px 0 18px}
+  .remember{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--mute);cursor:pointer}
+  .remember input{width:15px;height:15px;accent-color:var(--orange)}
+
+  button.go{width:100%;font:700 13.5px 'Inter',sans-serif;letter-spacing:.12em;color:#180B00;
+    background:linear-gradient(135deg,var(--amber),var(--orange));border:none;border-radius:10px;
+    padding:15px;cursor:pointer;transition:transform .15s,box-shadow .2s}
+  button.go:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 10px 30px rgba(244,121,32,.32)}
+  button.go:disabled{opacity:.6;cursor:progress;transform:none}
+
+  .msg{margin-top:14px;font-size:12.5px;line-height:1.5;color:var(--red);
+    background:rgba(217,84,31,.09);border:1px solid rgba(217,84,31,.32);border-radius:9px;
+    padding:11px 12px;display:none}
+  .msg.on{display:block}
+
+  .foot{margin-top:18px;text-align:center;font:400 10px/1.8 'IBM Plex Mono',monospace;
+    letter-spacing:.14em;color:#6B6259}
+  .hint{margin-top:14px;font-size:11.5px;line-height:1.6;color:var(--mute);
+    border-top:1px solid var(--line);padding-top:14px}
+  .hint code{font-family:'IBM Plex Mono',monospace;color:var(--amber)}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="glow"></div><div class="floor"></div>
+
+<div class="wrap">
+  <div class="brand">
+    <svg width="30" height="18" viewBox="0 0 30 18" aria-hidden="true"><path d="M1 1h7l7 7.5L22 1h7L18.5 9 29 17h-7l-7-7.5L8 17H1l10.5-8L1 1z" fill="#fff"/></svg>
+    <span>XPENG</span>
+  </div>
+
+  <form id="form" autocomplete="on">
+    <h1>Campaign admin</h1>
+    <p class="sub">Future Night · registrations, selection and dealer exports.</p>
+
+    <div class="field">
+      <label for="u">Username</label>
+      <input id="u" name="username" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" required autofocus>
+    </div>
+
+    <div class="field">
+      <label for="p">Password</label>
+      <input id="p" name="password" type="password" autocomplete="current-password" required>
+      <button class="peek" type="button" id="peek" aria-label="Show password">SHOW</button>
+    </div>
+
+    <div class="row">
+      <label class="remember"><input type="checkbox" id="remember"> Keep me signed in</label>
+    </div>
+
+    <button class="go" type="submit" id="go">SIGN IN</button>
+    <div class="msg" id="msg" role="alert"></div>
+
+    <div class="hint" id="hint" hidden>
+      First run — the seeded account is <code id="seed-user">admin</code>.
+      Change it in <code>backend/.env</code> before staging.
+    </div>
+  </form>
+
+  <div class="foot">DRAGON AI · AUTHORISED ACCESS ONLY</div>
+</div>
+
+<script>
+  const $ = id => document.getElementById(id);
+  const form = $('form'), go = $('go'), msg = $('msg');
+
+  /* Show the local-default hint only on localhost, never in staging. */
+  if (['localhost', '127.0.0.1'].includes(location.hostname)) $('hint').hidden = false;
+
+  $('peek').addEventListener('click', () => {
+    const p = $('p');
+    const show = p.type === 'password';
+    p.type = show ? 'text' : 'password';
+    $('peek').textContent = show ? 'HIDE' : 'SHOW';
+    p.focus();
+  });
+
+  function fail(text) {
+    msg.textContent = text;
+    msg.classList.add('on');
+    go.disabled = false;
+    go.textContent = 'SIGN IN';
+    $('p').select();
+  }
+
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    msg.classList.remove('on');
+    go.disabled = true;
+    go.textContent = 'SIGNING IN…';
+
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: $('u').value.trim(),
+          password: $('p').value,
+          remember: $('remember').checked
+        })
+      });
+      const data = await res.json();
+
+      if (data.ok) {
+        /* ?next= is validated server-side to be a local path. */
+        const next = new URLSearchParams(location.search).get('next');
+        location.replace(next && next.startsWith('/') ? next : '/admin');
+        return;
+      }
+      if (data.error === 'locked') {
+        fail('Too many failed attempts. Try again in about ' + Math.ceil((data.retryInSec || 60) / 60) + ' minute(s).');
+      } else {
+        fail('That username and password do not match an active account.');
+      }
+    } catch (err) {
+      fail('Could not reach the server. Is it still running?');
+    }
+  });
+</script>
+</body>
+</html>

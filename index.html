@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>XPENG FUTURE NIGHT · The Physical AI Open House · MOA Arena</title>
+<meta name="description" content="XPENG FUTURE NIGHT — the Philippines' first Physical AI Open House at MOA Arena. Free to attend, by invitation. Join the waitlist in under one minute.">
+<meta name="theme-color" content="#0B0907">
+<meta property="og:title" content="XPENG FUTURE NIGHT · The Physical AI Open House">
+<meta property="og:description" content="One night at MOA Arena: the full XPENG line-up, a humanoid robot, a flying car and a headline concert. Free to attend, by invitation. Join the waitlist.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="/og.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://futurenight.xpeng.ph/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+
+<!-- ============================================================
+     TRACKING (Section 9) — drop the real IDs in before go-live.
+     Events fired from app.js: PageView, StartForm,
+     CompleteRegistration, ClaimClick.
+     ============================================================ -->
+<!-- Meta Pixel: paste snippet here -->
+<!-- TikTok Pixel: paste snippet here -->
+<!-- Google Tag (GA4 + Google Ads): paste snippet here -->
+</head>
+<body>
+<a class="skip" href="#waitlist">Skip to the waitlist form</a>
+
+<nav>
+  <a class="logo" href="#" aria-label="XPENG home">
+    <svg width="28" height="17" viewBox="0 0 30 18" fill="none" aria-hidden="true"><path d="M1 1h7l7 7.5L22 1h7L18.5 9 29 17h-7l-7-7.5L8 17H1l10.5-8L1 1z" fill="#fff"/></svg>
+    XPENG
+  </a>
+  <div class="nav-links">
+    <a href="#event">EVENT</a>
+    <a href="#how">HOW IT WORKS</a>
+    <a href="#experience">EXPERIENCE</a>
+    <a href="#faq">FAQ</a>
+  </div>
+  <a class="btn nav-cta" href="#waitlist" data-cta="nav">JOIN WAITLIST</a>
+  <button class="burger" id="burger" aria-label="Menu" aria-expanded="false" aria-controls="drawer"><span></span></button>
+</nav>
+
+<div class="drawer" id="drawer">
+  <a href="#event">EVENT</a>
+  <a href="#how">HOW IT WORKS</a>
+  <a href="#experience">EXPERIENCE</a>
+  <a href="#faq">FAQ</a>
+  <a class="btn" href="#waitlist" data-cta="drawer">JOIN WAITLIST</a>
+</div>
+
+<header>
+  <div class="sky"></div><div class="beams"></div><div class="floor"></div>
+
+  <div class="hero-copy">
+    <div class="eyebrow">A NATIONAL FIRST · MOA ARENA</div>
+    <h1>XPENG<br>FUTURE NIGHT</h1>
+    <div class="sub">The Physical AI Open House</div>
+    <div class="meta">
+      <b id="m-venue">MOA Arena</b><span class="dot"></span>
+      <b id="m-date">September 25, 2026</b><span class="dot"></span>
+      <span>Free · by invitation only</span>
+    </div>
+    <div class="hero-line"></div>
+    <p class="lede">Experience the future of intelligent mobility. One night, one arena: the full XPENG line-up, the IRON humanoid, the flying car — and a headline concert to close it. Seats aren't sold. The guest list is curated from the waitlist.</p>
+
+    <div class="countdown" id="countdown" aria-label="Countdown to event day">
+      <div class="cd"><b data-cd="d">--</b><span>DAYS</span></div>
+      <div class="cd"><b data-cd="h">--</b><span>HRS</span></div>
+      <div class="cd"><b data-cd="m">--</b><span>MIN</span></div>
+      <div class="cd"><b data-cd="s">--</b><span>SEC</span></div>
+    </div>
+
+    <div class="free-tag"><i></i><span id="m-forum">PHYSICAL AI FORUM · 3:30 PM · LIVESTREAMED</span></div>
+
+    <!-- Hero artist strip — swaps from silhouette to names at T-1 week -->
+    <div class="hero-artist" id="hero-artist">
+      <span class="ha-lab">HEADLINE PERFORMANCE</span>
+      <span class="ha-sil" aria-hidden="true"><i></i><i></i></span>
+      <span class="ha-txt" id="hero-artist-txt">2 STARS · TO BE REVEALED</span>
+    </div>
+  </div>
+
+  <!-- ============ WAITLIST CARD ============ -->
+  <div class="card" id="waitlist">
+    <div class="status">
+      <s id="s-soldout">TICKETS SOLD OUT</s><em id="s-waitlist">WAITLIST OPEN</em>
+    </div>
+
+    <!-- STEP 1 · THE LEAD -->
+    <form id="step1" novalidate>
+      <h2>Join the Waitlist</h2>
+      <p class="hint">Register your interest in under one minute. Free — there is nothing to buy.</p>
+      <div class="counter" id="counter" hidden><b id="counter-num">0</b><span id="counter-label">already on the waitlist</span></div>
+      <div class="steps"><span class="on"></span><span></span></div>
+
+      <div class="field" id="w-name">
+        <input id="f-name" name="name" type="text" placeholder="Full name" autocomplete="name" required>
+        <div class="msg">Please enter your full name.</div>
+      </div>
+      <div class="field" id="w-mobile">
+        <input id="f-mobile" name="mobile" type="tel" inputmode="numeric" placeholder="Mobile number (09XX XXX XXXX)" autocomplete="tel" required>
+        <div class="msg">Enter an 11-digit PH mobile number starting with 09.</div>
+      </div>
+      <div class="field" id="w-email">
+        <input id="f-email" name="email" type="email" placeholder="Email address" autocomplete="email" required>
+        <div class="msg">Please enter a valid email address.</div>
+      </div>
+      <div class="row2">
+        <div class="field" id="w-prov">
+          <select id="f-prov" name="province" aria-label="Province or region" required><option value="">Province / Region</option></select>
+          <div class="msg">Select your province or region.</div>
+        </div>
+        <div class="field" id="w-city">
+          <select id="f-city" name="city" aria-label="City or municipality" required disabled><option value="">City / Municipality</option></select>
+          <div class="msg">Select your city or municipality.</div>
+        </div>
+      </div>
+
+      <button class="btn cta" type="submit">CONTINUE &rarr;</button>
+      <div class="err" id="err1">Please complete all fields to continue.</div>
+      <p class="fine">MOBILE VERIFIED BY OTP · NO PAYMENT, EVER</p>
+    </form>
+
+    <!-- STEP 2 · THE QUALIFICATION -->
+    <form id="step2" novalidate hidden>
+      <button class="back" type="button" id="btn-back">&larr; Back</button>
+      <h2>Help us curate your invitation</h2>
+      <p class="hint">A few taps — these answers shape the guest list and who follows up with you.</p>
+      <div class="steps"><span class="on"></span><span class="on"></span></div>
+
+      <div class="q" id="q-age"><label>Age bracket</label>
+        <div class="chips" data-q="age" role="group" aria-label="Age bracket">
+          <span class="chip" tabindex="0" role="button">18–24</span><span class="chip" tabindex="0" role="button">25–34</span><span class="chip" tabindex="0" role="button">35–44</span><span class="chip" tabindex="0" role="button">45–54</span><span class="chip" tabindex="0" role="button">55+</span>
+        </div>
+      </div>
+
+      <div class="q" id="q-who"><label>Which best describes you?</label>
+        <div class="chips" data-q="who" role="group" aria-label="Which best describes you">
+          <span class="chip" tabindex="0" role="button">Business owner</span><span class="chip" tabindex="0" role="button">Professional / employee</span><span class="chip" tabindex="0" role="button">Government</span><span class="chip" tabindex="0" role="button">OFW / OFW family</span><span class="chip" tabindex="0" role="button">Student</span><span class="chip" tabindex="0" role="button">Other</span>
+        </div>
+      </div>
+
+      <div class="q" id="q-drive"><label>What do you drive today?</label>
+        <div class="field" style="margin-bottom:0">
+          <select id="f-drive" name="drives" aria-label="What do you drive today"><option value="">Select your current vehicle brand</option></select>
+        </div>
+      </div>
+
+      <div class="q" id="q-when"><label>Planning to buy a vehicle?</label>
+        <div class="chips" data-q="when" role="group" aria-label="Planning to buy a vehicle">
+          <span class="chip" tabindex="0" role="button">Within 3 months</span><span class="chip" tabindex="0" role="button">3–6 months</span><span class="chip" tabindex="0" role="button">6–12 months</span><span class="chip" tabindex="0" role="button">Over a year</span><span class="chip" tabindex="0" role="button">Just exploring</span>
+        </div>
+      </div>
+
+      <div class="q" id="q-budget"><label>Budget for your next vehicle</label>
+        <div class="chips" data-q="budget" role="group" aria-label="Budget for your next vehicle">
+          <span class="chip" tabindex="0" role="button">Under ₱1.5M</span><span class="chip" tabindex="0" role="button">₱1.5–2.5M</span><span class="chip" tabindex="0" role="button">₱2.5–4M</span><span class="chip" tabindex="0" role="button">₱4M+</span><span class="chip" tabindex="0" role="button">Prefer not to say</span>
+        </div>
+      </div>
+
+      <div class="q" id="q-model"><label>Which XPENG interests you?</label>
+        <div class="chips" data-q="model" role="group" aria-label="Which XPENG interests you">
+          <span class="chip" tabindex="0" role="button">X9 luxury MPV</span><span class="chip" tabindex="0" role="button">L03 SUV</span><span class="chip" tabindex="0" role="button">The full line-up</span><span class="chip" tabindex="0" role="button">Just curious about the AI</span>
+        </div>
+      </div>
+
+      <div class="q" id="q-ev"><label>EV experience</label>
+        <div class="chips" data-q="ev" role="group" aria-label="EV experience">
+          <span class="chip" tabindex="0" role="button">Own an EV</span><span class="chip" tabindex="0" role="button">Have test-driven</span><span class="chip" tabindex="0" role="button">Never tried</span>
+        </div>
+      </div>
+
+      <div class="consents">
+        <label><input type="checkbox" id="c-priv"> <span>I agree to the collection and use of my data per the <a href="/privacy" target="_blank" rel="noopener">Data Privacy notice</a>. <b>(required)</b></span></label>
+        <label><input type="checkbox" id="c-dealer"> <span>I agree that my information may be shared with XPENG's authorized dealers near me to assist with my inquiry.</span></label>
+        <label><input type="checkbox" id="c-mkt"> <span>Send me XPENG news, test-drive offers and X Space events. <i>(optional)</i></span></label>
+      </div>
+
+      <button class="btn cta" type="submit" id="btn-submit">JOIN THE WAITLIST</button>
+      <div class="err" id="err2">Please answer each question and accept the Data Privacy notice.</div>
+    </form>
+
+    <!-- SUCCESS -->
+    <div id="step3" hidden>
+      <div class="done">
+        <div class="num" id="wl-num">#—</div>
+        <div class="lab">YOU'RE ON THE WAITLIST</div>
+        <p id="wl-copy"></p>
+        <!-- No QR here. The game-pass code travels with the
+             INVITATION (brief step 4), so only selected guests who
+             claim a ticket receive one. A placeholder QR on this
+             screen would promise every registrant a pass to a
+             building most of them won't enter. -->
+      </div>
+      <div class="share">
+        <p>GET YOUR FRIENDS ON THE LIST</p>
+        <div class="share-row">
+          <a id="sh-fb" href="#" target="_blank" rel="noopener">Facebook</a>
+          <a id="sh-x" href="#" target="_blank" rel="noopener">X</a>
+          <a id="sh-vi" href="#" target="_blank" rel="noopener">Viber</a>
+          <button id="sh-copy" type="button">Copy link</button>
+        </div>
+        <p style="margin:18px 0 12px">FOLLOW XPENG PH FOR THE ARTIST REVEAL</p>
+        <div class="share-row" id="follow-row"></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ============ THE EVENT ============ -->
+<section id="event">
+  <div class="sec-eyebrow">THE EVENT</div>
+  <h2 class="sec-title">A launch you attend. Not one you watch.</h2>
+  <p class="sec-sub">The Philippines' first Physical AI Open House — free to attend, impossible to buy into. Every seat in the Arena is invited.</p>
+  <div class="blocks">
+    <div class="block">
+      <div class="tag">7:00 PM · THE SHOW</div>
+      <h3>The reveal</h3>
+      <p>The full XPENG line-up on an arena stage — flagship X9 revealed live, with the IRON humanoid, the flying car and the Physical AI story told at concert scale.</p>
+    </div>
+    <div class="block mystery">
+      <div class="tag">HEADLINE PERFORMANCE</div>
+      <h3>The night ends loud</h3>
+      <p id="mystery-copy">Two of the country's biggest stars share the stage with the cars — one revealed with the X9, one closing the night with a full concert set.</p>
+      <div class="sil" id="mystery-sil"><i></i><i></i><span>TO BE REVEALED</span></div>
+    </div>
+    <div class="block">
+      <div class="tag">6:00 PM · OPEN HOUSE</div>
+      <h3>The foyer</h3>
+      <p>Walk the XPENG story before the show — history wall, merch store, photo moments with IRON, and games where you can win exclusive XPENG merch.</p>
+    </div>
+    <div class="block wide">
+      <div>
+        <div class="tag">FREE · BY INVITATION</div>
+        <h3>Nothing to buy. Not at any point.</h3>
+        <p>Every seat is given, not sold. Registration is free, invitations are free, and the SM ticket you claim is free. There is no purchase path on this page and no payment at the door — if anyone asks you to pay for Future Night, it isn't us.</p>
+      </div>
+      <a class="btn" href="#waitlist" data-cta="event-block">JOIN THE WAITLIST</a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ HOW IT WORKS ============ -->
+<section id="how">
+  <div class="sec-eyebrow">HOW IT WORKS</div>
+  <h2 class="sec-title">Four steps from here to your seat.</h2>
+  <p class="sec-sub">Nothing is for sale at any point. If anyone asks you to pay for entry to Future Night, it isn't us.</p>
+  <ol class="flow">
+    <li><b>Join the waitlist</b><p>One minute, free, on this page. You get instant confirmation by email and SMS. No entry is promised at this stage.</p></li>
+    <li><b>We curate the guest list</b><p>Invitations are limited and selected from the waitlist — weighted by where you are and the answers you gave us.</p></li>
+    <li><b>Invitations go out, T-1 week</b><p>If you're selected, you receive a personal single-use claim code by email and SMS, with a link to SM Tickets.</p></li>
+    <li><b>Claim free, within 72 hours</b><p>Claim your free ticket on SM Tickets. That ticket is your entry to MOA Arena. Unclaimed codes expire and pass to the next names on the list.</p></li>
+  </ol>
+</section>
+
+<!-- ============ THE EXPERIENCE ============ -->
+<section id="experience">
+  <div class="sec-eyebrow">THE EXPERIENCE</div>
+  <h2 class="sec-title">Five reasons this isn't a car show.</h2>
+  <div class="pillars">
+    <div class="pill"><div class="ic">AI</div><h4>PHYSICAL AI</h4><p>Intelligence that moves</p></div>
+    <div class="pill"><div class="ic">XP</div><h4>XPILOT</h4><p>Advanced smart driving</p></div>
+    <div class="pill"><div class="ic">TC</div><h4>TURING CHIP</h4><p>Powerful AI computing</p></div>
+    <div class="pill"><div class="ic">8V</div><h4>800V PLATFORM</h4><p>Ultra-fast charging</p></div>
+    <div class="pill"><div class="ic">X</div><h4>ECOSYSTEM</h4><p>Car · robot · flight</p></div>
+  </div>
+
+  <!-- Artist reveal module — swapped from config.js at T-1 week, no redeploy -->
+  <div class="lineup" id="lineup">
+    <div class="lineup-copy">
+      <div class="tag">ARTIST LINE UP</div>
+      <h3 id="lineup-title">The stage won't only belong to the cars.</h3>
+      <p id="lineup-copy">Two of the country's biggest stars — one revealed with the X9, one closing the night with a full concert set. Names drop one week before the event.</p>
+    </div>
+    <div class="lineup-sil" id="lineup-art" aria-hidden="true">
+      <i style="height:74px"></i><i style="height:96px"></i>
+      <span id="lineup-reveal">TO BE REVEALED · SEPT 18</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section id="faq">
+  <div class="sec-eyebrow">FAQ</div>
+  <h2 class="sec-title">Before you ask.</h2>
+  <div class="faq">
+    <details><summary>Is it really free?</summary><div class="a">Yes — completely free, by invitation. There is nothing to buy anywhere on this page or at the door. Anyone asking you to pay for entry is not us.</div></details>
+    <details><summary>How do I get in?</summary><div class="a">Join the waitlist above. Invitations are limited and curated from the waitlist. Selected registrants receive a personal claim code by email and SMS, with a link to claim their free ticket on SM Tickets — that SM ticket is your entry pass to MOA Arena.</div></details>
+    <details><summary>When will I know if I'm invited?</summary><div class="a">Invitations are released about one week before the event. Watch your inbox and your SMS — the code is sent to the email and mobile number you register with, so please keep them accurate.</div></details>
+    <details><summary>What is the SM Tickets step?</summary><div class="a">Your invitation links to the SM Tickets page for Future Night. You enter your single-use code there and claim a free ticket — no payment, no fees. You have 72 hours from the invitation; after that the code expires and the seat is released to the next names on the waitlist.</div></details>
+    <details><summary>Who gets picked, and how?</summary><div class="a">Selection is made from the waitlist by our team, guided by city or residence and the profile answers in Step 2 of the form. Registering early and completing both steps gives you the strongest chance.</div></details>
+    <details><summary>Can I transfer my ticket?</summary><div class="a">No — invitations are personal and matched to your registered name and mobile number. Bring a valid ID together with your SM ticket.</div></details>
+    <details><summary>Is there an age policy?</summary><div class="a">Guests 18 and above may register and attend on their own. Minors are welcome only when accompanied by a registered adult guest, and each attendee still needs their own claimed ticket.</div></details>
+    <details><summary>Parking and how to get there</summary><div class="a">MOA Arena sits inside the SM Mall of Asia complex in Pasay, served by mall parking and the usual ride-hailing and bus drop-off points. The foyer opens at 6:00 PM — arrive early, gates and traffic around the complex get heavy before a full-house show. Detailed arrival instructions go out to claimed guests the day before.</div></details>
+    <details><summary>What can I win?</summary><div class="a">The foyer play zone runs from 6:00 PM with instant prizes — exclusive XPENG tote bags, keychains and a special-merch draw. The personal code in your invitation is your game pass, so keep that email or SMS handy on the night.</div></details>
+    <details><summary>What happens to my information?</summary><div class="a">Your data is used to manage this event and, only if you tick that consent, to connect you with an authorized XPENG dealer near you. You can withdraw consent or request deletion any time — full details and contacts are in the <a href="/privacy">Data Privacy notice</a>.</div></details>
+  </div>
+</section>
+
+<div class="closer">
+  <h3>Seats can't be bought. They're given.</h3>
+  <p>Registration takes under a minute and closes when the Arena is full.</p>
+  <a class="btn" href="#waitlist" data-cta="closer">JOIN THE WAITLIST</a>
+</div>
+
+<footer>
+  <div class="l">
+    XPENG PHILIPPINES · FUTURE NIGHT 2026<br>
+    Campaign by Dragon AI · <a id="f-mail" href="mailto:futurenight@xpeng.ph">futurenight@xpeng.ph</a>
+  </div>
+  <div class="r" id="f-links">
+    <a href="/privacy">Data Privacy notice</a>
+    <a href="/terms">Terms</a>
+  </div>
+</footer>
+
+<div class="sticky-cta" id="sticky">
+  <a class="btn" href="#waitlist" data-cta="sticky">JOIN THE WAITLIST — FREE</a>
+</div>
+
+<script src="config.js"></script>
+<script src="geo.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
