@@ -66,7 +66,15 @@ const ALL = Object.keys(GEO);
 async function main() {
   const count = Number(process.argv[2] || 40);
   const db = dbLayer.open(process.env);
-  await db.migrate();
+  /* Same rule as the server: only SQLite may create its own schema.
+     Against MySQL the app user has no DDL grant by design. */
+  if (db.name === 'sqlite') await db.migrate();
+  else if (!(await db.hasSchema())) {
+    console.error('No tables yet. Load the schema first:');
+    console.error('  sudo mysql ' + (process.env.DB_NAME || 'xpeng_future_night') +
+                  ' < backend/schema.mysql.sql');
+    process.exit(1);
+  }
   const store = storeLib.make(db, vaultLib.make(process.env.APP_KEY));
 
   let done = 0;
@@ -79,6 +87,8 @@ async function main() {
     const rec = {
       name: first + ' ' + last,
       mobile: '09' + String(Math.floor(100000000 + Math.random() * 899999999)),
+      /* @example.com marks every seeded row — that is what the purge
+         SQL matches on before go-live. Never use a real domain here. */
       email: (first + '.' + last).toLowerCase().replace(/[^a-z.]/g, '') + (1000 + i) + '@example.com',
       province, city,
       partial,
