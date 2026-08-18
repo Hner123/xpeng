@@ -30,6 +30,14 @@ function sqliteDriver(cfg) {
 
   return {
     name: 'sqlite',
+    async hasSchema() {
+      const r = db.prepare(
+        "SELECT COUNT(*) AS n FROM sqlite_master WHERE type='table' AND name='registrations'"
+      ).get();
+      return Number(r.n) > 0;
+    },
+    /* Safe to run every boot: the file is ours and CREATE TABLE IF
+       NOT EXISTS needs no special grant in SQLite. */
     async migrate() {
       db.exec(fs.readFileSync(path.join(ROOT, 'schema.sqlite.sql'), 'utf8'));
     },
@@ -77,6 +85,17 @@ function mysqlDriver(cfg) {
 
   return {
     name: 'mysql',
+    async hasSchema() {
+      const [rows] = await pool.query(
+        `SELECT COUNT(*) AS n FROM information_schema.tables
+          WHERE table_schema = DATABASE() AND table_name = 'registrations'`
+      );
+      return Number(rows[0].n) > 0;
+    },
+    /* Only ever called by "npm run migrate", never on boot. The app
+       user holds no CREATE/ALTER grant in production, and MySQL
+       denies DDL on privilege before it checks IF NOT EXISTS — so
+       auto-migrating would fail even against an existing schema. */
     async migrate() {
       const sql = fs.readFileSync(path.join(ROOT, 'schema.mysql.sql'), 'utf8');
       const conn = await pool.getConnection();

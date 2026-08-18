@@ -224,7 +224,21 @@ function startCommsWorker(store, auth) {
 /* ---------- routes ------------------------------------------ */
 async function main() {
   const db = dbLayer.open(process.env);
-  await db.migrate();
+
+  /* SQLite owns its own file, so it can create the schema on boot.
+     MySQL must not: the app user deliberately has no DDL grant, and
+     schema changes are a deliberate operational step. Verify and
+     fail with instructions instead of guessing. */
+  if (db.name === 'sqlite') {
+    await db.migrate();
+  } else if (!(await db.hasSchema())) {
+    console.error('');
+    console.error('  The database has no tables yet. Load the schema once:');
+    console.error('    sudo mysql ' + (process.env.DB_NAME || 'xpeng_future_night') +
+                  ' < backend/schema.mysql.sql');
+    console.error('');
+    process.exit(1);
+  }
   const vault = vaultLib.make(process.env.APP_KEY);
   const store = storeLib.make(db, vault);
   const auth = authLib.make(db);
@@ -412,6 +426,18 @@ async function main() {
       /* Never leak internals to the public write path. */
       return json(res, 500, { ok: false, error: 'server_error' });
     }
+  });
+
+  server.on('error', err => {
+    if (err.code === 'EADDRINUSE') {
+      console.error('');
+      console.error('  Port ' + PORT + ' is already in use by another app on this server.');
+      console.error('  Pick a free one: set PORT= in backend/.env (e.g. 3010) and restart,');
+      console.error('  then point the reverse proxy at the new port.');
+      console.error('');
+      process.exit(1);
+    }
+    throw err;
   });
 
   server.listen(PORT, () => {

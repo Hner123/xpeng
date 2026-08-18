@@ -8,6 +8,7 @@
   "scripts": {
     "start": "node server.js",
     "seed": "node seed.js",
+    "migrate": "node migrate.js",
     "rescore": "node rescore.js"
   },
   "dependencies": {},
