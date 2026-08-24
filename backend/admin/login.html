@@ -6,15 +6,27 @@
 <meta name="robots" content="noindex, nofollow">
 <title>Sign in · Future Night Admin</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
+  /* Brand faces, self-hosted. Absolute /font/ paths: this page is
+     served from /admin, so a relative url() would look in
+     /admin/font/ and 404. */
+  @font-face{font-family:'Basis Grotesque';src:url('/font/BasisGrotesque-Regular.otf') format('opentype');
+    font-weight:400;font-style:normal;font-display:swap}
+  @font-face{font-family:'Basis Grotesque';src:url('/font/BasisGrotesque-Bold.otf') format('opentype');
+    font-weight:500 700;font-style:normal;font-display:swap}
+  @font-face{font-family:'Futura Display';src:url('/font/FuturaBT-HeavyItalic.otf') format('opentype');
+    font-weight:700;font-style:italic;font-display:swap}
   :root{
     --bg:#0B0907; --panel:#17130F; --line:#2A231C; --ink:#F5F1EC; --mute:#9A9084;
     --orange:#F47920; --amber:#FF9A3D; --red:#D9541F; --field:#12100D;
+    --font-body:'Basis Grotesque',system-ui,sans-serif;
+    --font-display:'Futura Display','Basis Grotesque',sans-serif;
+    --font-mono:'IBM Plex Mono',ui-monospace,monospace;
   }
   *{margin:0;padding:0;box-sizing:border-box}
   body{min-height:100vh;background:var(--bg);color:var(--ink);
-    font:15px/1.55 'Inter',system-ui,sans-serif;display:grid;place-items:center;padding:24px;
+    font:15px/1.55 var(--font-body);display:grid;place-items:center;padding:24px;
     -webkit-font-smoothing:antialiased;overflow:hidden}
 
   /* same arena glow as the landing page, so this reads as one product */
@@ -29,28 +41,28 @@
 
   .wrap{position:relative;z-index:2;width:100%;max-width:392px}
   .brand{display:flex;align-items:center;gap:11px;justify-content:center;margin-bottom:26px}
-  .brand span{font-family:'Space Grotesk',sans-serif;font-weight:700;letter-spacing:.42em;font-size:15px}
+  .brand span{font-family:var(--font-body);font-weight:700;letter-spacing:.42em;font-size:15px}
 
   form{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:28px 26px 24px;
     box-shadow:0 30px 80px rgba(0,0,0,.6)}
-  h1{font-family:'Space Grotesk',sans-serif;font-size:22px;letter-spacing:-.01em;margin-bottom:5px}
+  h1{font-family:var(--font-display);font-style:italic;font-size:23px;letter-spacing:-.005em;margin-bottom:5px}
   .sub{font-size:13px;color:var(--mute);margin-bottom:22px}
 
   label{display:block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);margin:0 0 7px}
   .field{margin-bottom:14px;position:relative}
-  input{width:100%;font:15px 'Inter',sans-serif;color:var(--ink);background:var(--field);
+  input{width:100%;font:15px var(--font-body);color:var(--ink);background:var(--field);
     border:1px solid var(--line);border-radius:9px;padding:13px 14px;outline:none;
     transition:border-color .15s,box-shadow .15s}
   input:focus{border-color:var(--orange);box-shadow:0 0 0 3px rgba(244,121,32,.16)}
   .peek{position:absolute;right:6px;bottom:5px;background:none;border:none;color:var(--mute);
-    font:600 10.5px 'IBM Plex Mono',monospace;letter-spacing:.1em;padding:9px 8px;cursor:pointer}
+    font:600 10.5px var(--font-mono);letter-spacing:.1em;padding:9px 8px;cursor:pointer}
   .peek:hover{color:var(--ink)}
 
   .row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:4px 0 18px}
   .remember{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--mute);cursor:pointer}
   .remember input{width:15px;height:15px;accent-color:var(--orange)}
 
-  button.go{width:100%;font:700 13.5px 'Inter',sans-serif;letter-spacing:.12em;color:#180B00;
+  button.go{width:100%;font:700 13.5px var(--font-body);letter-spacing:.12em;color:#180B00;
     background:linear-gradient(135deg,var(--amber),var(--orange));border:none;border-radius:10px;
     padding:15px;cursor:pointer;transition:transform .15s,box-shadow .2s}
   button.go:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 10px 30px rgba(244,121,32,.32)}
@@ -61,11 +73,11 @@
     padding:11px 12px;display:none}
   .msg.on{display:block}
 
-  .foot{margin-top:18px;text-align:center;font:400 10px/1.8 'IBM Plex Mono',monospace;
+  .foot{margin-top:18px;text-align:center;font:400 10px/1.8 var(--font-mono);
     letter-spacing:.14em;color:#6B6259}
   .hint{margin-top:14px;font-size:11.5px;line-height:1.6;color:var(--mute);
     border-top:1px solid var(--line);padding-top:14px}
-  .hint code{font-family:'IBM Plex Mono',monospace;color:var(--amber)}
+  .hint code{font-family:var(--font-mono);color:var(--amber)}
   @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>

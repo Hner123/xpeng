@@ -6,22 +6,35 @@
 <meta name="robots" content="noindex, nofollow">
 <title>Future Night · Admin</title>
 <style>
+  /* Brand faces, self-hosted. Absolute /font/ paths: this page is
+     served from /admin, so a relative url() would look in
+     /admin/font/ and 404. */
+  @font-face{font-family:'Basis Grotesque';src:url('/font/BasisGrotesque-Regular.otf') format('opentype');
+    font-weight:400;font-style:normal;font-display:swap}
+  @font-face{font-family:'Basis Grotesque';src:url('/font/BasisGrotesque-Bold.otf') format('opentype');
+    font-weight:500 700;font-style:normal;font-display:swap}
+  @font-face{font-family:'Futura Display';src:url('/font/FuturaBT-HeavyItalic.otf') format('opentype');
+    font-weight:700;font-style:italic;font-display:swap}
   :root{
     --bg:#0E0C0A; --panel:#17130F; --line:#2A231C; --ink:#F5F1EC; --mute:#9A9084;
     --orange:#F47920; --amber:#FF9A3D; --green:#3FB27F; --red:#D9541F;
+    --font-body:'Basis Grotesque',system-ui,sans-serif;
+    --font-display:'Futura Display','Basis Grotesque',sans-serif;
+    --font-mono:'IBM Plex Mono',ui-monospace,monospace;
   }
   *{margin:0;padding:0;box-sizing:border-box}
   /* beats class-level display rules on elements using [hidden] */
   [hidden]{display:none!important}
-  body{background:var(--bg);color:var(--ink);font:14px/1.5 'Inter',system-ui,sans-serif}
-  code,.mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
+  body{background:var(--bg);color:var(--ink);font:14px/1.5 var(--font-body)}
+  code,.mono{font-family:var(--font-mono)}
   a{color:var(--amber)}
 
   header{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
     padding:14px 20px;border-bottom:1px solid var(--line);background:var(--panel);position:sticky;top:0;z-index:5}
-  header h1{font-size:14px;letter-spacing:.24em;font-weight:700}
+  header h1{font-family:var(--font-display);font-style:italic;
+    font-size:15px;letter-spacing:.18em;font-weight:700}
   header .sub{font-size:11px;letter-spacing:.16em;color:var(--mute)}
-  .btn{font:600 12px/1 'Inter',sans-serif;letter-spacing:.06em;color:#180B00;
+  .btn{font:600 12px/1 var(--font-body);letter-spacing:.06em;color:#180B00;
     background:linear-gradient(135deg,var(--amber),var(--orange));border:none;border-radius:7px;
     padding:10px 14px;cursor:pointer;text-decoration:none;display:inline-block}
   .btn.ghost{background:none;color:var(--ink);border:1px solid var(--line)}
@@ -51,7 +64,7 @@
 
   .toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:18px 0 10px}
   select,input[type=text],input[type=date],input[type=number]{
-    font:13px 'Inter',sans-serif;color:var(--ink);background:#12100D;border:1px solid var(--line);
+    font:13px var(--font-body);color:var(--ink);background:#12100D;border:1px solid var(--line);
     border-radius:8px;padding:9px 10px;outline:none}
   select:focus,input:focus{border-color:var(--orange)}
   .toolbar .spacer{flex:1}
@@ -79,7 +92,7 @@
     border-radius:10px;padding:12px 18px;font-size:13px;z-index:20;display:none}
   .toast.on{display:block}
   .tabs{display:flex;gap:4px;margin:18px 0 0}
-  .tab{font:600 11px/1 'Inter',sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);
+  .tab{font:600 11px/1 var(--font-body);letter-spacing:.14em;text-transform:uppercase;color:var(--mute);
     background:none;border:1px solid var(--line);border-bottom:none;border-radius:8px 8px 0 0;padding:11px 14px;cursor:pointer}
   .tab.on{color:var(--ink);background:var(--panel)}
   .view{display:none} .view.on{display:block}
