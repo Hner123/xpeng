@@ -104,7 +104,10 @@ body.menu-open .drawer{display:flex}
 .btn[disabled]{opacity:.55;cursor:progress;transform:none}
 
 /* ---------- HERO ---------- */
-header{position:relative;padding:calc(var(--nav-h) + 34px) var(--pad) 54px;overflow:hidden}
+header{position:relative;overflow:hidden;
+  min-height:100vh;min-height:100dvh;
+  padding:calc(var(--nav-h) + 26px) var(--pad) calc(46vh - 40px);
+  display:flex;flex-direction:column;justify-content:flex-start}
 .sky,.beams,.floor,.keyart{position:absolute;inset:0;z-index:0;pointer-events:none}
 /* Sunset gradient sampled from the key art, so the photo edge blends
    into the page instead of ending on a hard line. */
@@ -378,11 +381,18 @@ html.motion [data-reveal].in .cd b{animation:none}
   .nav-links a{color:var(--mist);text-decoration:none;transition:color .2s}
   .nav-links a:hover,.nav-links a:focus-visible{color:#fff}
   .nav-cta{display:inline-block}
+  /* The hero is exactly one screen. It used to be 100vh PLUS a
+     62vh padding-bottom for the art band, which pushed the artwork
+     below the fold — you had to scroll to see the cars. Now the art
+     band lives inside the viewport and the copy overlaps it, which
+     is what the scrim gradients are for.
+     dvh so mobile browser chrome doesn't cause a jump. */
   header{display:grid;grid-template-columns:minmax(0,1.12fr) 452px;gap:56px;align-items:center;
-         min-height:100vh;padding:calc(var(--nav-h) + 60px) var(--pad) 80px}
+         min-height:100vh;min-height:100dvh;
+         padding:calc(var(--nav-h) + 44px) var(--pad) 44px}
   .floor{height:34vh;opacity:.28}
-  /* Full-bleed along the bottom of the hero. */
-  .keyart{height:62vh;max-height:none;
+  /* Full-bleed along the bottom of the hero, inside the viewport. */
+  .keyart{height:56vh;max-height:none;
     background-image:image-set(
       url('image/hero/bg-2400.webp') type('image/webp'),
       url('image/hero/bg-2400.jpg')  type('image/jpeg'));
@@ -391,7 +401,6 @@ html.motion [data-reveal].in .cd b{animation:none}
     linear-gradient(to top, rgba(11,9,7,.35) 0%, rgba(11,9,7,0) 45%, rgba(11,9,7,.55) 85%, var(--ink) 100%),
     /* darken behind the copy column only, so the cars stay clean */
     linear-gradient(to right, rgba(11,9,7,.72) 0%, rgba(11,9,7,.35) 38%, rgba(11,9,7,0) 62%)}
-  header{padding-bottom:calc(62vh - 130px)}
   .card{margin-top:0;padding:28px 28px 24px}
   .cd{max-width:none}
   .cd b{font-size:27px}
