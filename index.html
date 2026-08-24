@@ -9,12 +9,18 @@
 <meta property="og:title" content="XPENG FUTURE NIGHT · The Physical AI Open House">
 <meta property="og:description" content="One night at MOA Arena: the full XPENG line-up, a humanoid robot, a flying car and a headline concert. Free to attend, by invitation. Join the waitlist.">
 <meta property="og:type" content="website">
-<meta property="og:image" content="/og.jpg">
+<meta property="og:image" content="image/hero/keyart-1600.jpg">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="canonical" href="https://futurenight.xpeng.ph/">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<!-- Brand faces are self-hosted (see @font-face in styles.css). Preload
+     the two that render above the fold to avoid a flash of fallback. -->
+<link rel="preload" href="font/FuturaBT-HeavyItalic.otf" as="font" type="font/otf" crossorigin>
+<link rel="preload" href="font/BasisGrotesque-Regular.otf" as="font" type="font/otf" crossorigin>
+<link rel="preload" as="image" href="image/hero/scene-m-900.webp" media="(max-width: 1019px)">
+<link rel="preload" as="image" href="image/hero/scene-2400.webp" media="(min-width: 1020px)">
 <link rel="stylesheet" href="styles.css">
 
 <!-- ============================================================
@@ -54,6 +60,9 @@
 
 <header>
   <div class="sky"></div><div class="beams"></div><div class="floor"></div>
+  <!-- Key art: X9 · IRON · L03 · eVTOL. Decorative — the hero text
+       carries all the meaning, so it stays out of the a11y tree. -->
+  <div class="keyart" role="presentation"></div>
 
   <div class="hero-copy">
     <div class="eyebrow">A NATIONAL FIRST · MOA ARENA</div>

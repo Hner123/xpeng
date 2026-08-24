@@ -82,7 +82,8 @@ const MIME = {
   '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8',
   '.js': 'text/javascript; charset=utf-8', '.json': 'application/json; charset=utf-8',
   '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg',
-  '.webp': 'image/webp', '.ico': 'image/x-icon', '.woff2': 'font/woff2'
+  '.webp': 'image/webp', '.ico': 'image/x-icon', '.woff2': 'font/woff2',
+  '.woff': 'font/woff', '.otf': 'font/otf', '.ttf': 'font/ttf'
 };
 
 function send(res, code, body, headers) {
@@ -172,10 +173,12 @@ function needAdmin(res) {
 
 /* ---------- static ------------------------------------------ */
 const STATIC_OK = new Set(['/', '/index.html', '/styles.css', '/app.js', '/config.js', '/geo.js', '/favicon.ico']);
+/* Asset folders served wholesale: brand fonts and the key art. */
+const STATIC_DIRS = /^\/(assets|img|font|image)\//;
 
 function serveStatic(req, res, pathname) {
   const rel = pathname === '/' ? '/index.html' : pathname;
-  if (!STATIC_OK.has(pathname) && !/^\/(assets|img)\//.test(rel)) return false;
+  if (!STATIC_OK.has(pathname) && !STATIC_DIRS.test(rel)) return false;
 
   const file = path.join(ROOT, path.normalize(rel).replace(/^(\.\.[/\\])+/, ''));
   if (!file.startsWith(ROOT) || !fs.existsSync(file) || fs.statSync(file).isDirectory()) return false;
@@ -186,7 +189,11 @@ function serveStatic(req, res, pathname) {
     'Content-Type': MIME[ext] || 'application/octet-stream',
     /* The page is static and CDN-cached in production; short TTL
        here so config.js edits show up on reload during review. */
-    'Cache-Control': ext === '.html' ? 'no-cache' : 'public, max-age=60'
+    /* Fonts and images never change without a filename change;
+       code files stay short-lived so config.js edits show up fast. */
+    'Cache-Control': ext === '.html' ? 'no-cache'
+      : /\.(otf|ttf|woff2?|webp|jpg|png|svg|ico)$/.test(file) ? 'public, max-age=31536000, immutable'
+      : 'public, max-age=60'
   });
   return true;
 }
@@ -253,7 +260,16 @@ async function main() {
   startCommsWorker(store, auth);
 
   const server = http.createServer(async (req, res) => {
-    const url = new URL(req.url, 'http://' + (req.headers.host || 'localhost'));
+    /* URL parsing must be inside the guard: a malformed request line
+       such as "//" throws ERR_INVALID_URL, and an uncaught throw here
+       takes the whole process down — one bad request would kill the
+       campaign API. Answer 400 and stay up. */
+    let url;
+    try {
+      url = new URL(req.url, 'http://' + (req.headers.host || 'localhost'));
+    } catch (e) {
+      return send(res, 400, 'Bad request', { 'Content-Type': 'text/plain; charset=utf-8' });
+    }
     const p = url.pathname;
     const q = Object.fromEntries(url.searchParams);
 
@@ -426,6 +442,15 @@ async function main() {
       /* Never leak internals to the public write path. */
       return json(res, 500, { ok: false, error: 'server_error' });
     }
+  });
+
+  /* Nothing should reach these, but a campaign server must not die
+     from an unexpected throw mid-boost. Log and keep serving. */
+  process.on('uncaughtException', err => {
+    console.error('[fatal-guard] uncaught:', err && err.stack || err);
+  });
+  process.on('unhandledRejection', err => {
+    console.error('[fatal-guard] unhandled rejection:', err && err.stack || err);
   });
 
   server.on('error', err => {

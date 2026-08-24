@@ -26,7 +26,7 @@
     X-Frame-Options = "SAMEORIGIN"
     # Only the fonts we actually use, plus the API origin for the
     # form POST. Update connect-src if the API domain changes.
-    Content-Security-Policy = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://api.futurenight.xpeng.ph; frame-ancestors 'self'"
+    Content-Security-Policy = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://api.futurenight.xpeng.ph; frame-ancestors 'self'"
 
 [[headers]]
   for = "/*.css"
