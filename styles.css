@@ -112,9 +112,8 @@ header{position:relative;overflow:hidden;
 /* Sunset gradient sampled from the key art, so the photo edge blends
    into the page instead of ending on a hard line. */
 .sky{background:
-     radial-gradient(1200px 520px at 46% 88%, rgba(244,121,32,.42), transparent 62%),
-     radial-gradient(900px 380px at 46% 96%, rgba(255,154,61,.45), transparent 60%),
-     linear-gradient(#070605 0%, #14100A 48%, #2A1206 78%, #4A1D07 100%)}
+     radial-gradient(1200px 520px at 46% 96%, rgba(244,121,32,.20), transparent 60%),
+     linear-gradient(#070605 0%, #0B0907 55%, #100C08 100%)}
 
 /* ---- KEY ART ----
    Sits at the bottom of the hero on mobile, and behind the copy on
@@ -129,9 +128,14 @@ header{position:relative;overflow:hidden;
   background-image:image-set(
     url('image/hero/bg-1000.webp') type('image/webp'),
     url('image/hero/bg-1000.jpg')  type('image/jpeg'));
-  background-size:cover;background-position:center bottom;background-repeat:no-repeat}
+  background-size:cover;background-position:center bottom;background-repeat:no-repeat;
+  /* Dissolve the top edge into the page instead of ending on a line.
+     Masking the image means there is no seam to colour-match: the
+     photo literally fades to nothing. */
+  -webkit-mask-image:linear-gradient(to bottom, transparent 0%, rgba(0,0,0,.35) 22%, #000 55%);
+          mask-image:linear-gradient(to bottom, transparent 0%, rgba(0,0,0,.35) 22%, #000 55%)}
 .keyart:after{content:"";position:absolute;inset:0;
-  background:linear-gradient(to top, rgba(11,9,7,.55) 0%, rgba(11,9,7,.15) 28%, rgba(11,9,7,.72) 78%, var(--ink) 100%)}
+  background:linear-gradient(to top, rgba(11,9,7,.55) 0%, rgba(11,9,7,.15) 30%, rgba(11,9,7,.45) 72%, rgba(11,9,7,.85) 100%)}
 
 .beams{opacity:.5;mix-blend-mode:screen;background:
   conic-gradient(from 178deg at 46% 100%,
@@ -398,9 +402,12 @@ html.motion [data-reveal].in .cd b{animation:none}
       url('image/hero/bg-2400.jpg')  type('image/jpeg'));
     background-position:center bottom;background-size:cover}
   .keyart:after{background:
-    linear-gradient(to top, rgba(11,9,7,.35) 0%, rgba(11,9,7,0) 45%, rgba(11,9,7,.55) 85%, var(--ink) 100%),
+    linear-gradient(to top, rgba(11,9,7,.35) 0%, rgba(11,9,7,0) 45%, rgba(11,9,7,.35) 88%, rgba(11,9,7,.6) 100%),
     /* darken behind the copy column only, so the cars stay clean */
     linear-gradient(to right, rgba(11,9,7,.72) 0%, rgba(11,9,7,.35) 38%, rgba(11,9,7,0) 62%)}
+  /* A longer dissolve on desktop — there is more band to fade. */
+  .keyart{-webkit-mask-image:linear-gradient(to bottom, transparent 0%, rgba(0,0,0,.3) 26%, #000 62%);
+                  mask-image:linear-gradient(to bottom, transparent 0%, rgba(0,0,0,.3) 26%, #000 62%)}
   .card{margin-top:0;padding:28px 28px 24px}
   .cd{max-width:none}
   .cd b{font-size:27px}
