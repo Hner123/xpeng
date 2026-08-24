@@ -83,6 +83,7 @@ const MIME = {
   '.js': 'text/javascript; charset=utf-8', '.json': 'application/json; charset=utf-8',
   '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg',
   '.webp': 'image/webp', '.ico': 'image/x-icon', '.woff2': 'font/woff2',
+  '.webmanifest': 'application/manifest+json',
   '.woff': 'font/woff', '.otf': 'font/otf', '.ttf': 'font/ttf'
 };
 
@@ -172,7 +173,8 @@ function needAdmin(res) {
 }
 
 /* ---------- static ------------------------------------------ */
-const STATIC_OK = new Set(['/', '/index.html', '/styles.css', '/app.js', '/config.js', '/geo.js', '/favicon.ico']);
+const STATIC_OK = new Set(['/', '/index.html', '/styles.css', '/app.js', '/config.js', '/geo.js',
+                           '/favicon.ico', '/site.webmanifest', '/robots.txt']);
 /* Asset folders served wholesale: brand fonts and the key art. */
 const STATIC_DIRS = /^\/(assets|img|font|image)\//;
 

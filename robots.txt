@@ -1,0 +1,8 @@
+# XPENG Future Night — campaign landing page
+# The public page should be indexed; the admin surface never.
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /api/
+
+Sitemap: https://futurenight.xpeng.ph/sitemap.xml

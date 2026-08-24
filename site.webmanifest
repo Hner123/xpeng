@@ -1,0 +1,13 @@
+{
+  "name": "XPENG FUTURE NIGHT",
+  "short_name": "Future Night",
+  "description": "The Physical AI Open House at MOA Arena — join the waitlist.",
+  "start_url": "/",
+  "display": "browser",
+  "background_color": "#0B0907",
+  "theme_color": "#0B0907",
+  "icons": [
+    { "src": "/image/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/image/icons/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
