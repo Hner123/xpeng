@@ -229,6 +229,26 @@ h1{font-family:var(--font-display);font-weight:700;font-style:italic;
   border:1px solid var(--card-line);border-radius:8px;padding:10px 14px;text-decoration:none;cursor:pointer}
 .share-row a:hover,.share-row button:hover{border-color:#C9C0B4}
 
+
+/* ---------- KEY ART BANNER ----------
+   Full-bleed band: it deliberately ignores --pad so the artwork runs
+   edge to edge, unlike every other band on the page.
+   The art is 4:1, which is very short on a phone, so the image is
+   allowed a taller crop there via object-fit + a min-height, keeping
+   the cars and IRON readable instead of a 90px letterbox. */
+.banner{position:relative;width:100%;background:var(--ink);overflow:hidden}
+.banner img{width:100%;height:auto;display:block;
+  aspect-ratio:3840/960;object-fit:cover;object-position:center}
+@media (max-width:700px){
+  .banner img{aspect-ratio:auto;height:52vw;min-height:190px;
+    object-fit:cover;object-position:58% center}   /* keeps X9 + IRON + L03 in frame */
+}
+/* Feather the top and bottom edges into the page background so the
+   band reads as part of the layout, not a pasted rectangle. */
+.banner:before,.banner:after{content:"";position:absolute;left:0;right:0;height:56px;z-index:1;pointer-events:none}
+.banner:before{top:0;background:linear-gradient(var(--ink),transparent)}
+.banner:after{bottom:0;background:linear-gradient(transparent,var(--ink))}
+
 /* ---------- SECTIONS ---------- */
 section{padding:70px var(--pad)}
 .sec-eyebrow{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.26em;color:var(--orange);margin-bottom:14px}
