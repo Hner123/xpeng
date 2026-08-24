@@ -43,7 +43,12 @@ window.XPENG_CONFIG = {
        without touching markup or code. */
     sectionLabel: "LIVE PERFORMANCES",
     actsLabel:    "2 OPM STARS",
-    teaser: "Two of the country's biggest OPM stars take the stage, turning up the energy for the X9 reveal and capping off Driving Into A New Day with a full concert set.",
+    /* Two different places, two different texts. blockCopy is the
+       "The Encore" card in THE EVENT; lineupCopy is the wide module in
+       THE EXPERIENCE. They used to share one string, which meant the
+       card silently showed the module's wording. */
+    blockCopy: "Two of the country's biggest OPM stars. One takes the stage for the XPENG X9 and XPENG L03 reveals, and the other caps off the night with a full concert set.",
+    lineupCopy: "Two of the country's biggest OPM stars take the stage, turning up the energy for the X9 reveal and capping off Driving Into A New Day with a full concert set. Find out who's hitting the stage one week before the event.",
     acts: [
       // when revealed: { name: "", role: "", photo: "" }
     ]

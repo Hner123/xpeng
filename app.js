@@ -142,10 +142,10 @@
     var lab = document.querySelector('.ha-lab');
     if (lab && a.sectionLabel) lab.textContent = a.sectionLabel;
     if (!a.revealed) {
-      if (a.teaser) {
-        $('lineup-copy').textContent  = a.teaser + ' Names drop one week before the event.';
-        $('mystery-copy').textContent = a.teaser;
-      }
+      /* Only overwrite when config actually supplies a value, so the
+         markup stays the fallback rather than being clobbered. */
+      if (a.blockCopy)  $('mystery-copy').textContent = a.blockCopy;
+      if (a.lineupCopy) $('lineup-copy').textContent  = a.lineupCopy;
       if (a.revealDateLabel && reveal) reveal.textContent = 'TO BE REVEALED · ' + a.revealDateLabel;
       /* Was hard-coded "2 STARS", which silently overwrote the markup.
          Both halves now come from config. */
@@ -161,8 +161,9 @@
     var sils = document.querySelector('.ha-sil');
     if (sils) sils.remove();
     if (names.length) $('hero-artist-txt').textContent = names.join(' · ').toUpperCase();
-    $('lineup-title').textContent = 'Your headliners for Future Night.';
-    $('lineup-copy').textContent  = 'One revealed with the X9, one closing the night with a full concert set.';
+    $('lineup-title').textContent = a.revealedTitle || 'Your headliners.';
+    $('lineup-copy').textContent  = a.revealedCopy ||
+      'One takes the stage for the XPENG X9 and XPENG L03 reveals, the other caps off the night with a full concert set.';
     var art = $('lineup-art');
     art.className = 'acts';
     art.innerHTML = (a.acts || []).map(function (act) {
