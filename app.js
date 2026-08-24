@@ -19,6 +19,16 @@
     return (api.base || '') + (api[name] || '/api/' + name);
   }
 
+  /* Same glyphs as the share row in index.html, kept here because the
+     follow row is built from config.contact.socials at runtime. */
+  var ICON = {
+    Facebook: '<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M22 12.06C22 6.5 17.52 2 12 2S2 6.5 2 12.06c0 5 3.66 9.15 8.44 9.94v-7.03H7.9v-2.91h2.54V9.85c0-2.51 1.49-3.9 3.77-3.9 1.09 0 2.23.2 2.23.2v2.46h-1.26c-1.24 0-1.63.78-1.63 1.57v1.88h2.78l-.44 2.91h-2.34V22c4.78-.79 8.45-4.94 8.45-9.94Z"/></svg>',
+    Instagram: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.4" cy="6.6" r="1.1" fill="currentColor" stroke="none"/></svg>',
+    TikTok: '<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M16.6 5.82A4.28 4.28 0 0 1 15.54 3h-3.1v12.4a2.59 2.59 0 1 1-1.84-2.48V9.74a5.72 5.72 0 1 0 4.94 5.66V8.99a7.32 7.32 0 0 0 4.27 1.38V7.27a4.25 4.25 0 0 1-3.21-1.45Z"/></svg>',
+    YouTube: '<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M21.6 7.2s-.2-1.4-.8-2c-.76-.8-1.6-.8-2-.86C16.2 4.2 12 4.2 12 4.2h-.02s-4.2 0-6.8.14c-.4.06-1.24.06-2 .86-.6.6-.8 2-.8 2S2.2 8.8 2.2 10.5v1.6c0 1.6.18 3.3.18 3.3s.2 1.4.8 2c.76.8 1.76.78 2.22.86 1.5.14 6.4.18 6.4.18s4.2 0 6.8-.16c.4-.06 1.24-.06 2-.86.6-.6.8-2 .8-2s.18-1.7.18-3.3v-1.6c0-1.7-.18-3.3-.18-3.3ZM9.9 14.4V8.9l5.4 2.76-5.4 2.74Z"/></svg>',
+    X: '<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M17.53 3h3.1l-6.77 7.74L21.9 21h-6.2l-4.4-5.77L6.1 21H3l7.05-8.06L2.4 3h6.36l4.1 5.42L17.53 3Zm-1.1 16.14h1.72L6.9 4.77H5.06l11.37 14.37Z"/></svg>'
+  };
+
   /* ---------- tracking helper (Section 9) ---------------------- */
   function track(event, data) {
     data = data || {};
@@ -68,13 +78,24 @@
     var socials = (ct.socials || []).filter(function (s) {
       return s.href && s.href !== '#' && /^https?:\/\//i.test(s.href);
     });
+    /* Footer keeps text links (they read as a list); the success
+       screen uses icons in the requested order. */
     socials.forEach(function (s) {
-      ['f-links', 'follow-row'].forEach(function (host) {
-        var a = document.createElement('a');
-        a.textContent = s.label; a.href = s.href;
-        a.target = '_blank'; a.rel = 'noopener';
-        $(host).appendChild(a);
-      });
+      var a = document.createElement('a');
+      a.textContent = s.label; a.href = s.href;
+      a.target = '_blank'; a.rel = 'noopener';
+      $('f-links').appendChild(a);
+    });
+    var ORDER = ['Facebook', 'Instagram', 'TikTok', 'YouTube', 'X'];
+    ORDER.forEach(function (label) {
+      var match = socials.filter(function (s) { return s.label === label; })[0];
+      if (!match) return;
+      var a = document.createElement('a');
+      a.href = match.href; a.target = '_blank'; a.rel = 'noopener';
+      a.setAttribute('aria-label', 'Follow XPENG Philippines on ' + label);
+      a.title = label;
+      a.innerHTML = ICON[label] || label;
+      $('follow-row').appendChild(a);
     });
     /* No usable links yet -> hide the whole follow block, heading
        included, so the success screen doesn't end on an empty row. */
@@ -241,6 +262,7 @@
       o.value = o.textContent = b;
       drive.appendChild(o);
     });
+    drive.addEventListener('change', toggleOther);
   }
 
   /* ---------- chips ------------------------------------------- */
@@ -256,6 +278,7 @@
         el.setAttribute('aria-pressed', 'true');
         answers[g.dataset.q] = el.textContent.trim();
         g.closest('.q').classList.remove('bad');
+        toggleOther();
       }
       g.addEventListener('click', function (e) {
         if (e.target.classList.contains('chip')) pick(e.target);
@@ -266,6 +289,23 @@
         }
       });
     });
+  }
+
+  /* Show a "please specify" box whenever Other is the answer. Hiding
+     it also clears it, so a stale value can never be submitted. */
+  function toggleOther() {
+    var whoWrap = $('w-who-other');
+    var showWho = answers.who === 'Other';
+    if (whoWrap.hidden === showWho) {
+      whoWrap.hidden = !showWho;
+      if (!showWho) $('f-who-other').value = '';
+    }
+    var drvWrap = $('w-drive-other');
+    var showDrv = drive.value === 'Other brand';
+    if (drvWrap.hidden === showDrv) {
+      drvWrap.hidden = !showDrv;
+      if (!showDrv) $('f-drive-other').value = '';
+    }
   }
 
   /* ---------- validation ------------------------------------- */
@@ -279,11 +319,13 @@
 
   function validateStep1() {
     var ok = true;
-    var name = $('f-name').value.trim();
-    var mob  = mobileDigits($('f-mobile').value);
-    var mail = $('f-email').value.trim();
+    var first = $('f-first').value.trim();
+    var last  = $('f-last').value.trim();
+    var mob   = mobileDigits($('f-mobile').value);
+    var mail  = $('f-email').value.trim();
 
-    if (name.length < 2)      { bad($('w-name')); ok = false; }   else clear($('w-name'));
+    if (first.length < 2) { bad($('w-first')); ok = false; } else clear($('w-first'));
+    if (last.length  < 2) { bad($('w-last'));  ok = false; } else clear($('w-last'));
     if (!reMobile.test(mob))  { bad($('w-mobile')); ok = false; } else clear($('w-mobile'));
     if (!reEmail.test(mail))  { bad($('w-email')); ok = false; }  else clear($('w-email'));
     if (!prov.value)          { bad($('w-prov')); ok = false; }   else clear($('w-prov'));
@@ -300,21 +342,41 @@
       if (!answers[k]) { el.classList.add('bad'); ok = false; } else el.classList.remove('bad');
     });
     if (!drive.value) { $('q-drive').classList.add('bad'); ok = false; } else $('q-drive').classList.remove('bad');
+
+    /* Other is only an answer once it has been specified. */
+    if (answers.who === 'Other' && !$('f-who-other').value.trim()) { bad($('w-who-other')); ok = false; }
+    else clear($('w-who-other'));
+    if (drive.value === 'Other brand' && !$('f-drive-other').value.trim()) { bad($('w-drive-other')); ok = false; }
+    else clear($('w-drive-other'));
     if (!$('c-priv').checked) ok = false;
     return ok;
   }
 
   /* ---------- payload ---------------------------------------- */
   function payload() {
+    /* "Other" answers carry the typed detail with them, so the option
+       and the specifics stay in one exportable column. */
+    var segment = answers.who || null;
+    if (segment === 'Other') {
+      var whoOther = $('f-who-other').value.trim();
+      if (whoOther) segment = 'Other — ' + whoOther;
+    }
+    var drives = drive.value || null;
+    if (drives === 'Other brand') {
+      var drvOther = $('f-drive-other').value.trim();
+      if (drvOther) drives = 'Other — ' + drvOther;
+    }
+
     return {
-      name:     $('f-name').value.trim(),
+      first_name: $('f-first').value.trim(),
+      last_name:  $('f-last').value.trim(),
       mobile:   mobileDigits($('f-mobile').value),
       email:    $('f-email').value.trim().toLowerCase(),
       province: prov.value,
       city:     city.value,
       profile: {
-        age: answers.age || null, segment: answers.who || null,
-        drives: drive.value || null, intent: answers.when || null,
+        age: answers.age || null, segment: segment,
+        drives: drives, intent: answers.when || null,
         budget: answers.budget || null, model: answers.model || null,
         ev: answers.ev || null
       },
@@ -411,6 +473,12 @@
       setTimeout(function () { if (showDone.pending) showDone(null); }, 1200);
     });
 
+    document.querySelectorAll('#step2 .other-field input').forEach(function (el) {
+      el.addEventListener('input', function () {
+        var w = el.closest('.field');
+        if (w) clear(w);
+      });
+    });
     document.querySelectorAll('#step1 input, #step1 select').forEach(function (el) {
       el.addEventListener('input', function () {
         var w = el.closest('.field');

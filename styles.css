@@ -215,6 +215,9 @@ h1{font-family:var(--font-display);font-weight:700;font-style:italic;
 .chip:hover{border-color:#C9C0B4}
 .chip.sel{background:#1B140C;color:#fff;border-color:#1B140C}
 .q.bad label{color:#B4400E}
+/* "Please specify" box under an Other answer. */
+.other-field{margin-top:8px;margin-bottom:0}
+.other-field input{font-size:14px}
 .consents{margin:16px 0 6px;display:flex;flex-direction:column;gap:10px}
 .consents label{display:flex;gap:10px;font-size:11.5px;line-height:1.55;color:#6E6559;cursor:pointer}
 .consents input{accent-color:var(--orange);margin-top:2px;flex:none;width:16px;height:16px}
@@ -237,6 +240,11 @@ h1{font-family:var(--font-display);font-weight:700;font-style:italic;
 .share-row a,.share-row button{font-family:inherit;font-size:12px;font-weight:600;color:#3A342C;background:var(--field);
   border:1px solid var(--card-line);border-radius:8px;padding:10px 14px;text-decoration:none;cursor:pointer}
 .share-row a:hover,.share-row button:hover{border-color:#C9C0B4}
+/* Icon rows: square 44px targets (thumb-sized), glyph inherits colour. */
+.share-row.icons a,.share-row.icons button{display:grid;place-items:center;
+  width:44px;height:44px;padding:0;color:#3A342C}
+.share-row.icons svg{display:block}
+.share-row.icons a:hover,.share-row.icons button:hover{color:#191510;background:#EFEAE3}
 
 
 .banner:before{top:0;background:linear-gradient(var(--ink),transparent)}
@@ -290,6 +298,11 @@ section{padding:70px var(--pad)}
 .flow li:before{counter-increment:s;content:counter(s);position:absolute;left:20px;top:20px;width:26px;height:26px;border-radius:8px;
   display:grid;place-items:center;font-family:var(--font-mono);font-size:11px;color:#180B00;background:linear-gradient(135deg,var(--amber),var(--orange))}
 .flow b{display:block;font-family:var(--font-body);font-size:15.5px;margin-bottom:5px}
+/* Step 1 is clickable: the whole card jumps to the form. */
+.flow-cta{display:block;text-decoration:none;color:inherit;transition:color .2s}
+.flow-cta:hover b{color:var(--amber)}
+.flow li:has(.flow-cta){cursor:pointer;transition:background .2s}
+.flow li:has(.flow-cta):hover{background:rgba(244,121,32,.07)}
 .flow p{font-size:13px;line-height:1.6;color:var(--mist)}
 
 .faq{margin-top:32px;border-top:1px solid var(--line)}

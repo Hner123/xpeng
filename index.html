@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>XPENG FUTURE NIGHT · The Physical AI Open House · MOA Arena</title>
-<meta name="description" content="XPENG FUTURE NIGHT — the Philippines' first Physical AI Open House at MOA Arena. Free to attend, by invitation. Join the waitlist in under one minute.">
+<title>XPENG · Driving Into A New Day · The Physical AI Open House · MOA Arena</title>
+<meta name="description" content="XPENG Driving Into A New Day — the Philippines' first Physical AI Open House at MOA Arena. Free to attend, by invitation. Join the waitlist in under one minute.">
 <meta name="theme-color" content="#0B0907">
-<meta property="og:title" content="XPENG FUTURE NIGHT · The Physical AI Open House">
+<meta property="og:title" content="XPENG · Driving Into A New Day · The Physical AI Open House">
 <meta property="og:description" content="One night at MOA Arena: the full XPENG line-up, a humanoid robot, a flying car and a headline concert. Free to attend, by invitation. Join the waitlist.">
 <meta property="og:type" content="website">
 <meta property="og:image" content="image/hero/keyart-1600.jpg">
@@ -76,7 +76,7 @@
 
   <div class="hero-copy">
     <div class="eyebrow">A NATIONAL FIRST · MOA ARENA</div>
-    <h1>XPENG<br>FUTURE NIGHT</h1>
+    <h1>XPENG<br>DRIVING INTO A NEW DAY</h1>
     <div class="sub">The Physical AI Open House</div>
     <div class="meta">
       <b id="m-venue">MOA Arena</b><span class="dot"></span>
@@ -84,7 +84,7 @@
       <span>Free · by invitation only</span>
     </div>
     <div class="hero-line"></div>
-    <p class="lede">Experience the future of intelligent mobility. One night, one arena: the full XPENG line-up, the IRON humanoid, the flying car — and a headline concert to close it. Seats aren't sold. The guest list is curated from the waitlist.</p>
+    <p class="lede">Step into the future of intelligent mobility. One night, one arena: an exclusive showcase of the full XPENG line-up, the IRON humanoid, and a flying car, capped off by a live concert. Seats aren't sold. Just an invitation from the waitlist.</p>
 
     <div class="countdown" id="countdown" aria-label="Countdown to event day">
       <div class="cd"><b data-cd="d">--</b><span>DAYS</span></div>
@@ -93,13 +93,13 @@
       <div class="cd"><b data-cd="s">--</b><span>SEC</span></div>
     </div>
 
-    <div class="free-tag"><i></i><span id="m-forum">PHYSICAL AI FORUM · 3:30 PM · LIVESTREAMED</span></div>
+    <div class="free-tag"><i></i><span id="m-forum">PHYSICAL AI FORUM · 3:30 PM · LIVE ON @XPENGPHILIPPINES</span></div>
 
     <!-- Hero artist strip — swaps from silhouette to names at T-1 week -->
     <div class="hero-artist" id="hero-artist">
-      <span class="ha-lab">HEADLINE PERFORMANCE</span>
+      <span class="ha-lab">LIVE PERFORMANCES</span>
       <span class="ha-sil" aria-hidden="true"><i></i><i></i></span>
-      <span class="ha-txt" id="hero-artist-txt">2 STARS · TO BE REVEALED</span>
+      <span class="ha-txt" id="hero-artist-txt">2 OPM STARS · TO BE REVEALED</span>
     </div>
   </div>
 
@@ -116,9 +116,17 @@
       <div class="counter" id="counter" hidden><b id="counter-num">0</b><span id="counter-label">already on the waitlist</span></div>
       <div class="steps"><span class="on"></span><span></span></div>
 
-      <div class="field" id="w-name">
-        <input id="f-name" name="name" type="text" placeholder="Full name" autocomplete="name" required>
-        <div class="msg">Please enter your full name.</div>
+      <!-- Two fields, not one: a single "Full name" box invites
+           nicknames, and the dealer handoff needs a real surname. -->
+      <div class="row2">
+        <div class="field" id="w-first">
+          <input id="f-first" name="first_name" type="text" placeholder="First name" autocomplete="given-name" required>
+          <div class="msg">Please enter your first name.</div>
+        </div>
+        <div class="field" id="w-last">
+          <input id="f-last" name="last_name" type="text" placeholder="Last name" autocomplete="family-name" required>
+          <div class="msg">Please enter your last name.</div>
+        </div>
       </div>
       <div class="field" id="w-mobile">
         <input id="f-mobile" name="mobile" type="tel" inputmode="numeric" placeholder="Mobile number (09XX XXX XXXX)" autocomplete="tel" required>
@@ -147,8 +155,8 @@
     <!-- STEP 2 · THE QUALIFICATION -->
     <form id="step2" novalidate hidden>
       <button class="back" type="button" id="btn-back">&larr; Back</button>
-      <h2>Help us curate your invitation</h2>
-      <p class="hint">A few taps — these answers shape the guest list and who follows up with you.</p>
+      <h2>Help us get to know you better.</h2>
+      <p class="hint">Your answers help us curate the guest list and keep you updated when we send out the invitations.</p>
       <div class="steps"><span class="on"></span><span class="on"></span></div>
 
       <div class="q" id="q-age"><label>Age bracket</label>
@@ -159,13 +167,22 @@
 
       <div class="q" id="q-who"><label>Which best describes you?</label>
         <div class="chips" data-q="who" role="group" aria-label="Which best describes you">
-          <span class="chip" tabindex="0" role="button">Business owner</span><span class="chip" tabindex="0" role="button">Professional / employee</span><span class="chip" tabindex="0" role="button">Government</span><span class="chip" tabindex="0" role="button">OFW / OFW family</span><span class="chip" tabindex="0" role="button">Student</span><span class="chip" tabindex="0" role="button">Other</span>
+          <span class="chip" tabindex="0" role="button">Business Owner / Entrepreneur</span><span class="chip" tabindex="0" role="button">Corporate Executive / Senior Management</span><span class="chip" tabindex="0" role="button">Working Professional / Employee</span><span class="chip" tabindex="0" role="button">Self-Employed / Freelancer</span><span class="chip" tabindex="0" role="button">Government / Public Sector</span><span class="chip" tabindex="0" role="button">OFW / OFW Dependent</span><span class="chip" tabindex="0" role="button">Student / Fresh Graduate</span><span class="chip" tabindex="0" role="button">Other</span>
+        </div>
+        <!-- Revealed only when "Other" is chosen, so the answer is never lost. -->
+        <div class="field other-field" id="w-who-other" hidden>
+          <input id="f-who-other" type="text" placeholder="Please specify" maxlength="60">
+          <div class="msg">Tell us which best describes you.</div>
         </div>
       </div>
 
       <div class="q" id="q-drive"><label>What do you drive today?</label>
         <div class="field" style="margin-bottom:0">
           <select id="f-drive" name="drives" aria-label="What do you drive today"><option value="">Select your current vehicle brand</option></select>
+        </div>
+        <div class="field other-field" id="w-drive-other" hidden>
+          <input id="f-drive-other" type="text" placeholder="Please specify your vehicle brand" maxlength="60">
+          <div class="msg">Tell us which brand you drive.</div>
         </div>
       </div>
 
@@ -183,13 +200,13 @@
 
       <div class="q" id="q-model"><label>Which XPENG interests you?</label>
         <div class="chips" data-q="model" role="group" aria-label="Which XPENG interests you">
-          <span class="chip" tabindex="0" role="button">X9 luxury MPV</span><span class="chip" tabindex="0" role="button">L03 SUV</span><span class="chip" tabindex="0" role="button">The full line-up</span><span class="chip" tabindex="0" role="button">Just curious about the AI</span>
+          <span class="chip" tabindex="0" role="button">XPENG X9 Flagship MPV</span><span class="chip" tabindex="0" role="button">XPENG L03 Intelligent SUV</span><span class="chip" tabindex="0" role="button">Upcoming / Future XPENG Models</span><span class="chip" tabindex="0" role="button">The Full Vehicle Lineup</span><span class="chip" tabindex="0" role="button">Curious About XPENG&rsquo;s AI Technology</span><span class="chip" tabindex="0" role="button">Just Exploring</span>
         </div>
       </div>
 
-      <div class="q" id="q-ev"><label>EV experience</label>
-        <div class="chips" data-q="ev" role="group" aria-label="EV experience">
-          <span class="chip" tabindex="0" role="button">Own an EV</span><span class="chip" tabindex="0" role="button">Have test-driven</span><span class="chip" tabindex="0" role="button">Never tried</span>
+      <div class="q" id="q-ev"><label>Electric Vehicle (EV) Experience</label>
+        <div class="chips" data-q="ev" role="group" aria-label="Electric Vehicle Experience">
+          <span class="chip" tabindex="0" role="button">Current EV Owner (Pure Electric)</span><span class="chip" tabindex="0" role="button">Current Hybrid Owner (HEV / PHEV)</span><span class="chip" tabindex="0" role="button">Have Driven or Test-Driven an EV</span><span class="chip" tabindex="0" role="button">First Time Exploring EVs</span><span class="chip" tabindex="0" role="button">Never Tried</span>
         </div>
       </div>
 
@@ -217,14 +234,17 @@
       </div>
       <div class="share">
         <p>GET YOUR FRIENDS ON THE LIST</p>
-        <div class="share-row">
-          <a id="sh-fb" href="#" target="_blank" rel="noopener">Facebook</a>
-          <a id="sh-x" href="#" target="_blank" rel="noopener">X</a>
-          <a id="sh-vi" href="#" target="_blank" rel="noopener">Viber</a>
-          <button id="sh-copy" type="button">Copy link</button>
+        <!-- Icons only. Facebook, X and Viber accept a shared link;
+             Instagram, TikTok and YouTube have no share-a-URL intent,
+             so those live in the follow row below instead. -->
+        <div class="share-row icons">
+          <a id="sh-fb" href="#" target="_blank" rel="noopener" aria-label="Share on Facebook" title="Facebook"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M22 12.06C22 6.5 17.52 2 12 2S2 6.5 2 12.06c0 5 3.66 9.15 8.44 9.94v-7.03H7.9v-2.91h2.54V9.85c0-2.51 1.49-3.9 3.77-3.9 1.09 0 2.23.2 2.23.2v2.46h-1.26c-1.24 0-1.63.78-1.63 1.57v1.88h2.78l-.44 2.91h-2.34V22c4.78-.79 8.45-4.94 8.45-9.94Z"/></svg></a>
+          <a id="sh-x" href="#" target="_blank" rel="noopener" aria-label="Share on X" title="X"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M17.53 3h3.1l-6.77 7.74L21.9 21h-6.2l-4.4-5.77L6.1 21H3l7.05-8.06L2.4 3h6.36l4.1 5.42L17.53 3Zm-1.1 16.14h1.72L6.9 4.77H5.06l11.37 14.37Z"/></svg></a>
+          <a id="sh-vi" href="#" target="_blank" rel="noopener" aria-label="Share on Viber" title="Viber"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M12 2C6.9 2 3 5.5 3 10.2c0 2.7 1.3 5 3.4 6.5v3.6c0 .5.6.8 1 .5l2.7-2a11 11 0 0 0 1.9.16c5.1 0 9-3.5 9-8.2S17.1 2 12 2Zm-1.2 4.1c.3-.05.6.1.75.36l.7 1.24c.16.3.1.66-.15.88l-.4.35c-.1.1-.13.25-.06.37.3.55.9 1.15 1.5 1.45.13.06.28.03.37-.08l.33-.4c.2-.25.56-.32.85-.17l1.25.66c.28.15.42.47.34.77-.2.72-.85 1.22-1.6 1.2-2.5-.06-5.2-2.7-5.3-5.2-.02-.73.46-1.37 1.16-1.5Z"/></svg></a>
+          <button id="sh-copy" type="button" aria-label="Copy link" title="Copy link"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><path d="M9.5 14.5 14.5 9.5"/><path d="M11.5 7.5l1.8-1.8a3.5 3.5 0 0 1 5 5L16.5 12.5"/><path d="M12.5 16.5l-1.8 1.8a3.5 3.5 0 0 1-5-5L7.5 11.5"/></svg></button>
         </div>
         <p style="margin:18px 0 12px">FOLLOW XPENG PH FOR THE ARTIST REVEAL</p>
-        <div class="share-row" id="follow-row"></div>
+        <div class="share-row icons" id="follow-row"></div>
       </div>
     </div>
   </div>
@@ -233,30 +253,30 @@
 <!-- ============ THE EVENT ============ -->
 <section id="event">
   <div class="sec-eyebrow">THE EVENT</div>
-  <h2 class="sec-title">A launch you attend. Not one you watch.</h2>
-  <p class="sec-sub">The Philippines' first Physical AI Open House — free to attend, impossible to buy into. Every seat in the Arena is invited.</p>
+  <h2 class="sec-title">Experience the future. Up close.</h2>
+  <p class="sec-sub">The Philippines' first Physical AI Open House. Free to attend, exclusively by invitation.</p>
   <div class="blocks">
     <div class="block">
       <div class="tag">7:00 PM · THE SHOW</div>
-      <h3>The reveal</h3>
-      <p>The full XPENG line-up on an arena stage — flagship X9 revealed live, with the IRON humanoid, the flying car and the Physical AI story told at concert scale.</p>
+      <h3>The Reveal</h3>
+      <p>The full XPENG line-up takes the stage, led by the grand reveal of the flagship XPENG X9, the next-gen AI coupe XPENG L03, alongside the IRON humanoid, and the flying car. A showcase of Physical AI brought to life at arena scale.</p>
     </div>
     <div class="block mystery">
-      <div class="tag">HEADLINE PERFORMANCE</div>
-      <h3>The night ends loud</h3>
-      <p id="mystery-copy">Two of the country's biggest stars share the stage with the cars — one revealed with the X9, one closing the night with a full concert set.</p>
+      <div class="tag">LIVE CONCERT</div>
+      <h3>The Encore</h3>
+      <p id="mystery-copy">Two of the country's biggest OPM stars. One takes the stage for the XPENG X9 and XPENG L03 reveals, and the other caps off the night with a full concert set.</p>
       <div class="sil" id="mystery-sil"><i></i><i></i><span>TO BE REVEALED</span></div>
     </div>
     <div class="block">
       <div class="tag">6:00 PM · OPEN HOUSE</div>
-      <h3>The foyer</h3>
-      <p>Walk the XPENG story before the show — history wall, merch store, photo moments with IRON, and games where you can win exclusive XPENG merch.</p>
+      <h3>The Foyer</h3>
+      <p>Step into the future with XPENG. Discover the brand's story, shop for merchandise, meet IRON, and take part in games for a chance to win exclusive XPENG merch.</p>
     </div>
     <div class="block wide">
       <div>
         <div class="tag">FREE · BY INVITATION</div>
-        <h3>Nothing to buy. Not at any point.</h3>
-        <p>Every seat is given, not sold. Registration is free, invitations are free, and the SM ticket you claim is free. There is no purchase path on this page and no payment at the door — if anyone asks you to pay for Future Night, it isn't us.</p>
+        <h3>No price tag. Just an invite.</h3>
+        <p>Join the waitlist for free. Selected guests will receive an invitation to claim their complimentary SM Tickets pass. No payment is required to attend.</p>
       </div>
       <a class="btn" href="#waitlist" data-cta="event-block">JOIN THE WAITLIST</a>
     </div>
@@ -267,37 +287,39 @@
 <section id="how">
   <div class="sec-eyebrow">HOW IT WORKS</div>
   <h2 class="sec-title">Four steps from here to your seat.</h2>
-  <p class="sec-sub">Nothing is for sale at any point. If anyone asks you to pay for entry to Future Night, it isn't us.</p>
+  <p class="sec-sub">Want front seats for XPENG's Driving Into A New Day? Here's everything you need to know.</p>
   <ol class="flow">
-    <li><b>Join the waitlist</b><p>One minute, free, on this page. You get instant confirmation by email and SMS. No entry is promised at this stage.</p></li>
-    <li><b>We curate the guest list</b><p>Invitations are limited and selected from the waitlist — weighted by where you are and the answers you gave us.</p></li>
-    <li><b>Invitations go out, T-1 week</b><p>If you're selected, you receive a personal single-use claim code by email and SMS, with a link to SM Tickets.</p></li>
-    <li><b>Claim free, within 72 hours</b><p>Claim your free ticket on SM Tickets. That ticket is your entry to MOA Arena. Unclaimed codes expire and pass to the next names on the list.</p></li>
+    <!-- Step 1 is a link, not just text: the whole card jumps to the
+         form, so the step doubles as a call to action. -->
+    <li><a class="flow-cta" href="#waitlist" data-cta="how-step1"><b>Join the waitlist</b><p>One minute is all it takes. Join the waitlist for free and get instant confirmation by email and SMS.</p></a></li>
+    <li><b>We curate the guest list</b><p>Invitations are limited. We carefully select guests from the waitlist based on details shared during registration.</p></li>
+    <li><b>Watch out for your invitation</b><p>One week before the event, selected guests will receive a personal single-use claim code by email and SMS, along with a link to SM Tickets.</p></li>
+    <li><b>Claim your ticket within 72 hours</b><p>Claim your free tickets for Driving Into A New Day at MOA Arena via SM Tickets. Your code is valid for 72 hours before your slots are offered to the next guests on the list.</p></li>
   </ol>
 </section>
 
 <!-- ============ THE EXPERIENCE ============ -->
 <section id="experience">
   <div class="sec-eyebrow">THE EXPERIENCE</div>
-  <h2 class="sec-title">Five reasons this isn't a car show.</h2>
+  <h2 class="sec-title">Five reasons this isn't just a car show.</h2>
   <div class="pillars">
-    <div class="pill"><div class="ic">AI</div><h4>PHYSICAL AI</h4><p>Intelligence that moves</p></div>
-    <div class="pill"><div class="ic">XP</div><h4>XPILOT</h4><p>Advanced smart driving</p></div>
-    <div class="pill"><div class="ic">TC</div><h4>TURING CHIP</h4><p>Powerful AI computing</p></div>
-    <div class="pill"><div class="ic">8V</div><h4>800V PLATFORM</h4><p>Ultra-fast charging</p></div>
-    <div class="pill"><div class="ic">X</div><h4>ECOSYSTEM</h4><p>Car · robot · flight</p></div>
+    <div class="pill"><div class="ic">AI</div><h4>PHYSICAL AI</h4><p>Intelligence That Moves</p></div>
+    <div class="pill"><div class="ic">XP</div><h4>XPILOT</h4><p>Advanced Smart Driving</p></div>
+    <div class="pill"><div class="ic">TC</div><h4>TURING CHIP</h4><p>Powerful AI That Computes</p></div>
+    <div class="pill"><div class="ic">8V</div><h4>800V PLATFORM</h4><p>Ultra-Fast Charging</p></div>
+    <div class="pill"><div class="ic">X</div><h4>ECOSYSTEM</h4><p>Car &middot; Robot &middot; Flying Car</p></div>
   </div>
 
   <!-- Artist reveal module — swapped from config.js at T-1 week, no redeploy -->
   <div class="lineup" id="lineup">
     <div class="lineup-copy">
-      <div class="tag">ARTIST LINE UP</div>
-      <h3 id="lineup-title">The stage won't only belong to the cars.</h3>
-      <p id="lineup-copy">Two of the country's biggest stars — one revealed with the X9, one closing the night with a full concert set. Names drop one week before the event.</p>
+      <div class="tag">THE ENCORE</div>
+      <h3 id="lineup-title">Cars aren't the only stars tonight.</h3>
+      <p id="lineup-copy">Two of the country's biggest OPM stars take the stage, turning up the energy for the X9 reveal and capping off Driving Into A New Day with a full concert set. Find out who's hitting the stage one week before the event.</p>
     </div>
     <div class="lineup-sil" id="lineup-art" aria-hidden="true">
       <i style="height:74px"></i><i style="height:96px"></i>
-      <span id="lineup-reveal">TO BE REVEALED · SEPT 18</span>
+      <span id="lineup-reveal">TO BE REVEALED · SEPTEMBER 15, 2026</span>
     </div>
   </div>
 </section>
@@ -307,16 +329,20 @@
   <div class="sec-eyebrow">FAQ</div>
   <h2 class="sec-title">Before you ask.</h2>
   <div class="faq">
-    <details><summary>Is it really free?</summary><div class="a">Yes — completely free, by invitation. There is nothing to buy anywhere on this page or at the door. Anyone asking you to pay for entry is not us.</div></details>
-    <details><summary>How do I get in?</summary><div class="a">Join the waitlist above. Invitations are limited and curated from the waitlist. Selected registrants receive a personal claim code by email and SMS, with a link to claim their free ticket on SM Tickets — that SM ticket is your entry pass to MOA Arena.</div></details>
-    <details><summary>When will I know if I'm invited?</summary><div class="a">Invitations are released about one week before the event. Watch your inbox and your SMS — the code is sent to the email and mobile number you register with, so please keep them accurate.</div></details>
-    <details><summary>What is the SM Tickets step?</summary><div class="a">Your invitation links to the SM Tickets page for Future Night. You enter your single-use code there and claim a free ticket — no payment, no fees. You have 72 hours from the invitation; after that the code expires and the seat is released to the next names on the waitlist.</div></details>
-    <details><summary>Who gets picked, and how?</summary><div class="a">Selection is made from the waitlist by our team, guided by city or residence and the profile answers in Step 2 of the form. Registering early and completing both steps gives you the strongest chance.</div></details>
-    <details><summary>Can I transfer my ticket?</summary><div class="a">No — invitations are personal and matched to your registered name and mobile number. Bring a valid ID together with your SM ticket.</div></details>
+    <details><summary>Is the launch event really free?</summary><div class="a">Yes, XPENG's Driving Into A New Day Physical AI Open House is completely free to attend, by invitation only. You'll never be asked for payment to register, claim your tickets, or enter the event.</div></details>
+    <details><summary>How do I get an invitation?</summary><div class="a">Join the waitlist above. Invitations are limited, with guests selected from the waitlist. You'll receive a personal claim code by email and SMS to claim your free ticket through SM Tickets. Your SM Ticket is your entry pass for the show at MOA Arena.</div></details>
+    <details><summary>Who gets selected, and how does the waitlist work?</summary><div class="a">Guests are selected from the waitlist by our team, based on factors such as city of residence and the profile information you share in Step 2. Register early and complete both steps for the best chance to get an invite.</div></details>
+    <details><summary>When will I know if I'm invited?</summary><div class="a">Invitations go out about a week before the event. If selected, you'll receive your invitation and claim code via email and SMS, so make sure your contact details upon registration are accurate.</div></details>
+    <details><summary>How do I claim my ticket via SM Tickets? (72-Hour Rule)</summary><div class="a">Your invitation will include a link to XPENG's Driving Into A New Day page on SM Tickets. Simply enter your claim code to secure your free ticket, no payment required. You'll have 72 hours to claim your tickets before the code expires and your seat is offered to the next guest on the waitlist.</div></details>
+    <details><summary>Can I bring a companion or plus one?</summary><div class="a">Each invitation and SM Ticket is strictly valid for one (1) person only. If family members or friends wish to join you, we encourage them to sign up for the waitlist individually using their personal details.</div></details>
+    <details><summary>Can I transfer my invitation or ticket to someone else?</summary><div class="a">No. Invitations and tickets are personal and non-transferable, matched with your registered name and phone number upon registration. Please bring a valid government-issued ID with your SM Tickets pass.</div></details>
+    <details><summary>What happens if I don't get selected for an invitation?</summary><div class="a">All registered guests on the waitlist remain in our priority circle. Even if you aren't selected for the September 25 launch event, your registration grants you priority access to upcoming XPENG experiences and test drives.</div></details>
+    <details><summary>What is the event schedule for the day?</summary><div class="a">We will air the event live on XPENG Philippines' social media channels at 3:30 PM, while the event officially opens at 6:00 PM for interactive experiences, the IRON humanoid showcase, and play zone games, leading into the main arena show and headline concert.</div></details>
+    <details><summary>What do I need to present upon event venue entry?</summary><div class="a">Please present your official claimed SM Ticket along with one (1) valid government-issued ID matching the registered name on your invitation. The original registration QR on your phone should be kept as it serves as your digital games pass in the play zones.</div></details>
     <details><summary>Is there an age policy?</summary><div class="a">Guests 18 and above may register and attend on their own. Minors are welcome only when accompanied by a registered adult guest, and each attendee still needs their own claimed ticket.</div></details>
-    <details><summary>Parking and how to get there</summary><div class="a">MOA Arena sits inside the SM Mall of Asia complex in Pasay, served by mall parking and the usual ride-hailing and bus drop-off points. The foyer opens at 6:00 PM — arrive early, gates and traffic around the complex get heavy before a full-house show. Detailed arrival instructions go out to claimed guests the day before.</div></details>
-    <details><summary>What can I win?</summary><div class="a">The foyer play zone runs from 6:00 PM with instant prizes — exclusive XPENG tote bags, keychains and a special-merch draw. The personal code in your invitation is your game pass, so keep that email or SMS handy on the night.</div></details>
-    <details><summary>What happens to my information?</summary><div class="a">Your data is used to manage this event and, only if you tick that consent, to connect you with an authorized XPENG dealer near you. You can withdraw consent or request deletion any time — full details and contacts are in the <a href="/privacy">Data Privacy notice</a>.</div></details>
+    <details><summary>Where do I park, and how do I get there?</summary><div class="a">MOA Arena is located within the SM Mall of Asia complex in Pasay City, with nearby parking and access via ride-hailing and bus drop-off points. The Foyer opens at 6:00 PM, and we recommend arriving early to allow for traffic concerns and entry procedures. Detailed arrival and parking information will be sent to confirmed guests the day before the event.</div></details>
+    <details><summary>What can I experience and win in the foyer?</summary><div class="a">The Foyer Play Zone opens at 6:00 PM, with instant prizes including exclusive XPENG tote bags and keychains, plus chances to win special merchandise. The original registration QR on your phone should be kept as it serves as your digital games pass in the play zones.</div></details>
+    <details><summary>How is my personal data handled?</summary><div class="a">Your data is collected to manage your Driving Into A New Day registration, and with your consent, to connect you with an authorized XPENG dealer near you. You can withdraw consent or request your information to be deleted at any time. Please see full details and contacts via the <a href="/privacy">Data Privacy Notice</a>.</div></details>
   </div>
 </section>
 
@@ -330,7 +356,7 @@
 <footer>
   <div class="l">
     <img class="foot-logo" src="image/logo-xpeng.png" alt="XPENG" width="823" height="116" loading="lazy">
-    XPENG PHILIPPINES · FUTURE NIGHT 2026<br>
+    XPENG PHILIPPINES · DRIVING INTO A NEW DAY · 2026<br>
     Campaign by Dragon AI · <a id="f-mail" href="mailto:futurenight@xpeng.ph">futurenight@xpeng.ph</a>
   </div>
   <div class="r" id="f-links">

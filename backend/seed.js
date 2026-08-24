@@ -40,11 +40,16 @@ const LAST = ['Santos','Reyes','Cruz','Bautista','Garcia','Torres','Mendoza','Aq
   'Villanueva','Castillo','Flores','Domingo','Navarro','Pascual','Salazar','Ocampo'];
 
 const AGES    = ['18–24','25–34','35–44','45–54','55+'];
-const SEGS    = ['Business owner','Professional / employee','Government','OFW / OFW family','Student','Other'];
+const SEGS    = ['Business Owner / Entrepreneur','Corporate Executive / Senior Management',
+                 'Working Professional / Employee','Self-Employed / Freelancer',
+                 'Government / Public Sector','OFW / OFW Dependent',
+                 'Student / Fresh Graduate','Other'];
 const INTENTS = ['Within 3 months','3–6 months','6–12 months','Over a year','Just exploring'];
 const BUDGETS = ['Under ₱1.5M','₱1.5–2.5M','₱2.5–4M','₱4M+','Prefer not to say'];
-const MODELS  = ['X9 luxury MPV','L03 SUV','The full line-up','Just curious about the AI'];
-const EVS     = ['Own an EV','Have test-driven','Never tried'];
+const MODELS  = ['XPENG X9 Flagship MPV','XPENG L03 Intelligent SUV','Upcoming / Future XPENG Models',
+                 'The Full Vehicle Lineup','Curious About XPENG\u2019s AI Technology','Just Exploring'];
+const EVS     = ['Current EV Owner (Pure Electric)','Current Hybrid Owner (HEV / PHEV)',
+                 'Have Driven or Test-Driven an EV','First Time Exploring EVs','Never Tried'];
 const BRANDS  = ['Toyota','Mitsubishi','Nissan','Honda','Ford','Hyundai','Kia','Suzuki','Isuzu','BYD','MG','No car yet'];
 const SOURCES = [
   { utm_source: 'facebook', utm_medium: 'paid_social', utm_campaign: 'futurenight_teaser' },

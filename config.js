@@ -1,5 +1,5 @@
 /* =============================================================
-   XPENG FUTURE NIGHT — campaign config
+   XPENG DRIVING INTO A NEW DAY — campaign config
    Edited without a redeploy (Section 5 of the brief).
    Swap ARTIST.revealed = true at T-1 week to flip the hero
    silhouette module to the real artist names/photos.
@@ -7,13 +7,13 @@
 window.XPENG_CONFIG = {
 
   event: {
-    name:      "XPENG FUTURE NIGHT",
+    name:      "XPENG DRIVING INTO A NEW DAY",
     subtitle:  "The Physical AI Open House",
     venue:     "MOA Arena",
     dateISO:   "2026-09-25T18:00:00+08:00",   // countdown target
     dateLabel: "September 25, 2026",
     doorsLabel:"Foyer opens 6:00 PM · Show 7:00 PM",
-    forumLabel:"Physical AI Forum · 3:30 PM · livestreamed"
+    forumLabel:"Physical AI Forum · 3:30 PM · live on @XPENGPhilippines"
   },
 
   /* Ticket status is hard-coded for the whole campaign. */
@@ -38,8 +38,8 @@ window.XPENG_CONFIG = {
   /* Artist reveal module. */
   artist: {
     revealed: false,
-    revealDateLabel: "SEPT 18",
-    teaser: "Two of the country's biggest stars — one revealed with the X9, one closing the night with a full concert set.",
+    revealDateLabel: "SEPTEMBER 15, 2026",
+    teaser: "Two of the country's biggest OPM stars take the stage, turning up the energy for the X9 reveal and capping off Driving Into A New Day with a full concert set.",
     acts: [
       // when revealed: { name: "", role: "", photo: "" }
     ]
@@ -49,12 +49,12 @@ window.XPENG_CONFIG = {
      close to serve the X Space priority message instead. */
   confirmation: {
     mode: "open",
-    open: "Invitations are picked from the waitlist and released <b>one week before the event</b>. If you're selected we'll email and text you a personal claim code for SM Tickets. Watch your inbox.",
-    closed: "Invitations for Future Night have closed — but your registration isn't wasted. You now have <b>priority access to X Space</b> pop-up events, workshops and test drives. We'll be in touch."
+    open: "Invitations go out <b>one week before the event</b>. If you're selected, we'll be in touch via email and SMS with your personal claim code for SM Tickets. Keep an eye on your inbox!",
+    closed: "Invitations for Driving Into A New Day have closed — but your registration isn't wasted. You now have <b>priority access to X Space</b> pop-up events, workshops and test drives. We'll be in touch."
   },
 
   share: {
-    text: "I joined the waitlist for XPENG FUTURE NIGHT — the Physical AI Open House at MOA Arena.",
+    text: "I joined the waitlist for XPENG's Driving Into A New Day — the Physical AI Open House at MOA Arena.",
     url:  "https://futurenight.xpeng.ph"
   },
 
@@ -85,7 +85,8 @@ window.XPENG_CONFIG = {
       { label: "Facebook",  href: "" },
       { label: "Instagram", href: "" },
       { label: "TikTok",    href: "" },
-      { label: "YouTube",   href: "" }
+      { label: "YouTube",   href: "" },
+      { label: "X",         href: "" }
     ]
   }
 };

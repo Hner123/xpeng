@@ -26,28 +26,35 @@ const WEIGHTS = {
     'Prefer not to say': 8       // not a negative signal, just unknown
   },
   segment: {
-    'Business owner':          15,
-    'Professional / employee': 11,
-    'Government':              9,
-    'OFW / OFW family':        11,
-    'Student':                 3,
-    'Other':                   5
+    'Business Owner / Entrepreneur':           15,
+    'Corporate Executive / Senior Management': 15,
+    'Working Professional / Employee':         11,
+    'Self-Employed / Freelancer':              12,
+    'Government / Public Sector':              9,
+    'OFW / OFW Dependent':                     11,
+    'Student / Fresh Graduate':                3,
+    'Other':                                   5
   },
   model_interest: {
-    'X9 luxury MPV':           10,
-    'L03 SUV':                 8,
-    'The full line-up':        8,
-    'Just curious about the AI': 3
+    'XPENG X9 Flagship MPV':            10,
+    'XPENG L03 Intelligent SUV':        9,
+    'Upcoming / Future XPENG Models':   7,
+    'The Full Vehicle Lineup':          8,
+    'Curious About XPENG’s AI Technology': 3,
+    'Just Exploring':                   2
   },
   ev_experience: {
-    'Own an EV':        6,
-    'Have test-driven': 8,       // warmest: tried one, hasn't bought yet
-    'Never tried':      4
+    'Current EV Owner (Pure Electric)':   6,
+    'Current Hybrid Owner (HEV / PHEV)':  7,
+    'Have Driven or Test-Driven an EV':   8,   // warmest: tried one, hasn't bought
+    'First Time Exploring EVs':           5,
+    'Never Tried':                        4
   },
   age: {
     '18–24': 3, '25–34': 5, '35–44': 5, '45–54': 4, '55+': 3
   }
 };
+
 
 /* Conquest bonus: currently driving a rival brand is a stronger
    signal than no car at all. */
@@ -57,7 +64,9 @@ function scoreOf(row) {
   let total = 0;
   for (const field of Object.keys(WEIGHTS)) {
     const table = WEIGHTS[field];
-    const value = row[field];
+    let value = row[field];
+    /* "Other — plumbing contractor" scores as plain Other. */
+    if (typeof value === 'string' && value.startsWith('Other — ')) value = 'Other';
     if (value && table[value] !== undefined) total += table[value];
   }
   if (row.drives && row.drives !== NO_CAR) total += 4;
