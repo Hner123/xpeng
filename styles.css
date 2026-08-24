@@ -78,9 +78,12 @@ a.skip:focus{left:8px}
 /* ---------- NAV ---------- */
 nav{position:fixed;inset:0 0 auto 0;z-index:50;display:flex;align-items:center;justify-content:space-between;
     height:var(--nav-h);padding:0 var(--pad);background:rgba(11,9,7,.86);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
-.logo{display:flex;align-items:center;gap:10px;font-family:var(--font-body);font-weight:700;letter-spacing:.34em;font-size:13px;
-      color:#fff;text-decoration:none}
-.logo:visited{color:#fff}
+/* The supplied PNG is the whole lockup (mark + wordmark), so the nav
+   no longer sets type for it. Sized by height; width follows the
+   823x116 aspect ratio. */
+.logo{display:flex;align-items:center;text-decoration:none}
+.logo img{height:17px;width:auto;display:block}
+.foot-logo{height:20px;width:auto;margin-bottom:12px;opacity:.85}
 .nav-links{display:none}
 .nav-cta{display:none}
 .burger{width:42px;height:38px;display:grid;place-items:center;background:none;border:1px solid var(--line);border-radius:9px;cursor:pointer}
@@ -379,7 +382,7 @@ html.motion [data-reveal].in .cd b{animation:none}
 @media (min-width:1020px){
   :root{--nav-h:66px}
   :root{--gutter:64px}
-  .logo{font-size:15px;letter-spacing:.42em}
+  .logo img{height:20px}
   .burger,.drawer{display:none!important}
   .nav-links{display:flex;gap:34px;font-size:12.5px;letter-spacing:.16em;font-weight:600}
   .nav-links a{color:var(--mist);text-decoration:none;transition:color .2s}

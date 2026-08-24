@@ -41,7 +41,7 @@
 
   .wrap{position:relative;z-index:2;width:100%;max-width:392px}
   .brand{display:flex;align-items:center;gap:11px;justify-content:center;margin-bottom:26px}
-  .brand span{font-family:var(--font-body);font-weight:700;letter-spacing:.42em;font-size:15px}
+  .brand img{height:22px;width:auto;display:block}
 
   form{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:28px 26px 24px;
     box-shadow:0 30px 80px rgba(0,0,0,.6)}
@@ -86,8 +86,8 @@
 
 <div class="wrap">
   <div class="brand">
-    <svg width="30" height="18" viewBox="0 0 30 18" aria-hidden="true"><path d="M1 1h7l7 7.5L22 1h7L18.5 9 29 17h-7l-7-7.5L8 17H1l10.5-8L1 1z" fill="#fff"/></svg>
-    <span>XPENG</span>
+    <!-- absolute path: this page is served from /admin -->
+    <img src="/image/logo-xpeng.png" alt="XPENG" width="823" height="116">
   </div>
 
   <form id="form" autocomplete="on">
