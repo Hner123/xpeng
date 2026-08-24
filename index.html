@@ -19,8 +19,8 @@
      the two that render above the fold to avoid a flash of fallback. -->
 <link rel="preload" href="font/FuturaBT-HeavyItalic.otf" as="font" type="font/otf" crossorigin>
 <link rel="preload" href="font/BasisGrotesque-Regular.otf" as="font" type="font/otf" crossorigin>
-<link rel="preload" as="image" href="image/hero/scene-m-900.webp" media="(max-width: 1019px)">
-<link rel="preload" as="image" href="image/hero/scene-2400.webp" media="(min-width: 1020px)">
+<link rel="preload" as="image" href="image/hero/keyart-1000.webp" media="(max-width: 1019px)">
+<link rel="preload" as="image" href="image/hero/keyart-2400.webp" media="(min-width: 1020px)">
 <link rel="stylesheet" href="styles.css">
 
 <!-- ============================================================
@@ -221,29 +221,6 @@
 </header>
 
 <!-- ============ THE EVENT ============ -->
-<!-- ============ KEY ART BANNER ============
-     The approved artwork in full, including its own typography.
-     Full-bleed, srcset-driven, lazy-loaded (it sits below the fold)
-     and given an explicit aspect-ratio so it reserves its space
-     instead of shifting the page as it decodes. -->
-<div class="banner">
-  <picture>
-    <source type="image/webp"
-      srcset="image/hero/keyart-1000.webp 1000w,
-              image/hero/keyart-1600.webp 1600w,
-              image/hero/keyart-2400.webp 2400w,
-              image/hero/keyart-3840.webp 3840w"
-      sizes="100vw">
-    <img src="image/hero/keyart-1600.jpg"
-         srcset="image/hero/keyart-1000.jpg 1000w,
-                 image/hero/keyart-1600.jpg 1600w,
-                 image/hero/keyart-2400.jpg 2400w,
-                 image/hero/keyart-3840.jpg 3840w"
-         sizes="100vw" width="3840" height="960" loading="lazy" decoding="async"
-         alt="Mabuhay, Philippines — Driving into a new day. Physical AI for all. The XPENG X9 and L03 on a beach at sunset with the IRON humanoid walking between them and an eVTOL flying car overhead.">
-  </picture>
-</div>
-
 <section id="event">
   <div class="sec-eyebrow">THE EVENT</div>
   <h2 class="sec-title">A launch you attend. Not one you watch.</h2>
@@ -332,6 +309,7 @@
     <details><summary>What happens to my information?</summary><div class="a">Your data is used to manage this event and, only if you tick that consent, to connect you with an authorized XPENG dealer near you. You can withdraw consent or request deletion any time — full details and contacts are in the <a href="/privacy">Data Privacy notice</a>.</div></details>
   </div>
 </section>
+
 
 <div class="closer">
   <h3>Seats can't be bought. They're given.</h3>

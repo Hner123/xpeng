@@ -119,18 +119,17 @@ header{position:relative;padding:calc(var(--nav-h) + 34px) var(--pad) 54px;overf
    Sits at the bottom of the hero on mobile, and to the right of the
    copy on desktop. The overlay gradient is what keeps text legible
    over the bright sunset — never rely on the photo being dark. */
-.keyart{top:auto;height:44vh;max-height:340px;
+/* The complete approved artwork. It carries its own typography, so
+   the hero copy sits ABOVE it on mobile rather than on top of it —
+   the art occupies the lower band, the text the upper. */
+.keyart{top:auto;height:46vh;max-height:360px;
   background-image:image-set(
-    url('image/hero/scene-m-900.webp') type('image/webp'),
-    url('image/hero/scene-m-900.jpg')  type('image/jpeg'));
-  background-size:cover;background-position:center bottom;background-repeat:no-repeat}
+    url('image/hero/keyart-1000.webp') type('image/webp'),
+    url('image/hero/keyart-1000.jpg')  type('image/jpeg'));
+  background-size:cover;background-position:58% bottom;background-repeat:no-repeat}
 .keyart:after{content:"";position:absolute;inset:0;
   background:linear-gradient(to top, rgba(11,9,7,.55) 0%, rgba(11,9,7,.15) 28%, rgba(11,9,7,.72) 78%, var(--ink) 100%)}
-@media (max-width:640px){
-  .keyart{background-image:image-set(
-    url('image/hero/scene-m-640.webp') type('image/webp'),
-    url('image/hero/scene-m-640.jpg')  type('image/jpeg'))}
-}
+
 .beams{opacity:.5;mix-blend-mode:screen;background:
   conic-gradient(from 178deg at 46% 100%,
     transparent 0deg, rgba(255,154,61,.16) 3deg, transparent 7deg,
@@ -230,22 +229,6 @@ h1{font-family:var(--font-display);font-weight:700;font-style:italic;
 .share-row a:hover,.share-row button:hover{border-color:#C9C0B4}
 
 
-/* ---------- KEY ART BANNER ----------
-   Full-bleed band: it deliberately ignores --pad so the artwork runs
-   edge to edge, unlike every other band on the page.
-   The art is 4:1, which is very short on a phone, so the image is
-   allowed a taller crop there via object-fit + a min-height, keeping
-   the cars and IRON readable instead of a 90px letterbox. */
-.banner{position:relative;width:100%;background:var(--ink);overflow:hidden}
-.banner img{width:100%;height:auto;display:block;
-  aspect-ratio:3840/960;object-fit:cover;object-position:center}
-@media (max-width:700px){
-  .banner img{aspect-ratio:auto;height:52vw;min-height:190px;
-    object-fit:cover;object-position:58% center}   /* keeps X9 + IRON + L03 in frame */
-}
-/* Feather the top and bottom edges into the page background so the
-   band reads as part of the layout, not a pasted rectangle. */
-.banner:before,.banner:after{content:"";position:absolute;left:0;right:0;height:56px;z-index:1;pointer-events:none}
 .banner:before{top:0;background:linear-gradient(var(--ink),transparent)}
 .banner:after{bottom:0;background:linear-gradient(transparent,var(--ink))}
 
@@ -398,17 +381,17 @@ html.motion [data-reveal].in .cd b{animation:none}
   header{display:grid;grid-template-columns:minmax(0,1.12fr) 452px;gap:56px;align-items:center;
          min-height:100vh;padding:calc(var(--nav-h) + 60px) var(--pad) 80px}
   .floor{height:34vh;opacity:.28}
-  /* Wide crop, full-bleed along the bottom of the hero. */
-  .keyart{height:58vh;max-height:none;
+  /* Full artwork, full-bleed along the bottom of the hero. */
+  .keyart{height:62vh;max-height:none;
     background-image:image-set(
-      url('image/hero/scene-2400.webp') type('image/webp'),
-      url('image/hero/scene-2400.jpg')  type('image/jpeg'));
+      url('image/hero/keyart-2400.webp') type('image/webp'),
+      url('image/hero/keyart-2400.jpg')  type('image/jpeg'));
     background-position:center bottom;background-size:cover}
   .keyart:after{background:
     linear-gradient(to top, rgba(11,9,7,.35) 0%, rgba(11,9,7,0) 45%, rgba(11,9,7,.55) 85%, var(--ink) 100%),
     /* darken behind the copy column only, so the cars stay clean */
     linear-gradient(to right, rgba(11,9,7,.72) 0%, rgba(11,9,7,.35) 38%, rgba(11,9,7,0) 62%)}
-  header{padding-bottom:calc(58vh - 120px)}
+  header{padding-bottom:calc(62vh - 130px)}
   .card{margin-top:0;padding:28px 28px 24px}
   .cd{max-width:none}
   .cd b{font-size:27px}
