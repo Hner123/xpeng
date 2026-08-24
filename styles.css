@@ -114,19 +114,19 @@ header{position:relative;padding:calc(var(--nav-h) + 34px) var(--pad) 54px;overf
      linear-gradient(#070605 0%, #14100A 48%, #2A1206 78%, #4A1D07 100%)}
 
 /* ---- KEY ART ----
-   The scene crop (X9 · IRON · L03 · eVTOL) with the artwork's own
-   headline cropped away, so it can't fight the <h1>.
-   Sits at the bottom of the hero on mobile, and to the right of the
-   copy on desktop. The overlay gradient is what keeps text legible
-   over the bright sunset — never rely on the photo being dark. */
-/* The complete approved artwork. It carries its own typography, so
-   the hero copy sits ABOVE it on mobile rather than on top of it —
-   the art occupies the lower band, the text the upper. */
+   Sits at the bottom of the hero on mobile, and behind the copy on
+   desktop. The :after overlay is what keeps text legible over the
+   bright sunset — never rely on the photo being dark.
+
+   Clean key art — no baked-in typography, so nothing competes with
+   the hero copy. Subjects (X9, IRON, L03) sit in the centre band and
+   the flanks are empty sunset, which is what makes it safe to crop
+   hard on a phone: anchor centre-bottom and the cars stay in frame. */
 .keyart{top:auto;height:46vh;max-height:360px;
   background-image:image-set(
-    url('image/hero/keyart-1000.webp') type('image/webp'),
-    url('image/hero/keyart-1000.jpg')  type('image/jpeg'));
-  background-size:cover;background-position:58% bottom;background-repeat:no-repeat}
+    url('image/hero/bg-1000.webp') type('image/webp'),
+    url('image/hero/bg-1000.jpg')  type('image/jpeg'));
+  background-size:cover;background-position:center bottom;background-repeat:no-repeat}
 .keyart:after{content:"";position:absolute;inset:0;
   background:linear-gradient(to top, rgba(11,9,7,.55) 0%, rgba(11,9,7,.15) 28%, rgba(11,9,7,.72) 78%, var(--ink) 100%)}
 
@@ -381,11 +381,11 @@ html.motion [data-reveal].in .cd b{animation:none}
   header{display:grid;grid-template-columns:minmax(0,1.12fr) 452px;gap:56px;align-items:center;
          min-height:100vh;padding:calc(var(--nav-h) + 60px) var(--pad) 80px}
   .floor{height:34vh;opacity:.28}
-  /* Full artwork, full-bleed along the bottom of the hero. */
+  /* Full-bleed along the bottom of the hero. */
   .keyart{height:62vh;max-height:none;
     background-image:image-set(
-      url('image/hero/keyart-2400.webp') type('image/webp'),
-      url('image/hero/keyart-2400.jpg')  type('image/jpeg'));
+      url('image/hero/bg-2400.webp') type('image/webp'),
+      url('image/hero/bg-2400.jpg')  type('image/jpeg'));
     background-position:center bottom;background-size:cover}
   .keyart:after{background:
     linear-gradient(to top, rgba(11,9,7,.35) 0%, rgba(11,9,7,0) 45%, rgba(11,9,7,.55) 85%, var(--ink) 100%),
@@ -411,6 +411,14 @@ html.motion [data-reveal].in .cd b{animation:none}
   footer{padding:36px var(--pad);grid-template-columns:1fr auto;align-items:center}
   .sticky-cta{display:none}
 }
+/* Wide or high-density displays: the 2400 file starts to soften, so
+   step up to the full-width export. */
+@media (min-width:1800px), (min-resolution:1.5dppx) and (min-width:1020px){
+  .keyart{background-image:image-set(
+    url('image/hero/bg-3840.webp') type('image/webp'),
+    url('image/hero/bg-3840.jpg')  type('image/jpeg'))}
+}
+
 @media (prefers-reduced-motion:reduce){
   *{animation:none!important;transition:none!important}
   html{scroll-behavior:auto}
