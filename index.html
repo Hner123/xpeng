@@ -11,9 +11,11 @@
 <meta property="og:type" content="website">
 <meta property="og:image" content="image/hero/keyart-1600.jpg">
 <meta name="twitter:card" content="summary_large_image">
-<!-- Favicon: the X monogram on the brand dark tile. A white-on-
-     transparent mark would vanish on a light browser tab, so the
-     tile is baked in. .ico carries 16/32/48 for legacy and Windows. -->
+<!-- Favicon: theme-aware SVG first — the dark tile is drawn only in
+     light mode, so the icon never shows a black box on a dark tab
+     strip. .ico/.png keep the baked tile as a fallback for browsers
+     without SVG favicon support. -->
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="icon" href="favicon.ico" sizes="any">
 <link rel="icon" type="image/png" sizes="32x32" href="image/icons/icon-32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="image/icons/icon-16.png">

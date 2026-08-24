@@ -174,7 +174,7 @@ function needAdmin(res) {
 
 /* ---------- static ------------------------------------------ */
 const STATIC_OK = new Set(['/', '/index.html', '/styles.css', '/app.js', '/config.js', '/geo.js',
-                           '/favicon.ico', '/site.webmanifest', '/robots.txt']);
+                           '/favicon.ico', '/favicon.svg', '/site.webmanifest', '/robots.txt']);
 /* Asset folders served wholesale: brand fonts and the key art. */
 const STATIC_DIRS = /^\/(assets|img|font|image)\//;
 
