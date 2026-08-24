@@ -39,6 +39,10 @@ window.XPENG_CONFIG = {
   artist: {
     revealed: false,
     revealDateLabel: "SEPTEMBER 15, 2026",
+    /* Hero strip wording. Kept here so marketing can retune it
+       without touching markup or code. */
+    sectionLabel: "LIVE PERFORMANCES",
+    actsLabel:    "2 OPM STARS",
     teaser: "Two of the country's biggest OPM stars take the stage, turning up the energy for the X9 reveal and capping off Driving Into A New Day with a full concert set.",
     acts: [
       // when revealed: { name: "", role: "", photo: "" }

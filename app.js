@@ -139,13 +139,20 @@
   function paintArtist() {
     var a = CFG.artist || {};
     var reveal = $('lineup-reveal');
+    var lab = document.querySelector('.ha-lab');
+    if (lab && a.sectionLabel) lab.textContent = a.sectionLabel;
     if (!a.revealed) {
       if (a.teaser) {
         $('lineup-copy').textContent  = a.teaser + ' Names drop one week before the event.';
         $('mystery-copy').textContent = a.teaser;
       }
       if (a.revealDateLabel && reveal) reveal.textContent = 'TO BE REVEALED · ' + a.revealDateLabel;
-      if (a.revealDateLabel) $('hero-artist-txt').textContent = '2 STARS · REVEALED ' + a.revealDateLabel;
+      /* Was hard-coded "2 STARS", which silently overwrote the markup.
+         Both halves now come from config. */
+      var acts = a.actsLabel || '2 OPM STARS';
+      $('hero-artist-txt').textContent = a.revealDateLabel
+        ? acts + ' · REVEALED ' + a.revealDateLabel
+        : acts + ' · TO BE REVEALED';
       return;
     }
 
