@@ -18,6 +18,7 @@
   command = """
     rm -rf dist && mkdir -p dist &&
     cp index.html styles.css app.js config.js geo.js dist/ &&
+    cp privacy.html terms.html legal.css dist/ &&
     cp favicon.ico favicon.svg site.webmanifest robots.txt dist/ &&
     cp -r image font dist/
   """

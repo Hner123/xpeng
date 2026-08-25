@@ -178,13 +178,18 @@ function needAdmin(res) {
 
 /* ---------- static ------------------------------------------ */
 const STATIC_OK = new Set(['/', '/index.html', '/styles.css', '/app.js', '/config.js', '/geo.js',
-                           '/favicon.ico', '/favicon.svg', '/site.webmanifest', '/robots.txt']);
+                           '/favicon.ico', '/favicon.svg', '/site.webmanifest', '/robots.txt',
+                           '/privacy.html', '/terms.html', '/legal.css']);
+
+/* Pretty URLs for the legal pages: the site links to /privacy, and
+   Netlify resolves that to privacy.html on its own. Node needs telling. */
+const PRETTY = { '/privacy': '/privacy.html', '/terms': '/terms.html' };
 /* Asset folders served wholesale: brand fonts and the key art. */
 const STATIC_DIRS = /^\/(assets|img|font|image)\//;
 
 function serveStatic(req, res, pathname) {
-  const rel = pathname === '/' ? '/index.html' : pathname;
-  if (!STATIC_OK.has(pathname) && !STATIC_DIRS.test(rel)) return false;
+  const rel = pathname === '/' ? '/index.html' : (PRETTY[pathname] || pathname);
+  if (!STATIC_OK.has(pathname) && !PRETTY[pathname] && !STATIC_DIRS.test(rel)) return false;
 
   const file = path.join(ROOT, path.normalize(rel).replace(/^(\.\.[/\\])+/, ''));
   if (!file.startsWith(ROOT) || !fs.existsSync(file) || fs.statSync(file).isDirectory()) return false;
