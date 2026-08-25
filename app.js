@@ -650,9 +650,10 @@
     ['.faq details', null, 40],
     ['.closer h3', null, 0],
     ['.closer p', null, 80],
-    ['.closer .btn', null, 150],
-    ['footer .l', null, 0],
-    ['footer .r', null, 80]
+    ['.closer .btn', null, 150]
+    /* No footer entrance: it is the one band that can sit entirely
+       inside the observer's bottom dead zone, and animating a footer
+       buys nothing. */
   ];
 
   function markReveals() {
@@ -678,8 +679,31 @@
         e.target.classList.add('in');
         io.unobserve(e.target);       // one-shot: reveals don't re-hide on scroll up
       });
-    }, { rootMargin: '0px 0px -12% 0px', threshold: 0.12 });
+    }, { rootMargin: '0px 0px -8% 0px', threshold: 0.1 });
     targets.forEach(function (el) { io.observe(el); });
+
+    /* Safety net. The negative rootMargin above creates a dead band at
+       the bottom of the screen: anything that only ever appears inside
+       it — the last element on the page, once you cannot scroll any
+       further — would stay at opacity 0 permanently. This sweeps up
+       whatever is on screen but still hidden. */
+    function sweep() {
+      var left = document.querySelectorAll('[data-reveal]:not(.in)');
+      for (var i = 0; i < left.length; i++) {
+        var r = left[i].getBoundingClientRect();
+        if (r.top < window.innerHeight - 4 && r.bottom > 0) left[i].classList.add('in');
+      }
+      if (!left.length) window.removeEventListener('scroll', queued, { passive: true });
+    }
+    var pending = false;
+    function queued() {
+      if (pending) return;
+      pending = true;
+      requestAnimationFrame(function () { pending = false; sweep(); });
+    }
+    window.addEventListener('scroll', queued, { passive: true });
+    window.addEventListener('resize', queued, { passive: true });
+    setTimeout(sweep, 600);           // also covers a page that loads already scrolled
   }
 
   /* Hero glow drifts at a fraction of scroll speed. rAF-throttled. */
