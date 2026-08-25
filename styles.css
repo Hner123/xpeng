@@ -59,6 +59,7 @@
   --font-body:'Basis Grotesque','Inter',system-ui,sans-serif;
   --font-display:'Futura Display','Basis Grotesque',sans-serif;
   --font-mono:'IBM Plex Mono',ui-monospace,monospace;
+  --font-script:'Dancing Script','Segoe Script',cursive;
 
   /* The hero ground. A variable so each palette can restyle the page
      behind the key art without touching any rule. */
@@ -195,8 +196,23 @@ header{position:relative;overflow:hidden;
 .hero-copy{position:relative;z-index:2}
 .eyebrow{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.26em;color:var(--amber);margin-bottom:16px}
 /* Matches "DRIVING INTO A NEW DAY" in the key art. */
+/* ---- HEADLINE ----
+   Two voices: XPENG in the Futura lockup face, the campaign line in
+   script, as in the supplied artwork.
+
+   STAND-IN: Dancing Script is the closest freely available match to
+   the signature face in the reference. Drop the real .otf into font/,
+   add an @font-face, and change --font-script — nothing else moves. */
 h1{font-family:var(--font-display);font-weight:700;font-style:italic;
    font-size:clamp(34px,10vw,72px);line-height:.98;letter-spacing:-.005em}
+.h1-brand{display:block}
+/* Script sits larger than the Futura line and tucks up under it —
+   cursive faces carry huge internal leading, so the negative margin
+   closes the gap rather than opening one. */
+.h1-script{display:block;font-family:var(--font-script);font-style:normal;font-weight:700;
+  text-transform:none;letter-spacing:0;line-height:.86;
+  font-size:clamp(46px,13vw,104px);margin-top:-.02em;padding-bottom:.14em}
+
 .sub{font-family:var(--font-body);font-weight:500;font-size:clamp(19px,5.4vw,32px);color:var(--orange);margin-top:8px}
 .meta{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;margin-top:20px;font-size:13.5px;color:var(--mist);letter-spacing:.03em}
 .meta b{color:#fff;font-weight:600}
