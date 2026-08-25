@@ -22,7 +22,7 @@ Open `index.html` directly in a browser to review; no build step.
 - `confirmation.mode = "closed"` → post-submit copy switches to the X Space priority message after invitations close.
 - `event.dateISO` drives the countdown; `api.submit` points the form at the backend.
 
-Ticket status is hard-coded to SOLD OUT / **WAITLIST OPEN**. There is no purchase path anywhere on the page.
+The card shows **WAITLIST OPEN**. There is no purchase path anywhere on the page.
 
 ## Form behaviour
 

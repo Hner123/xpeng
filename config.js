@@ -16,9 +16,10 @@ window.XPENG_CONFIG = {
     forumLabel:"Physical AI Forum · 3:30 PM · live on @XPENGPhilippines"
   },
 
-  /* Ticket status is hard-coded for the whole campaign. */
+  /* Ticket status is hard-coded for the whole campaign. There is no
+     sold-out label any more: the card says what you CAN do, and the
+     page never offers a purchase path to be sold out of. */
   status: {
-    soldOutLabel: "TICKETS SOLD OUT",
     waitlistLabel:"WAITLIST OPEN"
   },
 

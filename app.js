@@ -77,7 +77,6 @@
     if (ev.forumLabel) $('m-forum').textContent = ev.forumLabel.toUpperCase();
 
     var st = CFG.status || {};
-    if (st.soldOutLabel)  $('s-soldout').textContent  = st.soldOutLabel;
     if (st.waitlistLabel) $('s-waitlist').textContent = st.waitlistLabel;
 
     /* The counter stays hidden until the live API confirms a real
