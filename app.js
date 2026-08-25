@@ -68,6 +68,12 @@
     var ev = CFG.event || {};
     if (ev.venue)      $('m-venue').textContent = ev.venue;
     if (ev.dateLabel)  $('m-date').textContent  = ev.dateLabel;
+    /* Venue section repeats both, so drive them from the same config
+       and they can never drift apart. */
+    if (ev.venue && $('v-venue'))     $('v-venue').textContent = ev.venue;
+    if (ev.dateLabel && $('v-date'))  $('v-date').textContent  = ev.dateLabel;
+    if (ev.venue && $('c-venue'))     $('c-venue').textContent = ev.venue;
+    if (ev.dateLabel && $('c-date'))  $('c-date').textContent  = ev.dateLabel;
     if (ev.forumLabel) $('m-forum').textContent = ev.forumLabel.toUpperCase();
 
     var st = CFG.status || {};
@@ -99,17 +105,28 @@
       a.target = '_blank'; a.rel = 'noopener';
       $('f-links').appendChild(a);
     });
+    /* Two icon rows, same links, same order: the hero strip beside
+       the forum line, and the success screen after submitting. */
     var ORDER = ['Facebook', 'Instagram', 'TikTok', 'YouTube', 'X'];
-    ORDER.forEach(function (label) {
-      var match = socials.filter(function (s) { return s.label === label; })[0];
-      if (!match) return;
-      var a = document.createElement('a');
-      a.href = match.href; a.target = '_blank'; a.rel = 'noopener';
-      a.setAttribute('aria-label', 'Follow XPENG Philippines on ' + label);
-      a.title = label;
-      a.innerHTML = ICON[label] || label;
-      $('follow-row').appendChild(a);
-    });
+    function iconRow(host) {
+      if (!host) return;
+      ORDER.forEach(function (label) {
+        var match = socials.filter(function (s) { return s.label === label; })[0];
+        if (!match) return;
+        var a = document.createElement('a');
+        a.href = match.href; a.target = '_blank'; a.rel = 'noopener';
+        a.setAttribute('aria-label', 'Follow XPENG Philippines on ' + label);
+        a.title = label;
+        a.innerHTML = ICON[label] || label;
+        host.appendChild(a);
+      });
+    }
+    iconRow($('follow-row'));
+    iconRow($('hero-follow'));
+
+    /* The hero row ships hidden, so it never flashes an empty gap
+       next to the forum pill before config is read. */
+    if (socials.length && $('hero-follow')) $('hero-follow').hidden = false;
     /* No usable links yet -> hide the whole follow block, heading
        included, so the success screen doesn't end on an empty row. */
     if (!socials.length) {
@@ -646,11 +663,15 @@
     ['.block', null, 90],
     ['.pill', 'scale', 60],
     ['.lineup', null, 0],
+    ['.venue-shot', null, 90],
+    ['.venue-facts > div', null, 50],
     ['.flow li', 'left', 70],
     ['.faq details', null, 40],
-    ['.closer h3', null, 0],
-    ['.closer p', null, 80],
-    ['.closer .btn', null, 150]
+    ['.closer-tag', null, 0],
+    ['.closer h3', null, 60],
+    ['.closer p', null, 120],
+    ['.closer .btn', null, 180],
+    ['.closer-meta', null, 230]
     /* No footer entrance: it is the one band that can sit entirely
        inside the observer's bottom dead zone, and animating a footer
        buys nothing. */

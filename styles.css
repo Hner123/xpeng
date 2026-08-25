@@ -214,7 +214,20 @@ h1{font-family:var(--font-display);font-weight:700;font-style:italic;
 .meta .dot{width:4px;height:4px;border-radius:50%;background:var(--orange)}
 .hero-line{width:52px;height:3px;background:var(--orange);margin:24px 0 18px}
 .lede{font-size:15px;line-height:1.65;color:var(--mist);max-width:44ch}
-.free-tag{display:inline-flex;align-items:center;gap:9px;margin-top:22px;padding:9px 15px;border:1px solid rgba(255,154,61,.45);
+/* Forum line + follow icons share one row, so the icons read as
+   part of the same "watch us here" statement rather than a
+   second, competing element. They wrap under it on a phone. */
+.hero-tags{position:relative;z-index:2;display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:22px}
+.hero-follow{display:flex;align-items:center;gap:6px}
+/* Solid orange at rest, not on hover: these sit on busy key art,
+   and an outline-only icon disappeared into the car behind it. */
+.hero-follow a{display:grid;place-items:center;width:32px;height:32px;border-radius:50%;
+  color:#180B00;border:1px solid var(--orange);background:var(--orange);
+  transition:background .18s,border-color .18s}
+.hero-follow a:hover{background:var(--amber);border-color:var(--amber)}
+.hero-follow a:focus-visible{outline:2px solid var(--orange);outline-offset:2px}
+.hero-follow svg{display:block;width:15px;height:15px}
+.free-tag{display:inline-flex;align-items:center;gap:9px;padding:9px 15px;border:1px solid rgba(255,154,61,.45);
   border-radius:999px;font-family:var(--font-mono);font-size:10.5px;letter-spacing:.14em;color:var(--amber)}
 .free-tag i{width:7px;height:7px;border-radius:50%;background:var(--orange);animation:pulse 2.2s infinite;flex:none}
 @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(244,121,32,.5)}55%{box-shadow:0 0 0 8px rgba(244,121,32,0)}}
@@ -225,7 +238,8 @@ h1{font-family:var(--font-display);font-weight:700;font-style:italic;
 .ha-sil{display:inline-flex;gap:4px;align-items:flex-end}
 .ha-sil i{display:block;width:9px;height:13px;border-radius:3px 3px 0 0;background:linear-gradient(rgba(255,154,61,.85),rgba(244,121,32,.2))}
 .ha-sil i:last-child{height:17px}
-.ha-txt{font-family:var(--font-body);font-weight:500;font-size:13.5px;letter-spacing:.04em;color:var(--amber)}
+/* White, matching the XPENG wordmark, not the amber accent. */
+.ha-txt{font-family:var(--font-body);font-weight:500;font-size:13.5px;letter-spacing:.04em;color:var(--paper)}
 
 /* countdown */
 .countdown{position:relative;z-index:2;display:flex;gap:8px;margin-top:26px}
@@ -365,6 +379,24 @@ section{padding:70px var(--pad)}
 .pill h4{font-size:11.5px;letter-spacing:.12em;margin-bottom:6px}
 .pill p{font-size:11.5px;color:var(--mist)}
 
+/* venue.
+   The shots carry this section, so they get the width and the copy
+   stays out of the way. aspect-ratio + width/height on the img means
+   the box is reserved before decode — no reflow on a slow phone. */
+.venue-grid{display:grid;grid-template-columns:1fr;gap:14px;margin-top:34px}
+.venue-shot{margin:0;overflow:hidden;border:1px solid var(--line);border-radius:16px;background:var(--coal)}
+.venue-shot picture{display:block}
+.venue-shot img{display:block;width:100%;height:auto;aspect-ratio:16/9;object-fit:cover}
+.venue-shot figcaption{padding:11px 14px 13px;font-family:var(--font-mono);font-size:10px;
+  letter-spacing:.14em;color:var(--mist);text-transform:uppercase}
+.venue-facts{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;margin-top:14px;
+  background:var(--line);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.venue-facts > div{background:var(--ink);padding:16px 16px 17px}
+.venue-facts dt{font-family:var(--font-mono);font-size:9.5px;letter-spacing:.2em;color:var(--mist);
+  text-transform:uppercase;margin-bottom:7px}
+.venue-facts dd{font-family:var(--font-body);font-weight:600;font-size:14.5px;color:var(--paper)}
+.venue-note{margin-top:14px;font-size:12px;line-height:1.6;color:var(--mist)}
+
 .lineup{margin-top:14px;display:grid;grid-template-columns:1fr;gap:22px;align-items:center;
   border:1px solid rgba(244,121,32,.45);border-radius:16px;padding:24px 20px;
   background:linear-gradient(120deg,rgba(244,121,32,.16),rgba(244,121,32,.03) 60%)}
@@ -414,9 +446,23 @@ section{padding:70px var(--pad)}
 .faq .a a{color:var(--amber)}
 
 
-.closer{text-align:center;padding:60px var(--pad) 70px;border-top:1px solid var(--line)}
-.closer h3{font-family:var(--font-display);font-style:italic;font-size:clamp(24px,6.4vw,38px);line-height:1.15;max-width:22ch;margin:0 auto 14px}
-.closer p{font-size:14px;color:var(--mist);max-width:44ch;margin:0 auto 24px;line-height:1.65}
+/* The closer is the arena. The photo is the band's background, with a
+   scrim over it heavy enough that the type keeps its contrast on the
+   bright parts of the shot — the facade screen and the light trails. */
+.closer{position:relative;text-align:center;padding:56px var(--pad) 60px;border-top:1px solid var(--line);isolation:isolate}
+.closer-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 42%;z-index:-2}
+.closer:after{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
+  background:linear-gradient(180deg,rgba(11,5,3,.94),rgba(20,10,5,.72) 42%,rgba(11,5,3,.95)),
+             radial-gradient(120% 90% at 50% 50%,transparent 20%,rgba(11,5,3,.55) 100%)}
+.closer-in{position:relative;z-index:1}
+.closer-tag{font-family:var(--font-mono);font-size:9.5px;letter-spacing:.24em;color:var(--amber);margin-bottom:16px}
+.closer h3{font-family:var(--font-display);font-style:italic;font-size:clamp(26px,7vw,44px);line-height:1.12;max-width:22ch;
+  margin:0 auto 14px;text-shadow:0 2px 26px rgba(0,0,0,.6)}
+.closer p{font-size:14px;color:rgba(255,255,255,.78);max-width:44ch;margin:0 auto 26px;line-height:1.65}
+/* Venue, date and doors: the practical detail people look for last. */
+.closer-meta{display:flex;justify-content:center;align-items:center;gap:10px;flex-wrap:wrap;margin-top:26px;
+  font-family:var(--font-mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.66)}
+.closer-meta i{width:3px;height:3px;border-radius:50%;background:var(--orange);flex:none}
 
 footer{border-top:1px solid var(--line);padding:30px var(--pad) 34px;display:grid;gap:18px}
 footer .l{font-family:var(--font-mono);font-size:10px;letter-spacing:.14em;color:var(--mist);line-height:1.9}
@@ -522,10 +568,18 @@ html.motion [data-reveal].in .cd b{animation:none}
   .block.wide{grid-column:1/-1;min-height:0;flex-direction:row;align-items:center;justify-content:space-between;gap:40px}
   .block.wide p{max-width:74ch}
   .pillars{grid-template-columns:repeat(5,1fr);gap:14px;margin-top:50px}
+  /* Lead shot roughly two-thirds, the aerial beside it. */
+  .venue-grid{grid-template-columns:1.75fr 1fr;gap:18px;margin-top:50px}
+  .venue-shot.lead img{aspect-ratio:1734/907}
+  .venue-shot:not(.lead) img{height:100%;aspect-ratio:auto;min-height:320px}
+  .venue-shot:not(.lead){display:flex;flex-direction:column}
+  .venue-shot:not(.lead) picture{flex:1;display:flex}
+  .venue-facts{grid-template-columns:repeat(4,1fr);margin-top:18px}
   .lineup{grid-template-columns:1fr auto;gap:32px;padding:32px 36px;margin-top:20px}
   .flow{grid-template-columns:repeat(2,1fr)}
   .flow li{border-right:1px solid var(--line)}
   .flow li:nth-child(2n){border-right:none}
+  .closer{padding:78px var(--pad) 82px}
   .faq{margin-top:48px}
   .faq summary{font-size:16.5px;padding:22px 4px}
   footer{padding:36px var(--pad);grid-template-columns:1fr auto;align-items:center}
@@ -636,11 +690,8 @@ section,.closer{overflow:hidden}
   right:-60px;bottom:12%;width:150px;height:150px;border-radius:50%;
   border:1.5px solid var(--deco-line)}
 
-/* The closer gets the biggest disc, centred behind the final ask. */
-.closer:before{content:"";position:absolute;z-index:-1;pointer-events:none;
-  left:50%;top:50%;transform:translate(-50%,-50%);
-  width:min(70vw,560px);aspect-ratio:1;border-radius:50%;
-  background:var(--deco-fill)}
+/* No disc on the closer any more: it now carries the arena photo, and
+   a glow blob over a photograph reads as a smudge, not decoration. */
 
 /* Phones: keep one disc per screen at most. Several shapes on a 390px
    viewport stop being decoration and start being clutter. */
