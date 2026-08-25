@@ -109,8 +109,13 @@
   body.viewer .admin-only{display:none!important}
   .hlogo{height:15px;width:auto;display:block;margin-bottom:7px;opacity:.9}
   .readonly-note{font-size:11.5px;color:var(--mute);border:1px solid var(--line);border-radius:8px;padding:8px 11px}
-  .btn.danger{border-color:rgba(217,84,31,.45);color:#E8825C}
-  .btn.danger:hover:not(:disabled){background:rgba(217,84,31,.12);color:#fff}
+  /* Toolbar: a red outline on a transparent ghost button. */
+  .btn.ghost.danger{border-color:rgba(217,84,31,.45);color:#E8825C;background:none}
+  .btn.ghost.danger:hover:not(:disabled){background:rgba(217,84,31,.12);color:#fff}
+  /* Modal confirm: solid red. The ghost rule only set a text colour,
+     which on the modal's orange fill left pale orange on orange. */
+  .modal .btn.danger{background:linear-gradient(135deg,#D14526,#A8281A);color:#fff;border:none}
+  .modal .btn.danger:hover{background:linear-gradient(135deg,#E04F2C,#B8301A)}
   .erased{color:#5C534A;font-style:italic}
 
   /* ---- modal ----
