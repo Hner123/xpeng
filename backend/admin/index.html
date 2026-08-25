@@ -477,7 +477,7 @@ async function loadRows() {
     const yn = v => v ? '<span class="yes">✓</span>' : '<span class="no">—</span>';
     return '<tr>' +
       '<td><input type="checkbox" class="pick" data-id="' + r.id + '"' +
-        (r.complete ? '' : ' disabled title="Partial records cannot be invited"') +
+        (r.complete ? '' : ' title="Step 1 only — cannot be invited, but can be deleted or anonymised"') +
         (state.selected.has(r.id) ? ' checked' : '') + '></td>' +
       '<td class="mono">' + r.sequence + '</td>' +
       '<td class="mono" style="color:var(--mute)">' + esc(r.created_at) + '</td>' +
@@ -609,7 +609,7 @@ async function loadExports() {
 $('f-score').addEventListener('input', () => { state.offset = 0; loadRows(); });
 
 $('all').addEventListener('change', e => {
-  document.querySelectorAll('.pick:not(:disabled)').forEach(cb => {
+  document.querySelectorAll('.pick').forEach(cb => {
     cb.checked = e.target.checked;
     const id = Number(cb.dataset.id);
     e.target.checked ? state.selected.add(id) : state.selected.delete(id);
@@ -622,10 +622,17 @@ $('next').addEventListener('click', () => { state.offset += state.limit; loadRow
 
 $('invite').addEventListener('click', async () => {
   const ids = [...state.selected];
+  /* Partial rows are selectable (so they can be deleted) but cannot
+     be invited — say so before sending rather than in the result. */
+  const partial = [...document.querySelectorAll('.pick:checked')]
+    .filter(cb => cb.title.startsWith('Step 1 only')).length;
+  const sendable = ids.length - partial;
+  if (!sendable) { toast('Those are all partial registrations — nothing to invite.'); return; }
   const go = await ask({
     title: 'Issue invitations',
-    body: 'Sending to <b>' + ids.length + '</b> registrant(s). Each gets a single-use code valid for 72 hours, with email and SMS queued.',
-    confirm: 'Invite ' + ids.length
+    body: 'Sending to <b>' + sendable + '</b> registrant(s). Each gets a single-use code valid for 72 hours, with email and SMS queued.' +
+          (partial ? '<br><br>' + partial + ' partial registration(s) in the selection will be skipped — they never finished Step 2.' : ''),
+    confirm: 'Invite ' + sendable
   });
   if (!go) return;
   $('invite').disabled = true;
