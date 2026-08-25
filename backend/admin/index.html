@@ -148,7 +148,7 @@
   <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
     <span class="who" id="who" hidden><b id="who-name">—</b><i id="who-role">—</i></span>
     <button class="btn ghost" id="refresh">Refresh</button>
-    <a class="btn ghost" href="/" target="_blank">View landing page</a>
+    <a class="btn ghost" id="view-site" href="/" target="_blank" rel="noopener">View landing page</a>
     <a class="btn admin-only" id="export-all" href="#">Export CSV</a>
     <button class="btn ghost" id="pwd">Password</button>
     <button class="btn ghost" id="logout">Sign out</button>
@@ -679,6 +679,9 @@ async function loadMe() {
   if (res.status === 401) { location.replace('/admin/login'); return false; }
   const d = await res.json();
   ME = d.user;
+  /* The public page may live on another host (Netlify today), so the
+     link comes from the server rather than being hard-coded here. */
+  if (d.publicSite) $('view-site').href = d.publicSite;
   $('who-name').textContent = ME.name || ME.username;
   $('who-role').textContent = ME.role === 'admin' ? 'full access' : 'read-only';
   $('who-role').className = ME.role === 'admin' ? 'admin' : '';

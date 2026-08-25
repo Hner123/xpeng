@@ -56,6 +56,10 @@ const DRY_RUN  = process.env.COMMS_DRY_RUN !== 'false';
 /* Set COOKIE_SECURE=true once the app is behind HTTPS, so the
    session cookie is never sent over plain http. */
 const SECURE_COOKIES = process.env.COOKIE_SECURE === 'true';
+/* Where the public campaign page is hosted. The dashboard's "View
+   landing page" button points here — set it when the front-end moves
+   to its own domain, so the link never goes stale. */
+const PUBLIC_SITE = process.env.PUBLIC_SITE_URL || 'https://x-peng.netlify.app';
 /* Origins allowed to call the PUBLIC endpoints cross-site — set this
    to the Netlify URL when the page and API live on different hosts.
    Comma-separated, exact origins only, never '*'. Admin routes are
@@ -355,7 +359,7 @@ async function main() {
             { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' });
         }
         if (p === '/api/admin/me' && req.method === 'GET') {
-          return json(res, 200, { ok: true, user: session });
+          return json(res, 200, { ok: true, user: session, publicSite: PUBLIC_SITE });
         }
         if (p === '/api/admin/stats' && req.method === 'GET') {
           return json(res, 200, { ok: true, ...(await store.stats()) });
