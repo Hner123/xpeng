@@ -226,6 +226,26 @@
   }
 
   /* ---------- nav / drawer / sticky CTA ------------------------ */
+  /* Theme toggle. The preference is a browser convenience, not user
+     data — it never leaves the device and carries nothing personal. */
+  function theme() {
+    var btn = $('theme-toggle');
+    if (!btn) return;
+    function label() {
+      var light = document.documentElement.dataset.theme === 'light';
+      btn.setAttribute('aria-label', light ? 'Switch to dark theme' : 'Switch to light theme');
+    }
+    label();
+    btn.addEventListener('click', function () {
+      var light = document.documentElement.dataset.theme === 'light';
+      var next = light ? 'dark' : 'light';
+      document.documentElement.dataset.theme = next;
+      try { localStorage.setItem('xpeng-theme', next); } catch (e) {}
+      label();
+      track('ThemeSwitch', { theme: next });
+    });
+  }
+
   function chrome() {
     var burger = $('burger');
     var drawer = $('drawer');
@@ -579,6 +599,20 @@
   }
 
   /* ---------- share ------------------------------------------ */
+  function toastShare(msg) {
+    var el = document.getElementById('share-toast');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'share-toast';
+      el.className = 'share-toast';
+      document.body.appendChild(el);
+    }
+    el.textContent = msg;
+    el.classList.add('on');
+    clearTimeout(toastShare.t);
+    toastShare.t = setTimeout(function () { el.classList.remove('on'); }, 2600);
+  }
+
   function share() {
     var sh = CFG.share || {};
     var text = sh.text || 'I joined the waitlist for XPENG FUTURE NIGHT';
@@ -586,6 +620,22 @@
     $('sh-fb').href = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(url) + '&quote=' + encodeURIComponent(text);
     $('sh-x').href  = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(text) + '&url=' + encodeURIComponent(url);
     $('sh-vi').href = 'viber://forward?text=' + encodeURIComponent(text + ' ' + url);
+
+    /* Instagram accepts no URL from the web, so the only honest route
+       is the OS share sheet — where Instagram is one of the targets.
+       Desktop has no sheet, so it copies instead and says so. */
+    $('sh-ig').addEventListener('click', function () {
+      track('Share', { channel: 'instagram' });
+      if (navigator.share) {
+        navigator.share({ title: 'XPENG · Driving Into A New Day', text: text, url: url }).catch(function () {});
+        return;
+      }
+      navigator.clipboard.writeText(url).then(function () {
+        var btn = $('sh-ig');
+        btn.title = 'Link copied — paste it into your Instagram story';
+        toastShare('Link copied — paste it into your Instagram story');
+      }).catch(function () {});
+    });
 
     $('sh-copy').addEventListener('click', function () {
       var btn = this;
@@ -763,6 +813,7 @@
   flow();
   share();
   chrome();
+  theme();
   motion();
   countdown();
   track('PageView', UTM);

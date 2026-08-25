@@ -519,6 +519,137 @@ html.motion [data-reveal].in .cd b{animation:none}
     url('image/hero/bg-3840.jpg')  type('image/jpeg'))}
 }
 
+
+/* =============================================================
+   LIGHT THEME
+   Same layout, inverted ground. Driven by data-theme="light" on
+   <html>, set by the nav toggle (and remembered per browser).
+   Only colour is overridden here — no spacing, no sizes — so the
+   two themes can never drift apart structurally.
+   ============================================================= */
+:root[data-theme="light"]{
+  --ink:#F4F1EC;          /* page ground */
+  /* The ember used on dark fails AA on a light ground at small sizes,
+     so the light theme gets its own, darker accent. */
+  --ember:#9E4000;
+  --coal:#EAE5DE;
+  --paper:#FFFFFF;
+  --mist:rgba(25,21,16,.66);
+  --line:rgba(25,21,16,.14);
+  --card-line:#E2DCD3;
+  --field:#FFFFFF;
+}
+:root[data-theme="light"] body{color:#191510}
+
+/* nav + drawer */
+:root[data-theme="light"] nav{background:rgba(255,255,255,.86);border-bottom-color:var(--line)}
+:root[data-theme="light"] body.scrolled nav{background:rgba(255,255,255,.95);box-shadow:0 10px 30px rgba(25,21,16,.10)}
+:root[data-theme="light"] .logo img,
+:root[data-theme="light"] .foot-logo{filter:invert(1)}   /* the lockup is white artwork */
+:root[data-theme="light"] .nav-links a{color:rgba(25,21,16,.62)}
+:root[data-theme="light"] .nav-links a:hover{color:#191510}
+:root[data-theme="light"] .burger span,
+:root[data-theme="light"] .burger span:before,
+:root[data-theme="light"] .burger span:after{background:#191510}
+:root[data-theme="light"] body.menu-open .burger span{background:transparent}
+:root[data-theme="light"] .drawer{background:rgba(255,255,255,.98)}
+:root[data-theme="light"] .drawer a{color:rgba(25,21,16,.7)}
+:root[data-theme="light"] body.menu-open:after{background:rgba(25,21,16,.35)}
+
+/* hero: the art stays, the ground under it flips */
+:root[data-theme="light"] .sky{background:
+  radial-gradient(1200px 520px at 46% 96%, rgba(244,121,32,.16), transparent 60%),
+  linear-gradient(#FFFFFF 0%, #F7F4EF 55%, #F1ECE4 100%)}
+:root[data-theme="light"] .keyart:after{background:
+  linear-gradient(to top, rgba(244,241,236,.55) 0%, rgba(244,241,236,.10) 30%,
+                  rgba(244,241,236,.55) 72%, rgba(244,241,236,.92) 100%)}
+:root[data-theme="light"] .beams{opacity:.22}
+:root[data-theme="light"] .floor{opacity:.18}
+:root[data-theme="light"] .eyebrow,
+:root[data-theme="light"] .sec-eyebrow{color:var(--ember)}
+:root[data-theme="light"] .meta b{color:#191510}
+:root[data-theme="light"] .lede,
+:root[data-theme="light"] .sec-sub,
+:root[data-theme="light"] .block p,
+:root[data-theme="light"] .pill p,
+:root[data-theme="light"] .lineup p,
+:root[data-theme="light"] .flow p,
+:root[data-theme="light"] .faq .a,
+:root[data-theme="light"] .closer p{color:rgba(25,21,16,.7)}
+:root[data-theme="light"] .ha-lab{color:rgba(25,21,16,.6)}
+:root[data-theme="light"] .ha-txt,
+:root[data-theme="light"] .free-tag{color:var(--ember)}
+:root[data-theme="light"] .free-tag{border-color:rgba(194,78,0,.35);background:rgba(255,255,255,.7)}
+:root[data-theme="light"] .cd{background:rgba(255,255,255,.75);border-color:var(--line)}
+:root[data-theme="light"] .cd span{color:rgba(25,21,16,.55)}
+
+/* the form card: solid white on a light ground, not frosted glass */
+:root[data-theme="light"] .card{background:#fff;color:#191510;
+  backdrop-filter:none;-webkit-backdrop-filter:none;
+  box-shadow:0 20px 60px rgba(25,21,16,.14), 0 0 0 1px rgba(25,21,16,.06)}
+:root[data-theme="light"] .card h2,
+:root[data-theme="light"] .q label,
+:root[data-theme="light"] .counter b{color:#191510}
+:root[data-theme="light"] .card .hint,
+:root[data-theme="light"] .counter,
+:root[data-theme="light"] .consents label{color:#6E6559}
+:root[data-theme="light"] .consents a{color:var(--ember)}
+:root[data-theme="light"] .back{color:#6E6559}
+:root[data-theme="light"] .back:hover{color:#191510}
+:root[data-theme="light"] .fine{color:#9A9084}
+:root[data-theme="light"] .steps span{background:#E8E3DC}
+:root[data-theme="light"] .field .msg,
+:root[data-theme="light"] .err,
+:root[data-theme="light"] .q.bad label{color:#B4400E}
+:root[data-theme="light"] .field input,
+:root[data-theme="light"] .field select{background:#F7F4F0;border-color:var(--card-line)}
+:root[data-theme="light"] .card.is-done{background:#fff;color:#191510}
+:root[data-theme="light"] .card.is-done .status{background:#F2EEE8;border-color:var(--card-line);color:#191510}
+:root[data-theme="light"] .card.is-done .status s{color:#8A8177}
+:root[data-theme="light"] .card.is-done .done .num{color:var(--ember)}
+:root[data-theme="light"] .card.is-done .done .lab{color:#8A8177}
+:root[data-theme="light"] .card.is-done .done p{color:#4B4338}
+:root[data-theme="light"] .card.is-done .done p b{color:#191510}
+:root[data-theme="light"] .card.is-done .share{border-top-color:var(--card-line)}
+:root[data-theme="light"] .card.is-done .share p{color:#8A8177}
+:root[data-theme="light"] .card.is-done .share-row a,
+:root[data-theme="light"] .card.is-done .share-row button{color:#3A342C;background:#F7F4F0;border-color:var(--card-line)}
+
+/* sections */
+:root[data-theme="light"] .block{background:linear-gradient(160deg,rgba(25,21,16,.04),rgba(25,21,16,.015));border-color:var(--line)}
+:root[data-theme="light"] .block.mystery{background:linear-gradient(160deg,rgba(244,121,32,.12),rgba(244,121,32,.03));border-color:rgba(244,121,32,.35)}
+:root[data-theme="light"] .flow li{background:rgba(25,21,16,.03);border-bottom-color:var(--line)}
+:root[data-theme="light"] .flow li:has(.flow-cta):hover{background:rgba(244,121,32,.08)}
+:root[data-theme="light"] .lineup{background:linear-gradient(120deg,rgba(244,121,32,.14),rgba(244,121,32,.03) 60%);border-color:rgba(244,121,32,.35)}
+:root[data-theme="light"] .pill{border-color:var(--line)}
+:root[data-theme="light"] .faq summary:hover,
+:root[data-theme="light"] .faq details[open] summary{color:var(--ember)}
+:root[data-theme="light"] footer .l{color:rgba(25,21,16,.6)}
+:root[data-theme="light"] footer a{color:rgba(25,21,16,.6)}
+:root[data-theme="light"] footer a:hover{color:#191510}
+:root[data-theme="light"] .sticky-cta{background:rgba(255,255,255,.94);border-top-color:var(--line)}
+:root[data-theme="light"] .act{background:rgba(255,255,255,.6)}
+
+/* the toggle itself */
+.theme-toggle{width:38px;height:38px;display:grid;place-items:center;margin-left:auto;margin-right:10px;
+  background:none;border:1px solid var(--line);border-radius:9px;cursor:pointer;color:#fff;flex:none;
+  transition:border-color .2s,color .2s}
+.theme-toggle:hover{border-color:var(--orange);color:var(--amber)}
+:root[data-theme="light"] .theme-toggle{color:#191510}
+.theme-toggle svg{display:block}
+.theme-toggle .moon{display:none}
+:root[data-theme="light"] .theme-toggle .moon{display:block}
+:root[data-theme="light"] .theme-toggle .sun{display:none}
+@media (min-width:1020px){.theme-toggle{margin-left:0;margin-right:14px}}
+
+/* share toast (used by the Instagram fallback) */
+.share-toast{position:fixed;left:50%;bottom:22px;transform:translate(-50%,8px);z-index:60;
+  background:rgba(11,9,7,.94);color:#fff;border:1px solid var(--line);border-radius:10px;
+  padding:12px 16px;font-size:13px;opacity:0;visibility:hidden;
+  transition:opacity .2s,transform .2s,visibility 0s .2s}
+.share-toast.on{opacity:1;visibility:visible;transform:translate(-50%,0);transition:opacity .2s,transform .2s,visibility 0s}
+:root[data-theme="light"] .share-toast{background:#fff;color:#191510;box-shadow:0 12px 40px rgba(25,21,16,.18)}
+
 @media (prefers-reduced-motion:reduce){
   *{animation:none!important;transition:none!important}
   html{scroll-behavior:auto}
