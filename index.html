@@ -24,11 +24,12 @@
 <link rel="canonical" href="https://futurenight.xpeng.ph/">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Dancing+Script:wght@600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <!-- Brand faces are self-hosted (see @font-face in styles.css). Preload
      the two that render above the fold to avoid a flash of fallback. -->
 <link rel="preload" href="font/FuturaBT-HeavyItalic.otf" as="font" type="font/otf" crossorigin>
 <link rel="preload" href="font/BasisGrotesque-Regular.otf" as="font" type="font/otf" crossorigin>
+<link rel="preload" as="image" href="image/hero/wordmark-620.webp">
 <link rel="preload" as="image" href="image/hero/bg-1000.webp" media="(max-width: 1019px)">
 <link rel="preload" as="image" href="image/hero/bg-2400.webp" media="(min-width: 1020px)">
 <link rel="stylesheet" href="styles.css">
@@ -89,7 +90,20 @@
 
   <div class="hero-copy">
     <div class="eyebrow">A NATIONAL FIRST · MOA ARENA</div>
-    <h1><span class="h1-brand">XPENG</span><span class="h1-script">Driving into a<br>New day</span></h1>
+    <h1>
+      <span class="h1-brand">XPENG</span>
+      <!-- The campaign line is supplied artwork, not type — the script
+           face is not licensed for web use. The alt text carries the
+           words, so the h1 still reads as "XPENG Driving into a new
+           day" to search engines and screen readers. -->
+      <picture>
+        <source type="image/webp" srcset="image/hero/wordmark-620.webp 620w, image/hero/wordmark-1240.webp 1240w" sizes="(min-width:1020px) 620px, 92vw">
+        <img class="h1-art" src="image/hero/wordmark-620.png"
+             srcset="image/hero/wordmark-620.png 620w, image/hero/wordmark-1240.png 1240w"
+             sizes="(min-width:1020px) 620px, 92vw"
+             width="996" height="365" alt="Driving into a new day" fetchpriority="high" decoding="async">
+      </picture>
+    </h1>
     <div class="sub">The Physical AI Open House</div>
     <div class="meta">
       <b id="m-venue">MOA Arena</b><span class="dot"></span>
