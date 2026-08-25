@@ -354,21 +354,32 @@
     return ok;
   }
 
-  var REQUIRED_Q = { age: 'q-age', who: 'q-who', when: 'q-when', budget: 'q-budget', model: 'q-model', ev: 'q-ev' };
+  /* Split across the two qualification screens. */
+  var REQUIRED_A = { age: 'q-age', who: 'q-who', ev: 'q-ev' };
+  var REQUIRED_B = { when: 'q-when', budget: 'q-budget', model: 'q-model' };
 
-  function validateStep2() {
+  function checkGroup(map) {
     var ok = true;
-    Object.keys(REQUIRED_Q).forEach(function (k) {
-      var el = $(REQUIRED_Q[k]);
+    Object.keys(map).forEach(function (k) {
+      var el = $(map[k]);
       if (!answers[k]) { el.classList.add('bad'); ok = false; } else el.classList.remove('bad');
     });
-    if (!drive.value) { $('q-drive').classList.add('bad'); ok = false; } else $('q-drive').classList.remove('bad');
+    return ok;
+  }
 
-    /* Other is only an answer once it has been specified. */
+  /* Screen one: age, segment, current vehicle. */
+  function validateStep2a() {
+    var ok = checkGroup(REQUIRED_A);
+    if (!drive.value) { $('q-drive').classList.add('bad'); ok = false; } else $('q-drive').classList.remove('bad');
     if (answers.who === 'Other' && !$('f-who-other').value.trim()) { bad($('w-who-other')); ok = false; }
     else clear($('w-who-other'));
     if (drive.value === 'Other brand' && !$('f-drive-other').value.trim()) { bad($('w-drive-other')); ok = false; }
     else clear($('w-drive-other'));
+    return ok;
+  }
+
+  function validateStep2() {
+    var ok = checkGroup(REQUIRED_B);
     if (!$('c-priv').checked) ok = false;
     return ok;
   }
@@ -447,7 +458,7 @@
   }
 
   /* ---------- steps ------------------------------------------ */
-  var s1 = $('step1'), s2 = $('step2'), s3 = $('step3');
+  var s1 = $('step1'), s2 = $('step2'), s2b = $('step2b'), s3 = $('step3');
 
   function focusCard() {
     $('waitlist').scrollIntoView({ block: 'center', behavior: 'smooth' });
@@ -470,10 +481,25 @@
       focusCard();
     });
 
+    /* Screen one of the qualification: no submit, just advance. */
     s2.addEventListener('submit', function (e) {
       e.preventDefault();
-      var ok = validateStep2();
+      var ok = validateStep2a();
       $('err2').classList.toggle('on', !ok);
+      if (!ok) return;
+      s2.hidden = true; s2b.hidden = false;
+      focusCard();
+    });
+
+    $('btn-back2').addEventListener('click', function () {
+      s2b.hidden = true; s2.hidden = false;
+      focusCard();
+    });
+
+    s2b.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var ok = validateStep2();
+      $('err3').classList.toggle('on', !ok);
       if (!ok) return;
 
       var btn = $('btn-submit');
@@ -494,7 +520,7 @@
       setTimeout(function () { if (showDone.pending) showDone(null); }, 1200);
     });
 
-    document.querySelectorAll('#step2 .other-field input').forEach(function (el) {
+    document.querySelectorAll('.other-field input').forEach(function (el) {
       el.addEventListener('input', function () {
         var w = el.closest('.field');
         if (w) clear(w);
@@ -523,7 +549,7 @@
     var conf = CFG.confirmation || {};
     $('wl-copy').innerHTML = conf.mode === 'closed' ? (conf.closed || '') : (conf.open || '');
 
-    s2.hidden = true; s3.hidden = false;
+    s2.hidden = true; s2b.hidden = true; s3.hidden = false;
     /* Swap the white form card for the glass confirmation card. */
     $('waitlist').classList.add('is-done');
     focusCard();

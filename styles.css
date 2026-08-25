@@ -184,22 +184,22 @@ h1{font-family:var(--font-display);font-weight:700;font-style:italic;
 .cd span{font-family:var(--font-mono);font-size:8.5px;letter-spacing:.18em;color:var(--mist)}
 
 /* ---------- WAITLIST CARD ---------- */
-/* Glass, not paper: transparent panel with white type sitting on the
-   hero art. Padding is kept — with padding:0 the inputs would touch
-   the ring — but everything else follows the approved values. */
-.card{position:relative;z-index:2;background:rgba(0,0,0,0);color:#ffffff;border-radius:18px;
+/* White while the form is being filled in — dark-on-light is what
+   makes seven questions readable. It turns to glass on the
+   confirmation (.is-done), where there is nothing left to fill in. */
+.card{position:relative;z-index:2;background:var(--paper);color:#191510;border-radius:18px;
       padding:24px 20px 22px;margin-top:34px;
       box-shadow:-12px 20px 80px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,.06)}
 .status{display:flex;align-items:center;justify-content:center;gap:10px;background:#F2EEE8;border:1px solid var(--card-line);
         border-radius:9px;padding:10px;font-family:var(--font-mono);font-size:9.5px;letter-spacing:.12em;font-weight:500;text-align:center}
 .status s{color:#8A8177;text-decoration-thickness:1.5px}
 .status em{font-style:normal;color:var(--ember);font-weight:600}
-.card h2{font-family:var(--font-body);font-size:23px;letter-spacing:-.01em;margin:16px 0 4px;color:#fff}
-.card .hint{font-size:13px;color:rgba(255,255,255,.68);margin-bottom:16px}
-.counter{display:flex;align-items:center;gap:8px;font-size:12px;color:rgba(255,255,255,.6);margin:-8px 0 16px}
-.counter b{color:#fff;font-family:var(--font-body);font-size:15px}
+.card h2{font-family:var(--font-body);font-size:23px;letter-spacing:-.01em;margin:16px 0 4px}
+.card .hint{font-size:13px;color:#6E6559;margin-bottom:16px}
+.counter{display:flex;align-items:center;gap:8px;font-size:12px;color:#6E6559;margin:-8px 0 16px}
+.counter b{color:#191510;font-family:var(--font-body);font-size:15px}
 .steps{display:flex;gap:6px;margin-bottom:16px}
-.steps span{height:3px;flex:1;border-radius:2px;background:rgba(255,255,255,.18)}
+.steps span{height:3px;flex:1;border-radius:2px;background:#E8E3DC}
 .steps span.on{background:var(--orange)}
 .field{margin-bottom:10px}
 .field input,.field select{width:100%;font-family:inherit;font-size:15px;color:#191510;background:var(--field);border:1px solid var(--card-line);
@@ -208,34 +208,35 @@ h1{font-family:var(--font-display);font-weight:700;font-style:italic;
 .field input:focus,.field select:focus{border-color:var(--orange);box-shadow:0 0 0 3px rgba(244,121,32,.15)}
 .field input::placeholder{color:#9A9084}
 .field.bad input,.field.bad select{border-color:#D9541F;background:#FDF3EE}
-.field .msg{font-size:11px;color:#FF8A5C;margin:5px 2px 0;display:none}
+.field .msg{font-size:11px;color:#B4400E;margin:5px 2px 0;display:none}
 .field.bad .msg{display:block}
 .row2{display:grid;grid-template-columns:1fr;gap:0}
 .q{margin-bottom:14px}
-.q label{display:block;font-size:12.5px;font-weight:600;color:#fff;margin-bottom:8px}
+.q label{display:block;font-size:12.5px;font-weight:600;color:#3A342C;margin-bottom:8px}
 .chips{display:flex;flex-wrap:wrap;gap:7px}
 .chip{font-size:12.5px;font-weight:500;color:#4B4338;background:var(--field);border:1px solid var(--card-line);border-radius:999px;
       padding:9px 14px;cursor:pointer;transition:background .12s,color .12s,border-color .12s}
 .chip:hover{border-color:#C9C0B4}
 .chip.sel{background:#1B140C;color:#fff;border-color:#1B140C}
-.q.bad label{color:#FF8A5C}
+.q.bad label{color:#B4400E}
 /* "Please specify" box under an Other answer. */
 .other-field{margin-top:8px;margin-bottom:0}
 .other-field input{font-size:14px}
 .consents{margin:16px 0 6px;display:flex;flex-direction:column;gap:10px}
-.consents label{display:flex;gap:10px;font-size:11.5px;line-height:1.55;color:rgba(255,255,255,.72);cursor:pointer}
+.consents label{display:flex;gap:10px;font-size:11.5px;line-height:1.55;color:#6E6559;cursor:pointer}
 .consents input{accent-color:var(--orange);margin-top:2px;flex:none;width:16px;height:16px}
-.consents a{color:var(--amber)}
+.consents a{color:#3A342C}
 .cta{width:100%;margin-top:12px;padding:16px;font-size:14px;letter-spacing:.12em;border-radius:10px}
-.fine{margin-top:12px;text-align:center;font-family:var(--font-mono);font-size:9.5px;letter-spacing:.08em;color:rgba(255,255,255,.45);line-height:1.6}
-.back{background:none;border:none;font-size:12.5px;color:rgba(255,255,255,.6);cursor:pointer;margin-bottom:10px;font-family:inherit;padding:4px 0}
-.back:hover{color:#fff}
-.err{font-size:11.5px;color:#FF8A5C;margin-top:10px;display:none}
+.fine{margin-top:12px;text-align:center;font-family:var(--font-mono);font-size:9.5px;letter-spacing:.08em;color:#9A9084;line-height:1.6}
+.back{background:none;border:none;font-size:12.5px;color:#6E6559;cursor:pointer;margin-bottom:10px;font-family:inherit;padding:4px 0}
+.back:hover{color:#191510}
+.err{font-size:11.5px;color:#B4400E;margin-top:10px;display:none}
 .err.on{display:block}
 
 /* ---- CONFIRMATION STATE ----
-   The card is glass throughout now, so this only re-tones the pieces
-   unique to the success screen. */
+   Nothing left to fill in, so the paper card dissolves: transparent
+   panel, white type, sitting straight on the hero art. */
+.card.is-done{background:rgba(0,0,0,0);color:#ffffff}
 .card.is-done .status{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.14);color:#fff;margin:0}
 .card.is-done .status s{color:rgba(255,255,255,.45)}
 .card.is-done .status em{color:var(--amber)}
@@ -255,7 +256,10 @@ h1{font-family:var(--font-display);font-weight:700;font-style:italic;
 .done .num{font-family:var(--font-body);font-weight:700;font-size:40px;color:var(--ember);font-variant-numeric:tabular-nums}
 .done .lab{font-family:var(--font-mono);font-size:10px;letter-spacing:.2em;color:#8A8177;margin:4px 0 16px}
 .done p{font-size:13.5px;line-height:1.65;color:#4B4338;max-width:36ch;margin:0 auto}
+/* The rule sat edge to edge while its buttons were inside the card
+   padding, so the two never lined up. Same inset for both now. */
 .share{margin-top:22px;padding-top:18px;border-top:1px solid var(--card-line)}
+.card.is-done .share{border-top-color:rgba(255,255,255,.14)}
 .share p{font-size:11.5px;letter-spacing:.12em;font-family:var(--font-mono);color:#8A8177;margin-bottom:12px}
 /* Left, to sit under the caption above it — centred icons under a
    left-aligned label read as a mistake. */

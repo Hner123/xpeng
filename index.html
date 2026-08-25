@@ -116,7 +116,7 @@
       <h2>Join the Waitlist</h2>
       <p class="hint">Register your interest in under one minute. Free — there is nothing to buy.</p>
       <div class="counter" id="counter" hidden><b id="counter-num">0</b><span id="counter-label">already on the waitlist</span></div>
-      <div class="steps"><span class="on"></span><span></span></div>
+      <div class="steps"><span class="on"></span><span></span><span></span></div>
 
       <!-- Two fields, not one: a single "Full name" box invites
            nicknames, and the dealer handoff needs a real surname. -->
@@ -154,12 +154,16 @@
       <p class="fine">MOBILE VERIFIED BY OTP · NO PAYMENT, EVER</p>
     </form>
 
-    <!-- STEP 2 · THE QUALIFICATION -->
+    <!-- STEP 2 · ABOUT YOU
+         Split from one long screen into two: the client's refined
+         option lists took this to seven questions, which scrolled off
+         the card. Two short screens beat one long one — no nested
+         scrollbar, and each screen looks finishable. -->
     <form id="step2" novalidate hidden>
       <button class="back" type="button" id="btn-back">&larr; Back</button>
       <h2>Help us get to know you better.</h2>
       <p class="hint">Your answers help us curate the guest list and keep you updated when we send out the invitations.</p>
-      <div class="steps"><span class="on"></span><span class="on"></span></div>
+      <div class="steps"><span class="on"></span><span class="on"></span><span></span></div>
 
       <div class="q" id="q-age"><label>Age bracket</label>
         <div class="chips" data-q="age" role="group" aria-label="Age bracket">
@@ -188,6 +192,24 @@
         </div>
       </div>
 
+
+      <div class="q" id="q-ev"><label>Electric Vehicle (EV) Experience</label>
+        <div class="chips" data-q="ev" role="group" aria-label="Electric Vehicle Experience">
+          <span class="chip" tabindex="0" role="button">Current EV Owner (Pure Electric)</span><span class="chip" tabindex="0" role="button">Current Hybrid Owner (HEV / PHEV)</span><span class="chip" tabindex="0" role="button">Have Driven or Test-Driven an EV</span><span class="chip" tabindex="0" role="button">First Time Exploring EVs</span><span class="chip" tabindex="0" role="button">Never Tried</span>
+        </div>
+      </div>
+
+      <button class="btn cta" type="submit">CONTINUE &rarr;</button>
+      <div class="err" id="err2">Please answer each question to continue.</div>
+    </form>
+
+    <!-- STEP 3 · WHAT YOU DRIVE NEXT -->
+    <form id="step2b" novalidate hidden>
+      <button class="back" type="button" id="btn-back2">&larr; Back</button>
+      <h2>Almost there.</h2>
+      <p class="hint">Last few taps — these tell us which XPENG to show you on the night.</p>
+      <div class="steps"><span class="on"></span><span class="on"></span><span class="on"></span></div>
+
       <div class="q" id="q-when"><label>Planning to buy a vehicle?</label>
         <div class="chips" data-q="when" role="group" aria-label="Planning to buy a vehicle">
           <span class="chip" tabindex="0" role="button">Within 3 months</span><span class="chip" tabindex="0" role="button">3–6 months</span><span class="chip" tabindex="0" role="button">6–12 months</span><span class="chip" tabindex="0" role="button">Over a year</span><span class="chip" tabindex="0" role="button">Just exploring</span>
@@ -206,12 +228,6 @@
         </div>
       </div>
 
-      <div class="q" id="q-ev"><label>Electric Vehicle (EV) Experience</label>
-        <div class="chips" data-q="ev" role="group" aria-label="Electric Vehicle Experience">
-          <span class="chip" tabindex="0" role="button">Current EV Owner (Pure Electric)</span><span class="chip" tabindex="0" role="button">Current Hybrid Owner (HEV / PHEV)</span><span class="chip" tabindex="0" role="button">Have Driven or Test-Driven an EV</span><span class="chip" tabindex="0" role="button">First Time Exploring EVs</span><span class="chip" tabindex="0" role="button">Never Tried</span>
-        </div>
-      </div>
-
       <div class="consents">
         <label><input type="checkbox" id="c-priv"> <span>I agree to the collection and use of my data per the <a href="/privacy" target="_blank" rel="noopener">Data Privacy notice</a>. <b>(required)</b></span></label>
         <label><input type="checkbox" id="c-dealer"> <span>I agree that my information may be shared with XPENG's authorized dealers near me to assist with my inquiry.</span></label>
@@ -219,7 +235,7 @@
       </div>
 
       <button class="btn cta" type="submit" id="btn-submit">JOIN THE WAITLIST</button>
-      <div class="err" id="err2">Please answer each question and accept the Data Privacy notice.</div>
+      <div class="err" id="err3">Please answer each question and accept the Data Privacy notice.</div>
     </form>
 
     <!-- SUCCESS -->
