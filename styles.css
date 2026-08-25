@@ -301,10 +301,10 @@ h1{font-family:var(--font-display);font-weight:700;font-style:italic;
    padding, so the two never lined up. Same inset for both now. */
 .share{margin-top:22px;padding-top:18px;border-top:1px solid var(--card-line)}
 .card.is-done .share{border-top-color:rgba(255,255,255,.14)}
-.share p{font-size:11.5px;letter-spacing:.12em;font-family:var(--font-mono);color:#8A8177;margin-bottom:12px}
-/* Left, to sit under the caption above it — centred icons under a
-   left-aligned label read as a mistake. */
-.share-row{display:flex;gap:8px;justify-content:flex-start;flex-wrap:wrap}
+.share p{font-size:11.5px;letter-spacing:.12em;font-family:var(--font-mono);color:#8A8177;margin-bottom:12px;text-align:center}
+/* Centred, matching the sequence number and confirmation copy above
+   it — the whole card reads on one axis. */
+.share-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
 .share-row a,.share-row button{font-family:inherit;font-size:12px;font-weight:600;color:#3A342C;background:var(--field);
   border:1px solid var(--card-line);border-radius:8px;padding:10px 14px;text-decoration:none;cursor:pointer}
 .share-row a:hover,.share-row button:hover{border-color:#C9C0B4}
