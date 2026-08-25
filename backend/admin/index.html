@@ -112,6 +112,29 @@
   .btn.danger{border-color:rgba(217,84,31,.45);color:#E8825C}
   .btn.danger:hover:not(:disabled){background:rgba(217,84,31,.12);color:#fff}
   .erased{color:#5C534A;font-style:italic}
+
+  /* ---- modal ----
+     Replaces confirm()/prompt(): those cannot be styled, block the
+     whole tab, and prompt() is unsupported in some browsers. */
+  .modal-back{position:fixed;inset:0;z-index:100;display:grid;place-items:center;padding:20px;
+    background:rgba(6,5,4,.72);backdrop-filter:blur(3px);
+    opacity:0;visibility:hidden;transition:opacity .18s ease, visibility 0s .18s}
+  .modal-back.on{opacity:1;visibility:visible;transition:opacity .18s ease, visibility 0s}
+  .modal{width:100%;max-width:440px;background:var(--panel);border:1px solid var(--line);
+    border-radius:14px;padding:22px 22px 18px;box-shadow:0 30px 80px rgba(0,0,0,.6);
+    transform:translateY(8px) scale(.985);transition:transform .2s cubic-bezier(.22,.61,.36,1)}
+  .modal-back.on .modal{transform:none}
+  .modal h3{font-size:16px;margin-bottom:8px}
+  .modal p{font-size:13px;line-height:1.6;color:var(--mute);margin-bottom:14px}
+  .modal p b{color:var(--ink)}
+  .modal label{display:block;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--mute);margin:0 0 6px}
+  .modal input{width:100%;font:14px 'Basis Grotesque',sans-serif;color:var(--ink);background:#12100D;
+    border:1px solid var(--line);border-radius:8px;padding:11px 12px;outline:none;margin-bottom:12px}
+  .modal input:focus{border-color:var(--orange)}
+  .modal .row{display:flex;gap:8px;justify-content:flex-end;margin-top:6px}
+  .modal .err{font-size:12px;color:#E8825C;margin:-6px 0 10px;display:none}
+  .modal .err.on{display:block}
 </style>
 </head>
 <body>
@@ -265,11 +288,98 @@
 
 <div class="toast" id="toast"></div>
 
+<div class="modal-back" id="modal-back" role="dialog" aria-modal="true" aria-labelledby="modal-title" hidden>
+  <div class="modal">
+    <h3 id="modal-title"></h3>
+    <p id="modal-body"></p>
+    <div id="modal-fields"></div>
+    <div class="err" id="modal-err"></div>
+    <div class="row">
+      <button class="btn ghost" id="modal-cancel" type="button">Cancel</button>
+      <button class="btn" id="modal-ok" type="button">Confirm</button>
+    </div>
+  </div>
+</div>
+
 <script>
 /* ---------- helpers ---------- */
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const api = (p, opt) => fetch(p, opt).then(r => r.json());
+/* ---------- modal ----------
+   ask({...}) resolves with:
+     null                      cancelled
+     true                      plain confirm
+     { name: value, ... }      when fields were requested
+   A `requireWord` must be typed exactly before Confirm will submit —
+   the same guard as before, just not in a browser dialog. */
+let modalState = null;
+
+function ask(opts) {
+  return new Promise(resolve => {
+    const back = $('modal-back');
+    $('modal-title').textContent = opts.title || 'Are you sure?';
+    $('modal-body').innerHTML = opts.body || '';
+    $('modal-ok').textContent = opts.confirm || 'Confirm';
+    $('modal-ok').classList.toggle('danger', !!opts.danger);
+    $('modal-err').classList.remove('on');
+
+    const fields = opts.fields ? opts.fields.slice() : [];
+    if (opts.requireWord) {
+      fields.push({ name: '__word', label: 'Type ' + opts.requireWord + ' to confirm', type: 'text' });
+    }
+    $('modal-fields').innerHTML = fields.map(f =>
+      '<label for="mf-' + f.name + '">' + esc(f.label) + '</label>' +
+      '<input id="mf-' + f.name + '" type="' + (f.type || 'text') + '"' +
+      (f.type === 'password' ? ' autocomplete="off"' : '') + '>'
+    ).join('');
+
+    back.hidden = false;
+    requestAnimationFrame(() => back.classList.add('on'));
+    const first = $('modal-fields').querySelector('input');
+    setTimeout(() => (first || $('modal-ok')).focus(), 60);
+
+    modalState = { resolve, fields, requireWord: opts.requireWord };
+  });
+}
+
+function closeModal(value) {
+  const back = $('modal-back');
+  back.classList.remove('on');
+  setTimeout(() => { back.hidden = true; }, 200);
+  const st = modalState;
+  modalState = null;
+  if (st) st.resolve(value);
+}
+
+function submitModal() {
+  if (!modalState) return;
+  const { fields, requireWord } = modalState;
+  if (requireWord) {
+    const typed = ($('mf-__word').value || '').trim();
+    if (typed !== requireWord) {
+      $('modal-err').textContent = 'Type ' + requireWord + ' exactly to continue.';
+      $('modal-err').classList.add('on');
+      $('mf-__word').focus();
+      return;
+    }
+  }
+  const out = {};
+  fields.forEach(f => { if (f.name !== '__word') out[f.name] = $('mf-' + f.name).value; });
+  closeModal(Object.keys(out).length ? out : true);
+}
+
+document.addEventListener('click', e => {
+  if (!modalState) return;
+  if (e.target.id === 'modal-cancel' || e.target.id === 'modal-back') closeModal(null);
+  else if (e.target.id === 'modal-ok') submitModal();
+});
+document.addEventListener('keydown', e => {
+  if (!modalState) return;
+  if (e.key === 'Escape') closeModal(null);
+  if (e.key === 'Enter' && e.target.tagName === 'INPUT') { e.preventDefault(); submitModal(); }
+});
+
 let toastTimer;
 function toast(msg) {
   $('toast').textContent = msg;
@@ -406,7 +516,12 @@ function syncInvite() {
    stays so the totals we have already reported remain true. */
 $('anon').addEventListener('click', async () => {
   const ids = [...state.selected];
-  if (!confirm('Anonymise ' + ids.length + ' record(s)?\n\nName, mobile and email are erased permanently. The row stays, so registration counts and reporting are unchanged. This cannot be undone.')) return;
+  const go = await ask({
+    title: 'Anonymise ' + ids.length + ' record(s)?',
+    body: 'Name, mobile and email are erased permanently. The row stays, so registration counts and reporting are unchanged. <b>This cannot be undone.</b>',
+    confirm: 'Anonymise', danger: true
+  });
+  if (!go) return;
   const res = await api('/api/admin/anonymise', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ ids })
@@ -420,8 +535,12 @@ $('anon').addEventListener('click', async () => {
    it removes the record and its invitation history outright. */
 $('del').addEventListener('click', async () => {
   const ids = [...state.selected];
-  const typed = prompt('Delete ' + ids.length + ' record(s) permanently?\n\nThis also removes their invitations and queued messages, and the registration count drops. Type DELETE to confirm.');
-  if (typed !== 'DELETE') { if (typed !== null) toast('Not deleted — confirmation did not match.'); return; }
+  const go = await ask({
+    title: 'Delete ' + ids.length + ' record(s) permanently?',
+    body: 'This also removes their invitations and queued messages, and the registration count drops. <b>This cannot be undone.</b>',
+    confirm: 'Delete', danger: true, requireWord: 'DELETE'
+  });
+  if (!go) return;
   const res = await api('/api/admin/delete', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ ids })
@@ -433,8 +552,12 @@ $('del').addEventListener('click', async () => {
 
 /* Launch-day cleanup: every seeded @example.com row in one action. */
 $('purge').addEventListener('click', async () => {
-  const typed = prompt('Remove every seeded test registration (@example.com)?\n\nReal registrations are untouched. Type PURGE to confirm.');
-  if (typed !== 'PURGE') { if (typed !== null) toast('Not purged — confirmation did not match.'); return; }
+  const go = await ask({
+    title: 'Remove all test registrations?',
+    body: 'Every seeded <b>@example.com</b> row is deleted. Real registrations are untouched.',
+    confirm: 'Purge', danger: true, requireWord: 'PURGE'
+  });
+  if (!go) return;
   const res = await api('/api/admin/purge-test', { method: 'POST' });
   toast(res.ok ? 'Removed ' + res.removed + ' test registration(s).' : (res.message || 'Failed.'));
   await Promise.all([loadRows(), loadStats(), loadExports()]);
@@ -494,7 +617,12 @@ $('next').addEventListener('click', () => { state.offset += state.limit; loadRow
 
 $('invite').addEventListener('click', async () => {
   const ids = [...state.selected];
-  if (!confirm('Issue invitations to ' + ids.length + ' registrant(s)?\n\nEach gets a single-use code valid 72 hours, and email + SMS are queued.')) return;
+  const go = await ask({
+    title: 'Issue invitations',
+    body: 'Sending to <b>' + ids.length + '</b> registrant(s). Each gets a single-use code valid for 72 hours, with email and SMS queued.',
+    confirm: 'Invite ' + ids.length
+  });
+  if (!go) return;
   $('invite').disabled = true;
   const res = await api('/api/admin/invite', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -569,17 +697,24 @@ $('logout').addEventListener('click', async () => {
 });
 
 $('pwd').addEventListener('click', async () => {
-  const current = prompt('Current password:');
-  if (current === null) return;
-  const next = prompt('New password (at least 10 characters):');
-  if (next === null) return;
+  const vals = await ask({
+    title: 'Change your password',
+    body: 'You will be signed out of every session, including this one.',
+    confirm: 'Change password',
+    fields: [
+      { name: 'current', label: 'Current password', type: 'password' },
+      { name: 'next', label: 'New password (10+ characters)', type: 'password' }
+    ]
+  });
+  if (!vals) return;
+  const current = vals.current, next = vals.next;
   const res = await fetch('/api/admin/password', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ current, next })
   });
   const d = await res.json();
-  if (d.ok) { alert('Password changed. Signing you out.'); location.replace('/admin/login'); }
-  else alert(d.error === 'too_short' ? 'That password is too short.' : 'Current password is wrong.');
+  if (d.ok) { toast('Password changed — signing you out.'); setTimeout(() => location.replace('/admin/login'), 900); }
+  else toast(d.error === 'too_short' ? 'That password is too short.' : 'Current password is wrong.');
 });
 
 /* Any 401 mid-session (expired cookie) bounces to the login page. */
