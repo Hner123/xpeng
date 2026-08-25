@@ -511,6 +511,8 @@
     $('wl-copy').innerHTML = conf.mode === 'closed' ? (conf.closed || '') : (conf.open || '');
 
     s2.hidden = true; s3.hidden = false;
+    /* Swap the white form card for the glass confirmation card. */
+    $('waitlist').classList.add('is-done');
     focusCard();
     if (chrome.refreshSticky) chrome.refreshSticky();
     track('CompleteRegistration', { value: 1, currency: 'PHP' });
