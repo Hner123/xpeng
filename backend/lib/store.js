@@ -479,8 +479,24 @@ function make(db, vault) {
     }));
   }
 
-  async function takePending(limit = 25) {
-    return db.all("SELECT * FROM comms_queue WHERE status='PENDING' ORDER BY id LIMIT ?", [limit]);
+  /* Joined so a message can be personalised without a second query,
+     and so the worker never has to know the schema.
+     FAILED rows are retried while attempts are low: a provider hiccup
+     or a rate limit should not lose an invitation. */
+  async function takePending(limit = 25, maxAttempts = 5) {
+    const rows = await db.all(
+      `SELECT c.*, r.first_name_enc, r.name_enc, r.id AS seq
+         FROM comms_queue c
+         LEFT JOIN registrations r ON r.id = c.registration_id
+        WHERE c.status='PENDING' OR (c.status='FAILED' AND c.attempts < ?)
+        ORDER BY c.status DESC, c.id
+        LIMIT ?`, [maxAttempts, limit]);
+    return rows.map(r => ({
+      ...r,
+      recipient: vault.decrypt(r.recipient_enc),
+      first_name: r.first_name_enc ? vault.decrypt(r.first_name_enc)
+                : (vault.decrypt(r.name_enc) || '').split(' ')[0]
+    }));
   }
 
   async function markSent(id, error) {

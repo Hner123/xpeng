@@ -23,6 +23,8 @@ const dbLayer  = require('./lib/db');
 const vaultLib = require('./lib/crypto');
 const storeLib = require('./lib/store');
 const authLib  = require('./lib/auth');
+const mailLib  = require('./lib/mailer');
+const tpl      = require('./lib/templates');
 const { validate } = require('./lib/validate');
 
 const ROOT      = path.join(__dirname, '..');      // the landing page lives here
@@ -60,6 +62,10 @@ const SECURE_COOKIES = process.env.COOKIE_SECURE === 'true';
    landing page" button points here — set it when the front-end moves
    to its own domain, so the link never goes stale. */
 const PUBLIC_SITE = process.env.PUBLIC_SITE_URL || 'https://x-peng.netlify.app';
+/* Where an invited guest claims their free ticket. Supplied by SM
+   Tickets; until then invitations point back at the campaign page. */
+const SM_CLAIM_URL = (process.env.SM_CLAIM_URL || '').trim();
+let mailerRef = null;   // for the startup banner
 /* Origins allowed to call the PUBLIC endpoints cross-site — set this
    to the Netlify URL when the page and API live on different hosts.
    Comma-separated, exact origins only, never '*'. Admin routes are
@@ -210,23 +216,58 @@ function serveStatic(req, res, pathname) {
 }
 
 /* ---------- comms worker ------------------------------------ */
-/* Providers aren't wired yet, so this drains the queue to a log
-   file. That keeps the pipeline observable end to end: you can see
-   exactly what would have been sent, to whom, with which code. */
-function startCommsWorker(store, auth) {
+/* Drains comms_queue. Email goes out over SMTP once MAIL/SMTP settings
+   exist; without them, or with COMMS_DRY_RUN=true, every message is
+   written to backend/data/outbox.log instead so the pipeline stays
+   observable without sending anything.
+
+   SMS has no provider yet and always logs. */
+function startCommsWorker(store, auth, mailer) {
   const outbox = path.join(BACKEND, 'data', 'outbox.log');
+  const sendLive = mailer.enabled && !DRY_RUN;
+
+  function log(msg, extra) {
+    fs.appendFileSync(outbox, JSON.stringify(Object.assign({
+      at: new Date().toISOString(),
+      id: msg.id, channel: msg.channel, template: msg.template,
+      to: sendLive ? msg.recipient : '[dry-run] ' + (msg.recipient || ''),
+      payload: msg.payload ? JSON.parse(msg.payload) : null
+    }, extra || {})) + '\n');
+  }
+
+  async function deliver(msg) {
+    const data = Object.assign(
+      { firstName: msg.first_name, sequence: msg.seq, siteUrl: PUBLIC_SITE },
+      msg.payload ? JSON.parse(msg.payload) : {});
+    if (data.expires_at && !data.expiresAt) data.expiresAt = data.expires_at;
+    if (data.code && !data.claimUrl) data.claimUrl = SM_CLAIM_URL || PUBLIC_SITE;
+
+    if (msg.channel === 'sms' || !sendLive) {
+      log(msg);                                   // SMS provider still pending
+      return;
+    }
+    const mail = tpl.build(msg.template, data);
+    if (!mail) throw new Error('no template for ' + msg.template);
+    if (!msg.recipient) throw new Error('no recipient address');
+    const out = await mailer.send({
+      to: msg.recipient, subject: mail.subject, text: mail.text, html: mail.html
+    });
+    log(msg, { messageId: out.messageId });
+  }
+
   async function tick() {
     try {
       const batch = await store.takePending(25);
       for (const msg of batch) {
-        const line = JSON.stringify({
-          at: new Date().toISOString(),
-          id: msg.id, channel: msg.channel, template: msg.template,
-          to: DRY_RUN ? '[dry-run]' : undefined,
-          payload: msg.payload ? JSON.parse(msg.payload) : null
-        });
-        fs.appendFileSync(outbox, line + '\n');
-        await store.markSent(msg.id, null);
+        try {
+          await deliver(msg);
+          await store.markSent(msg.id, null);
+        } catch (err) {
+          /* markSent records the error and bumps attempts, so
+             takePending will pick it up again until the cap. */
+          await store.markSent(msg.id, err.message);
+          console.error('[comms] ' + msg.template + ' #' + msg.id + ' failed: ' + err.message);
+        }
       }
       const expired = await store.expireStale();
       if (expired) console.log('[comms] expired ' + expired + ' unclaimed invitation(s)');
@@ -268,7 +309,16 @@ async function main() {
       (process.env.ADMIN_PASS ? '' : ' with the default password'));
   }
 
-  startCommsWorker(store, auth);
+  const mailer = mailLib.make(process.env);
+  mailerRef = mailer;
+  startCommsWorker(store, auth, mailer);
+
+  /* Prove the credentials at boot rather than mid-campaign. */
+  if (mailer.enabled && !DRY_RUN) {
+    mailer.verify().then(r => console.log(r.ok
+      ? '[mail] ready — sending as ' + r.detail
+      : '[mail] NOT READY — ' + r.error + ' (queue will retry)'));
+  }
 
   const server = http.createServer(async (req, res) => {
     /* URL parsing must be inside the guard: a malformed request line
@@ -508,7 +558,8 @@ async function main() {
     console.log('  landing page   http://localhost:' + PORT + '/');
     console.log('  admin login    http://localhost:' + PORT + '/admin/login');
     console.log('  database       ' + db.name + (db.name === 'sqlite' ? '  (backend/data/future-night.db)' : ''));
-    console.log('  comms          ' + (DRY_RUN ? 'DRY RUN -> backend/data/outbox.log' : 'LIVE'));
+    console.log('  email          ' + (DRY_RUN ? 'DRY RUN -> backend/data/outbox.log'
+                 : mailerRef ? mailerRef.describe() : 'not configured'));
     console.log('');
     if (!process.env.ADMIN_PASS) {
       console.log('  user  ' + (process.env.ADMIN_USER || 'admin') + '   password  futurenight   (default)');

@@ -2,17 +2,22 @@
   "name": "xpeng-future-night-backend",
   "version": "1.0.0",
   "private": true,
-  "description": "Campaign backend for XPENG FUTURE NIGHT — registration API, admin dashboard, invitation pipeline",
+  "description": "Campaign backend for XPENG FUTURE NIGHT \u2014 registration API, admin dashboard, invitation pipeline",
   "main": "server.js",
-  "engines": { "node": ">=22.5" },
+  "engines": {
+    "node": ">=22.5"
+  },
   "scripts": {
     "start": "node server.js",
     "seed": "node seed.js",
     "migrate": "node migrate.js",
     "rescore": "node rescore.js"
   },
-  "dependencies": {},
+  "dependencies": {
+    "nodemailer": "^9.0.5"
+  },
   "optionalDependencies": {
-    "mysql2": "^3.19.1"
+    "mysql2": "^3.19.1",
+    "nodemailer": "^7.0.0"
   }
 }
