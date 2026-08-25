@@ -231,7 +231,7 @@ h1{font-family:var(--font-display);font-weight:700;font-style:italic;
 .consents input{accent-color:var(--orange);margin-top:2px;flex:none;width:16px;height:16px}
 .consents a{color:var(--amber)}
 .cta{width:100%;margin-top:12px;padding:16px;font-size:14px;letter-spacing:.12em;border-radius:10px}
-.fine{margin-top:12px;text-align:center;font-family:var(--font-mono);font-size:9.5px;letter-spacing:.08em;color:rgba(255,255,255,.7);line-height:1.6}
+.fine{margin-top:12px;text-align:center;font-family:var(--font-mono);font-size:9.5px;letter-spacing:.08em;color:rgba(255,255,255,.82);line-height:1.6}
 .back{background:none;border:none;font-size:12.5px;color:rgba(255,255,255,.68);cursor:pointer;margin-bottom:10px;font-family:inherit;padding:4px 0}
 .back:hover{color:#fff}
 .err{font-size:11.5px;color:#FFB79B;margin-top:10px;display:none}
