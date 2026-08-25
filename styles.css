@@ -264,7 +264,9 @@ h1{font-family:var(--font-display);font-weight:700;font-style:italic;
 .done p{font-size:13.5px;line-height:1.65;color:#4B4338;max-width:36ch;margin:0 auto}
 .share{margin-top:22px;padding-top:18px;border-top:1px solid var(--card-line)}
 .share p{font-size:11.5px;letter-spacing:.12em;font-family:var(--font-mono);color:#8A8177;margin-bottom:12px}
-.share-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+/* Left, to sit under the caption above it — centred icons under a
+   left-aligned label read as a mistake. */
+.share-row{display:flex;gap:8px;justify-content:flex-start;flex-wrap:wrap}
 .share-row a,.share-row button{font-family:inherit;font-size:12px;font-weight:600;color:#3A342C;background:var(--field);
   border:1px solid var(--card-line);border-radius:8px;padding:10px 14px;text-decoration:none;cursor:pointer}
 .share-row a:hover,.share-row button:hover{border-color:#C9C0B4}
