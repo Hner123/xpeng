@@ -94,11 +94,42 @@ nav{position:fixed;inset:0 0 auto 0;z-index:50;display:flex;align-items:center;j
 body.menu-open .burger span{background:transparent}
 body.menu-open .burger span:before{top:0;transform:rotate(45deg)}
 body.menu-open .burger span:after{top:0;transform:rotate(-45deg)}
-.drawer{position:fixed;top:var(--nav-h);left:0;right:0;z-index:49;background:rgba(11,9,7,.97);border-bottom:1px solid var(--line);
-        padding:8px var(--pad) 20px;display:none;flex-direction:column}
-body.menu-open .drawer{display:flex}
-.drawer a{padding:15px 2px;color:var(--mist);text-decoration:none;font-size:13px;letter-spacing:.18em;font-weight:600;border-bottom:1px solid var(--line)}
+/* The drawer stays in the layout and animates, rather than being
+   display:none — you cannot transition display, which is why it used
+   to snap. visibility is delayed on close so the panel is still
+   painted while it slides away, then removed from the tab order. */
+.drawer{position:fixed;top:var(--nav-h);left:0;right:0;z-index:49;background:rgba(11,9,7,.97);
+        backdrop-filter:blur(12px);border-bottom:1px solid var(--line);
+        padding:8px var(--pad) 20px;display:flex;flex-direction:column;
+        opacity:0;visibility:hidden;transform:translateY(-12px);
+        transition:opacity .26s ease, transform .3s cubic-bezier(.22,.61,.36,1), visibility 0s .3s}
+body.menu-open .drawer{opacity:1;visibility:visible;transform:none;
+        transition:opacity .26s ease, transform .3s cubic-bezier(.22,.61,.36,1), visibility 0s}
+
+/* Items follow the panel in, one after another — it reads as the menu
+   unfolding instead of a block appearing. */
+.drawer a{padding:15px 2px;color:var(--mist);text-decoration:none;font-size:13px;letter-spacing:.18em;font-weight:600;
+  border-bottom:1px solid var(--line);
+  opacity:0;transform:translateY(-6px);
+  transition:opacity .25s ease, transform .25s ease, color .2s}
+body.menu-open .drawer a{opacity:1;transform:none}
+body.menu-open .drawer a:nth-child(1){transition-delay:.06s}
+body.menu-open .drawer a:nth-child(2){transition-delay:.10s}
+body.menu-open .drawer a:nth-child(3){transition-delay:.14s}
+body.menu-open .drawer a:nth-child(4){transition-delay:.18s}
+body.menu-open .drawer a:nth-child(5){transition-delay:.22s}
+.drawer a:active{color:#fff}
 .drawer .btn{margin-top:16px;text-align:center}
+
+/* Dim the page behind an open menu, so the drawer reads as a layer. */
+body.menu-open:after{content:"";position:fixed;inset:var(--nav-h) 0 0;z-index:47;
+  background:rgba(11,9,7,.6);animation:scrim .26s ease forwards}
+@keyframes scrim{from{opacity:0}to{opacity:1}}
+
+/* The burger's bars already rotate into an X; give them the same
+   curve as the panel so the two movements feel like one gesture. */
+.burger span,.burger span:before,.burger span:after{
+  transition:transform .3s cubic-bezier(.22,.61,.36,1), top .3s cubic-bezier(.22,.61,.36,1), background .2s}
 
 .btn{font-weight:700;font-size:13px;letter-spacing:.06em;color:#180B00;background:linear-gradient(135deg,var(--amber),var(--orange));
      border:none;border-radius:9px;padding:13px 20px;cursor:pointer;transition:transform .15s,box-shadow .2s;text-decoration:none;display:inline-block}

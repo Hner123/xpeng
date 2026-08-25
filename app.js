@@ -228,14 +228,35 @@
   /* ---------- nav / drawer / sticky CTA ------------------------ */
   function chrome() {
     var burger = $('burger');
-    burger.addEventListener('click', function () {
-      var open = document.body.classList.toggle('menu-open');
+    var drawer = $('drawer');
+
+    function setMenu(open) {
+      document.body.classList.toggle('menu-open', open);
       burger.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+
+    burger.addEventListener('click', function (e) {
+      e.stopPropagation();
+      setMenu(!document.body.classList.contains('menu-open'));
     });
-    $('drawer').addEventListener('click', function (e) {
-      if (e.target.tagName === 'A') {
-        document.body.classList.remove('menu-open');
-        burger.setAttribute('aria-expanded', 'false');
+
+    drawer.addEventListener('click', function (e) {
+      if (e.target.closest('a')) setMenu(false);
+    });
+
+    /* Tapping the dimmed page closes it — expected behaviour for an
+       overlay menu, and the scrim is a pseudo-element so it cannot
+       carry its own listener. */
+    document.addEventListener('click', function (e) {
+      if (!document.body.classList.contains('menu-open')) return;
+      if (e.target.closest('#drawer') || e.target.closest('#burger')) return;
+      setMenu(false);
+    });
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && document.body.classList.contains('menu-open')) {
+        setMenu(false);
+        burger.focus();
       }
     });
 
