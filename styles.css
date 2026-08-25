@@ -150,7 +150,7 @@ body.menu-open:after{content:"";position:fixed;inset:var(--nav-h) 0 0;z-index:47
 /* ---------- HERO ---------- */
 header{position:relative;overflow:hidden;
   min-height:100vh;min-height:100dvh;
-  padding:calc(var(--nav-h) + 26px) var(--pad) calc(46vh - 40px);
+  padding:calc(var(--nav-h) + 26px) var(--pad) 32px;
   display:flex;flex-direction:column;justify-content:flex-start}
 .sky,.beams,.floor,.keyart{position:absolute;inset:0;z-index:0;pointer-events:none}
 /* Sunset gradient sampled from the key art, so the photo edge blends
@@ -196,7 +196,7 @@ header{position:relative;overflow:hidden;
 .eyebrow{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.26em;color:var(--amber);margin-bottom:16px}
 /* Matches "DRIVING INTO A NEW DAY" in the key art. */
 h1{font-family:var(--font-display);font-weight:700;font-style:italic;
-   font-size:clamp(38px,11vw,72px);line-height:.98;letter-spacing:-.005em}
+   font-size:clamp(34px,10vw,72px);line-height:.98;letter-spacing:-.005em}
 .sub{font-family:var(--font-body);font-weight:500;font-size:clamp(19px,5.4vw,32px);color:var(--orange);margin-top:8px}
 .meta{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;margin-top:20px;font-size:13.5px;color:var(--mist);letter-spacing:.03em}
 .meta b{color:#fff;font-weight:600}
@@ -559,9 +559,13 @@ html.motion [data-reveal].in .cd b{animation:none}
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E");
   background-size:140px 140px}
 
-/* Content sits above the ambient layer. */
-nav,.drawer,header,section,.closer,footer,.sticky-cta{position:relative;z-index:1}
-nav{z-index:50}.drawer{z-index:49}.sticky-cta{z-index:45}
+/* Content sits above the ambient layer.
+   Only the bands that are statically positioned are listed: nav, the
+   drawer and the sticky CTA are already fixed with their own z-index,
+   and naming them here overrode position:fixed — which dropped the nav
+   into the flow and let the invisible drawer occupy 275px above the
+   hero. */
+header,section,.closer,footer{position:relative;z-index:1}
 
 /* ---- colour fields ---- */
 :root{
