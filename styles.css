@@ -751,6 +751,84 @@ html.motion [data-reveal].in .cd b{animation:none}
 .sw-paper{background:linear-gradient(135deg,#FFFFFF,#E8E1D6)}
 .sw-sand{background:linear-gradient(135deg,#FFF9F0,#E0B77C)}
 
+
+/* =============================================================
+   AMBIENT BACKGROUND
+   Large sections were flat expanses of one colour, worst on the
+   light palettes. Three very soft colour fields drift behind the
+   whole page, with a grain overlay so wide gradients do not band on
+   cheap panels.
+
+   Fixed, not per-section: one composited layer for the page instead
+   of a decoration inside every band. It never repaints on scroll and
+   costs nothing on mobile.
+   ============================================================= */
+.ambient{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.ambient .blob{position:absolute;display:block;border-radius:50%;
+  filter:blur(90px);opacity:.55;will-change:transform}
+.b1{width:60vw;height:60vw;max-width:820px;max-height:820px;top:-14vh;left:-10vw;
+  background:var(--blob-1);animation:drift1 42s ease-in-out infinite alternate}
+.b2{width:52vw;height:52vw;max-width:700px;max-height:700px;top:38vh;right:-14vw;
+  background:var(--blob-2);animation:drift2 55s ease-in-out infinite alternate}
+.b3{width:46vw;height:46vw;max-width:620px;max-height:620px;bottom:-12vh;left:26vw;
+  background:var(--blob-3);animation:drift3 48s ease-in-out infinite alternate}
+@keyframes drift1{to{transform:translate3d(9vw,7vh,0) scale(1.12)}}
+@keyframes drift2{to{transform:translate3d(-11vw,-9vh,0) scale(1.08)}}
+@keyframes drift3{to{transform:translate3d(7vw,-6vh,0) scale(.92)}}
+
+/* Grain. An SVG turbulence tile, inline so it costs no request, at a
+   low enough opacity to read as paper rather than noise. */
+.grain{position:absolute;inset:0;opacity:.16;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E");
+  background-size:140px 140px}
+
+/* Content sits above the ambient layer. */
+nav,.drawer,header,section,.closer,footer,.sticky-cta{position:relative;z-index:1}
+nav{z-index:50}.drawer{z-index:49}.sticky-cta{z-index:45}
+
+/* ---- per-palette colour fields ---- */
+:root{
+  --blob-1:radial-gradient(circle, rgba(244,121,32,.22), transparent 70%);
+  --blob-2:radial-gradient(circle, rgba(255,154,61,.16), transparent 70%);
+  --blob-3:radial-gradient(circle, rgba(194,78,0,.18), transparent 70%);
+}
+:root[data-theme="ember"]{
+  --blob-1:radial-gradient(circle, rgba(255,122,26,.34), transparent 70%);
+  --blob-2:radial-gradient(circle, rgba(196,54,0,.30), transparent 70%);
+  --blob-3:radial-gradient(circle, rgba(255,180,90,.22), transparent 70%);
+}
+:root[data-theme="steel"]{
+  --blob-1:radial-gradient(circle, rgba(120,160,205,.24), transparent 70%);
+  --blob-2:radial-gradient(circle, rgba(244,121,32,.14), transparent 70%);
+  --blob-3:radial-gradient(circle, rgba(90,120,165,.22), transparent 70%);
+}
+/* Light grounds need far less — the same strength reads as a stain. */
+:root[data-mode="light"] .ambient .blob{opacity:.42;filter:blur(110px)}
+:root[data-mode="light"] .grain{opacity:.10;mix-blend-mode:multiply}
+:root[data-theme="paper"]{
+  --blob-1:radial-gradient(circle, rgba(244,121,32,.16), transparent 70%);
+  --blob-2:radial-gradient(circle, rgba(120,160,205,.10), transparent 70%);
+  --blob-3:radial-gradient(circle, rgba(255,154,61,.14), transparent 70%);
+}
+:root[data-theme="sand"]{
+  --blob-1:radial-gradient(circle, rgba(226,140,50,.20), transparent 70%);
+  --blob-2:radial-gradient(circle, rgba(180,120,60,.14), transparent 70%);
+  --blob-3:radial-gradient(circle, rgba(255,190,110,.20), transparent 70%);
+}
+
+/* Drifting colour is exactly what motion sensitivity dislikes: the
+   fields stay, they simply stop moving. */
+@media (prefers-reduced-motion:reduce){
+  .ambient .blob{animation:none}
+}
+/* Phones: fewer, cheaper fields — a 90px blur over most of the screen
+   is the most expensive thing on the page. */
+@media (max-width:700px){
+  .ambient .blob{filter:blur(60px);opacity:.42}
+  .b3{display:none}
+  .grain{opacity:.12}
+}
+
 @media (prefers-reduced-motion:reduce){
   *{animation:none!important;transition:none!important}
   html{scroll-behavior:auto}

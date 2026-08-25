@@ -58,6 +58,17 @@
 <body>
 <a class="skip" href="#waitlist">Skip to the waitlist form</a>
 
+<!-- Ambient background. One fixed layer for the whole page rather than
+     per-section decoration: three soft colour fields that drift, plus a
+     fine grain so large flat areas do not band. Decorative, so it stays
+     out of the a11y tree. -->
+<div class="ambient" aria-hidden="true">
+  <span class="blob b1"></span>
+  <span class="blob b2"></span>
+  <span class="blob b3"></span>
+  <span class="grain"></span>
+</div>
+
 <nav>
   <a class="logo" href="#" aria-label="XPENG home">
     <!-- Supplied lockup: white artwork on transparent, so it sits on the
