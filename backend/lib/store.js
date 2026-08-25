@@ -337,6 +337,82 @@ function make(db, vault) {
     return r.changes;
   }
 
+  /* ---------- deletion --------------------------------------- */
+
+  /* Every destructive action lands in export_log, which already
+     carries actor / scope / count / filters — so deletions leave the
+     same paper trail as exports. A DPA audit will ask for exactly
+     this. */
+  async function logAction(actor, scope, count, detail) {
+    await db.run(
+      'INSERT INTO export_log (at,actor,scope,dealer,row_count,filters) VALUES (?,?,?,?,?,?)',
+      [nowUTC(), actor, scope, null, count, JSON.stringify(detail).slice(0, 2000)]
+    );
+  }
+
+  /* Children first — the invitations FK would block the parent. */
+  async function removeIds(ids) {
+    let removed = 0;
+    for (const id of ids) {
+      await db.run('DELETE FROM comms_queue WHERE registration_id=?', [id]);
+      await db.run('DELETE FROM invitations  WHERE registration_id=?', [id]);
+      const r = await db.run('DELETE FROM registrations WHERE id=?', [id]);
+      removed += r.changes;
+    }
+    return removed;
+  }
+
+  /* Hard delete. For test rows and mistakes — the record is gone and
+     the sequence number is never reused. */
+  async function deleteRegistrations(ids, actor) {
+    const removed = await removeIds(ids);
+    await logAction(actor, 'delete', removed, { ids });
+    return { removed };
+  }
+
+  /* The right tool for a person exercising their DPA rights: the
+     personal fields are erased, the row survives. Registration counts,
+     the daily curve and reporting therefore stay honest — a hard
+     delete would silently rewrite history.
+     The unique hashes are replaced with random values so the record
+     can never be re-linked to the person, and so the indexes still
+     hold. */
+  async function anonymise(ids, actor) {
+    let done = 0;
+    for (const id of ids) {
+      const tag = 'erased-' + crypto.randomBytes(12).toString('hex');
+      const r = await db.run(
+        `UPDATE registrations SET
+           name_enc=?, first_name_enc=NULL, last_name_enc=NULL,
+           mobile_enc=?, email_enc=?,
+           mobile_hash=?, email_hash=?,
+           consent_dealer=0, consent_marketing=0, dealer=NULL,
+           updated_at=?
+         WHERE id=?`,
+        [vault.encrypt('[erased]'), vault.encrypt(''), vault.encrypt(''),
+         tag + '-m', tag + '-e', nowUTC(), id]
+      );
+      /* Anything still queued would carry their address out the door. */
+      await db.run("DELETE FROM comms_queue WHERE registration_id=? AND status='PENDING'", [id]);
+      done += r.changes;
+    }
+    await logAction(actor, 'anonymise', done, { ids });
+    return { anonymised: done };
+  }
+
+  /* Seeded rows all use @example.com. The column is encrypted, so the
+     domain cannot be matched in SQL — decrypt and filter in app. */
+  async function purgeTestData(actor) {
+    const rows = await db.all('SELECT id, email_enc FROM registrations');
+    const ids = rows
+      .filter(r => (vault.decrypt(r.email_enc) || '').toLowerCase().endsWith('@example.com'))
+      .map(r => r.id);
+    if (!ids.length) return { removed: 0, found: 0 };
+    const removed = await removeIds(ids);
+    await logAction(actor, 'purge-test', removed, { pattern: '@example.com' });
+    return { removed, found: ids.length };
+  }
+
   /* ---------- export ---------------------------------------- */
 
   const EXPORT_COLS = [
@@ -426,6 +502,7 @@ function make(db, vault) {
   }
 
   return {
+    deleteRegistrations, anonymise, purgeTestData,
     saveRegistration, publicCount, list, stats, invite, markClaimed, expireStale,
     exportCsv, exportLog, dealers, setDealer, comms, takePending, markSent,
     rescoreAll, decorate, nowUTC

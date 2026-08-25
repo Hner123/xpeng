@@ -404,6 +404,31 @@ async function main() {
           await store.setDealer(String(body.city), String(body.dealer));
           return json(res, 200, { ok: true });
         }
+        /* Destructive routes: admin only, never the viewer role. */
+        if (p === '/api/admin/delete' && req.method === 'POST') {
+          if (!isAdmin) return needAdmin(res);
+          const body = await readBody(req);
+          const ids = (body.ids || []).map(Number).filter(Boolean);
+          if (!ids.length) return json(res, 422, { ok: false, error: 'no ids' });
+          const out = await store.deleteRegistrations(ids, actor);
+          console.log('[audit] ' + actor + ' deleted ' + out.removed + ' registration(s): ' + ids.join(','));
+          return json(res, 200, { ok: true, ...out });
+        }
+        if (p === '/api/admin/anonymise' && req.method === 'POST') {
+          if (!isAdmin) return needAdmin(res);
+          const body = await readBody(req);
+          const ids = (body.ids || []).map(Number).filter(Boolean);
+          if (!ids.length) return json(res, 422, { ok: false, error: 'no ids' });
+          const out = await store.anonymise(ids, actor);
+          console.log('[audit] ' + actor + ' anonymised ' + out.anonymised + ' registration(s): ' + ids.join(','));
+          return json(res, 200, { ok: true, ...out });
+        }
+        if (p === '/api/admin/purge-test' && req.method === 'POST') {
+          if (!isAdmin) return needAdmin(res);
+          const out = await store.purgeTestData(actor);
+          console.log('[audit] ' + actor + ' purged ' + out.removed + ' test registration(s)');
+          return json(res, 200, { ok: true, ...out });
+        }
         if (p === '/api/admin/rescore' && req.method === 'POST') {
           if (!isAdmin) return needAdmin(res);
           return json(res, 200, { ok: true, updated: await store.rescoreAll() });
