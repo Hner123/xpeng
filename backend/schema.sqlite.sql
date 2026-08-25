@@ -14,7 +14,10 @@ CREATE TABLE IF NOT EXISTS registrations (
   updated_at          TEXT NOT NULL,
 
   -- encrypted personal data (AES-256-GCM)
+  /* Stored separately as well as combined — joining is lossy. */
   name_enc            TEXT NOT NULL,
+  first_name_enc      TEXT,
+  last_name_enc       TEXT,
   mobile_enc          TEXT NOT NULL,
   email_enc           TEXT NOT NULL,
 

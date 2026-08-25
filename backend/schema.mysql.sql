@@ -13,7 +13,12 @@ CREATE TABLE IF NOT EXISTS registrations (
   created_at           DATETIME NOT NULL,
   updated_at           DATETIME NOT NULL,
 
+  /* Stored separately as well as combined: joining them is lossy —
+     "Maria Clara Dela Cruz" cannot be split back reliably, and the
+     comms need a first name to open with. */
   name_enc             VARBINARY(512) NOT NULL,
+  first_name_enc       VARBINARY(256) DEFAULT NULL,
+  last_name_enc        VARBINARY(256) DEFAULT NULL,
   mobile_enc           VARBINARY(256) NOT NULL,
   email_enc            VARBINARY(512) NOT NULL,
 

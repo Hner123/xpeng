@@ -8,7 +8,8 @@ const crypto = require('node:crypto');
 const { scoreOf } = require('./score');
 
 const REG_COLS = [
-  'created_at','updated_at','name_enc','mobile_enc','email_enc','mobile_hash','email_hash',
+  'created_at','updated_at','name_enc','first_name_enc','last_name_enc',
+  'mobile_enc','email_enc','mobile_hash','email_hash',
   'province','city','dealer','status','partial','otp_verified','lead_score',
   'age','segment','drives','intent','budget','model_interest','ev_experience',
   'consent_privacy','consent_privacy_at','consent_dealer','consent_dealer_at',
@@ -46,7 +47,9 @@ function make(db, vault) {
     const row = {
       created_at: now,
       updated_at: now,
-      name_enc:   vault.encrypt(input.name),
+      name_enc:       vault.encrypt(input.name),
+      first_name_enc: input.first_name ? vault.encrypt(input.first_name) : null,
+      last_name_enc:  input.last_name  ? vault.encrypt(input.last_name)  : null,
       mobile_enc: vault.encrypt(input.mobile),
       email_enc:  vault.encrypt(input.email),
       mobile_hash: vault.lookup(input.mobile),
@@ -188,6 +191,8 @@ function make(db, vault) {
       sequence: r.id,
       created_at: r.created_at,
       name: vault.decrypt(r.name_enc),
+      first_name: r.first_name_enc ? vault.decrypt(r.first_name_enc) : '',
+      last_name:  r.last_name_enc  ? vault.decrypt(r.last_name_enc)  : '',
       mobile_masked: mobile ? mobile.slice(0, 4) + '•••' + mobile.slice(-3) : '',
       mobile, email,
       province: r.province, city: r.city, dealer: r.dealer,
@@ -335,7 +340,7 @@ function make(db, vault) {
   /* ---------- export ---------------------------------------- */
 
   const EXPORT_COLS = [
-    'sequence','created_at','name','mobile','email','province','city','dealer','status',
+    'sequence','created_at','first_name','last_name','name','mobile','email','province','city','dealer','status',
     'lead_score','age','segment','drives','intent','budget','model_interest','ev_experience',
     'consent_dealer','consent_marketing','utm_source','utm_medium','utm_campaign'
   ];
