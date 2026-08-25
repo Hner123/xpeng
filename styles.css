@@ -818,6 +818,87 @@ nav{z-index:50}.drawer{z-index:49}.sticky-cta{z-index:45}
 
 /* Drifting colour is exactly what motion sensitivity dislikes: the
    fields stay, they simply stop moving. */
+
+/* =============================================================
+   SECTION GEOMETRY
+   The drifting fields give the page atmosphere; these give it
+   structure — a big quiet disc behind a section, an outlined ring,
+   a field of dots, a rule. Anchored to sections rather than fixed,
+   so they travel with the content they belong to.
+
+   All of it is ::before / ::after — no markup, nothing to keep in
+   sync, and z-index:-1 keeps them inside each section's own
+   stacking context, behind its content but above the page.
+   ============================================================= */
+:root{
+  --deco-fill:rgba(244,121,32,.07);
+  --deco-line:rgba(255,255,255,.14);
+  --deco-dot:rgba(255,154,61,.30);
+}
+:root[data-theme="ember"]{
+  --deco-fill:rgba(255,138,50,.10);
+  --deco-dot:rgba(255,180,90,.36);
+}
+:root[data-theme="steel"]{
+  --deco-fill:rgba(140,180,225,.09);
+  --deco-line:rgba(190,210,235,.16);
+  --deco-dot:rgba(150,190,235,.30);
+}
+:root[data-mode="light"]{
+  --deco-fill:rgba(244,121,32,.09);
+  --deco-line:rgba(25,21,16,.12);
+  --deco-dot:rgba(194,78,0,.22);
+}
+:root[data-theme="sand"]{
+  --deco-fill:rgba(200,130,60,.12);
+  --deco-dot:rgba(154,61,0,.24);
+}
+
+section,.closer{overflow:hidden}
+
+/* A large disc behind THE EVENT, bleeding off the right edge — the
+   shape the reference leans on. */
+#event:before{content:"";position:absolute;z-index:-1;pointer-events:none;
+  right:-14vw;top:6%;width:min(58vw,680px);aspect-ratio:1;border-radius:50%;
+  background:var(--deco-fill)}
+
+/* An outlined ring against HOW IT WORKS, plus a short rule that
+   echoes the hero's underline. */
+#how:before{content:"";position:absolute;z-index:-1;pointer-events:none;
+  left:-70px;top:18%;width:190px;height:190px;border-radius:50%;
+  border:1.5px solid var(--deco-line)}
+#how:after{content:"";position:absolute;z-index:-1;pointer-events:none;
+  right:8%;bottom:14%;width:120px;height:1px;background:var(--deco-line)}
+
+/* A dot field under THE EXPERIENCE — one gradient, not 40 elements. */
+#experience:before{content:"";position:absolute;z-index:-1;pointer-events:none;
+  right:4%;top:10%;width:180px;height:130px;opacity:.85;
+  background-image:radial-gradient(var(--deco-dot) 1.6px, transparent 1.7px);
+  background-size:22px 22px}
+#experience:after{content:"";position:absolute;z-index:-1;pointer-events:none;
+  left:-90px;bottom:-60px;width:min(40vw,420px);aspect-ratio:1;border-radius:50%;
+  background:var(--deco-fill)}
+
+/* FAQ keeps a single ring, low and left, so the column of questions
+   still reads as the only thing on that screen. */
+#faq:before{content:"";position:absolute;z-index:-1;pointer-events:none;
+  right:-60px;bottom:12%;width:150px;height:150px;border-radius:50%;
+  border:1.5px solid var(--deco-line)}
+
+/* The closer gets the biggest disc, centred behind the final ask. */
+.closer:before{content:"";position:absolute;z-index:-1;pointer-events:none;
+  left:50%;top:50%;transform:translate(-50%,-50%);
+  width:min(70vw,560px);aspect-ratio:1;border-radius:50%;
+  background:var(--deco-fill)}
+
+/* Phones: keep one disc per screen at most. Several shapes on a 390px
+   viewport stop being decoration and start being clutter. */
+@media (max-width:700px){
+  #how:before,#how:after,#faq:before,#experience:before{display:none}
+  #event:before{right:-30vw;width:70vw}
+  #experience:after{left:-30vw;width:70vw}
+}
+
 @media (prefers-reduced-motion:reduce){
   .ambient .blob{animation:none}
 }
