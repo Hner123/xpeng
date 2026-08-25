@@ -75,7 +75,11 @@ window.XPENG_CONFIG = {
      That origin must also be listed in ALLOWED_ORIGINS on the
      server, or the browser will block the request. */
   api: {
-    base:   "",
+    /* Only used when the page is served from somewhere OTHER than the
+       API host — i.e. the Netlify copy. On localhost and on the API
+       domain itself, app.js ignores this and uses relative paths, so
+       local development can never write into the live database. */
+    base:   "https://xpeng.heineraboka.site",
     submit: "/api/waitlist",
     count:  "/api/waitlist/count"
   },

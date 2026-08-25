@@ -1,20 +1,28 @@
 # =============================================================
-# Netlify hosts the static campaign page only. The API and admin
-# dashboard live on the Linux server behind Caddy — set
-# config.js -> api.base to that origin, and list the Netlify URL
-# in ALLOWED_ORIGINS on the server.
+# Netlify hosts the static campaign page only.
+#
+# The API and the admin dashboard stay on xpeng.heineraboka.site —
+# the dashboard must remain same-origin with its API so the session
+# cookie can keep SameSite=Strict.
+#
+# Two things must line up with this file:
+#   1. config.js  -> api.base = "https://xpeng.heineraboka.site"
+#   2. server .env -> ALLOWED_ORIGINS includes this site's URL
 # =============================================================
 
 [build]
-  # No build step: the page is plain HTML/CSS/JS.
-  publish = "."
-  command = ""
+  # Copy only the front-end into dist/ and publish that. Publishing the
+  # repo root would also upload backend/, including the admin HTML —
+  # harmless but confusing, and it would serve a second, broken copy of
+  # the dashboard from the wrong origin.
+  command = """
+    rm -rf dist && mkdir -p dist &&
+    cp index.html styles.css app.js config.js geo.js dist/ &&
+    cp favicon.ico favicon.svg site.webmanifest robots.txt dist/ &&
+    cp -r image font dist/
+  """
+  publish = "dist"
 
-[build.processing]
-  skip_processing = false
-
-# The backend must never be published. Netlify has no ignore file,
-# so this build command prunes it from the deploy directory.
 [build.environment]
   NODE_VERSION = "22"
 
@@ -24,9 +32,10 @@
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
     X-Frame-Options = "SAMEORIGIN"
-    # Only the fonts we actually use, plus the API origin for the
-    # form POST. Update connect-src if the API domain changes.
-    Content-Security-Policy = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://api.futurenight.xpeng.ph; frame-ancestors 'self'"
+    # connect-src must name the API host, or the browser blocks the
+    # form POST. Google Fonts serves IBM Plex Mono; the brand faces are
+    # self-hosted, so no other origin is needed.
+    Content-Security-Policy = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://xpeng.heineraboka.site; frame-ancestors 'self'"
 
 [[headers]]
   for = "/*.css"
@@ -36,13 +45,31 @@
 [[headers]]
   for = "/*.js"
   [headers.values]
-    # Short TTL: config.js carries the artist-reveal switch and must
-    # be able to change within minutes, without a redeploy.
+    # Short TTL: config.js carries the artist-reveal switch and the
+    # confirmation-copy mode, both of which must change within minutes
+    # without a redeploy.
     Cache-Control = "public, max-age=300"
 
-# Anyone hitting /admin on the Netlify domain goes to the real one.
+[[headers]]
+  for = "/image/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/font/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# The dashboard lives on the API host. Anyone who tries /admin here
+# gets sent to the real one rather than a 404.
 [[redirects]]
   from = "/admin/*"
-  to = "https://api.futurenight.xpeng.ph/admin/:splat"
+  to = "https://xpeng.heineraboka.site/admin/:splat"
   status = 302
+  force = true
+
+[[redirects]]
+  from = "/api/*"
+  to = "https://xpeng.heineraboka.site/api/:splat"
+  status = 307
   force = true

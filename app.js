@@ -12,11 +12,24 @@
   var BRANDS= window.XPENG_BRANDS || [];
   var $ = function (id) { return document.getElementById(id); };
 
-  /* Absolute when config.api.base is set (page and API on different
-     hosts), relative when it isn't. */
+  /* Absolute only when the page is genuinely on a different host from
+     the API. Local development and the API's own domain fall back to
+     relative paths — otherwise opening the page on localhost would
+     post test registrations straight into production. */
+  function apiBase() {
+    var api = CFG.api || {};
+    if (!api.base) return '';
+    var host = location.hostname;
+    if (host === 'localhost' || host === '127.0.0.1' || host === '') return '';
+    try {
+      if (new URL(api.base).hostname === host) return '';
+    } catch (e) { return ''; }
+    return api.base;
+  }
+
   function endpoint(name) {
     var api = CFG.api || {};
-    return (api.base || '') + (api[name] || '/api/' + name);
+    return apiBase() + (api[name] || '/api/' + name);
   }
 
   /* Same glyphs as the share row in index.html, kept here because the
