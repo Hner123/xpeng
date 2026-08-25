@@ -32,19 +32,6 @@
 <link rel="preload" as="image" href="image/hero/bg-1000.webp" media="(max-width: 1019px)">
 <link rel="preload" as="image" href="image/hero/bg-2400.webp" media="(min-width: 1020px)">
 <link rel="stylesheet" href="styles.css">
-<script>
-  /* Applied before first paint: setting this from app.js would show a
-     flash of the dark theme first. Only a theme name is stored — no
-     personal data in client-side storage (Section 10). */
-  (function () {
-    try {
-      var LIGHT = { paper: 1, sand: 1 };
-      var t = localStorage.getItem('xpeng-theme') || 'dark';
-      document.documentElement.dataset.theme = t;
-      document.documentElement.dataset.mode = LIGHT[t] ? 'light' : 'dark';
-    } catch (e) {}
-  })();
-</script>
 
 <!-- ============================================================
      TRACKING (Section 9) — drop the real IDs in before go-live.
@@ -81,13 +68,6 @@
     <a href="#how">HOW IT WORKS</a>
     <a href="#experience">EXPERIENCE</a>
     <a href="#faq">FAQ</a>
-  </div>
-  <div class="theme-wrap">
-    <button class="theme-toggle" id="theme-toggle" type="button"
-            aria-haspopup="true" aria-expanded="false" aria-label="Change theme">
-      <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="8.6" cy="10" r="1.2" fill="currentColor" stroke="none"/><circle cx="12" cy="7.8" r="1.2" fill="currentColor" stroke="none"/><circle cx="15.4" cy="10" r="1.2" fill="currentColor" stroke="none"/><path d="M12 21a3 3 0 0 1 0-6 2.2 2.2 0 0 0 2.2-2.2"/></svg>
-    </button>
-    <div class="theme-menu" id="theme-menu" role="menu" aria-label="Theme"></div>
   </div>
   <a class="btn nav-cta" href="#waitlist" data-cta="nav">JOIN WAITLIST</a>
   <button class="burger" id="burger" aria-label="Menu" aria-expanded="false" aria-controls="drawer"><span></span></button>

@@ -226,64 +226,6 @@
   }
 
   /* ---------- nav / drawer / sticky CTA ------------------------ */
-  /* ---------- themes ----------
-     Five palettes. data-theme picks the colours, data-mode tells the
-     stylesheet whether the ground is light or dark — so a light
-     palette reuses one shared block instead of restating it.
-     The choice is a browser convenience, never personal data. */
-  var THEMES = [
-    { id: 'dark',  name: 'Midnight', mode: 'dark'  },
-    { id: 'ember', name: 'Ember',    mode: 'dark'  },
-    { id: 'steel', name: 'Steel',    mode: 'dark'  },
-    { id: 'paper', name: 'Paper',    mode: 'light' },
-    { id: 'sand',  name: 'Sand',     mode: 'light' }
-  ];
-
-  function theme() {
-    var btn = $('theme-toggle'), menu = $('theme-menu');
-    if (!btn || !menu) return;
-
-    function current() { return document.documentElement.dataset.theme || 'dark'; }
-
-    function apply(id) {
-      var t = THEMES.filter(function (x) { return x.id === id; })[0] || THEMES[0];
-      document.documentElement.dataset.theme = t.id;
-      document.documentElement.dataset.mode = t.mode;
-      try { localStorage.setItem('xpeng-theme', t.id); } catch (e) {}
-      paint();
-      track('ThemeSwitch', { theme: t.id });
-    }
-
-    function paint() {
-      menu.innerHTML = THEMES.map(function (t) {
-        return '<button type="button" role="menuitemradio" data-theme-id="' + t.id + '"' +
-               ' aria-checked="' + (t.id === current() ? 'true' : 'false') + '">' +
-               '<span class="sw sw-' + t.id + '"></span>' + t.name + '</button>';
-      }).join('');
-    }
-
-    function open(state) {
-      menu.classList.toggle('on', state);
-      btn.setAttribute('aria-expanded', state ? 'true' : 'false');
-    }
-
-    paint();
-    btn.addEventListener('click', function (e) {
-      e.stopPropagation();
-      open(!menu.classList.contains('on'));
-    });
-    menu.addEventListener('click', function (e) {
-      var item = e.target.closest('[data-theme-id]');
-      if (!item) return;
-      apply(item.dataset.themeId);
-      open(false);
-    });
-    document.addEventListener('click', function () { open(false); });
-    document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape') open(false);
-    });
-  }
-
   function chrome() {
     var burger = $('burger');
     var drawer = $('drawer');
@@ -851,7 +793,6 @@
   flow();
   share();
   chrome();
-  theme();
   motion();
   countdown();
   track('PageView', UTM);

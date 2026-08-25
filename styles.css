@@ -34,14 +34,17 @@
    desktop is layered on at 1020px.
    ============================================================= */
 :root{
-  --ink:#0B0907;
-  --coal:#141008;
+  /* Ember: the sunset bleeding up through the page. This was one of
+     five selectable palettes; it is now the only one, folded into the
+     base rather than left as an override. */
+  --ink:#140A05;
+  --coal:#1F0E06;
   --orange:#F47920;
   --amber:#FF9A3D;
   --ember:#C24E00;
   --paper:#FFFFFF;
   --mist:rgba(255,255,255,.62);
-  --line:rgba(255,255,255,.14);
+  --line:rgba(255,196,150,.16);
   --card-line:#E8E3DC;
   --field:#F7F4F0;
   --nav-h:58px;
@@ -60,8 +63,9 @@
   /* The hero ground. A variable so each palette can restyle the page
      behind the key art without touching any rule. */
   --sky:
-     radial-gradient(1200px 520px at 46% 96%, rgba(244,121,32,.20), transparent 60%),
-     linear-gradient(#070605 0%, #0B0907 55%, #100C08 100%);
+     radial-gradient(1100px 620px at 50% 104%, rgba(255,122,26,.42), transparent 66%),
+     radial-gradient(800px 420px at 20% 88%, rgba(196,54,0,.30), transparent 62%),
+     linear-gradient(#0B0503 0%, #1A0A04 46%, #2E1006 78%, #431705 100%);
 
   --gutter:18px;
   --maxw:1320px;
@@ -173,9 +177,10 @@ header{position:relative;overflow:hidden;
   -webkit-mask-image:linear-gradient(to bottom, transparent 0%, rgba(0,0,0,.35) 22%, #000 55%);
           mask-image:linear-gradient(to bottom, transparent 0%, rgba(0,0,0,.35) 22%, #000 55%)}
 .keyart:after{content:"";position:absolute;inset:0;
-  background:linear-gradient(to top, rgba(11,9,7,.55) 0%, rgba(11,9,7,.15) 30%, rgba(11,9,7,.45) 72%, rgba(11,9,7,.85) 100%)}
+  background:linear-gradient(to top, rgba(20,10,5,.5) 0%, rgba(20,10,5,.08) 32%,
+                  rgba(20,10,5,.42) 74%, rgba(20,10,5,.86) 100%)}
 
-.beams{opacity:.5;mix-blend-mode:screen;background:
+.beams{opacity:.7;mix-blend-mode:screen;background:
   conic-gradient(from 178deg at 46% 100%,
     transparent 0deg, rgba(255,154,61,.16) 3deg, transparent 7deg,
     transparent 12deg, rgba(244,121,32,.22) 15deg, transparent 19deg,
@@ -223,7 +228,7 @@ h1{font-family:var(--font-display);font-weight:700;font-style:italic;
    the key art without hiding it. The blur matters — at 14% alone the
    sunset shows straight through and small type sits on moving colour. */
 .card{position:relative;z-index:2;
-      background:rgba(255,255,255,.14);
+      background:rgba(255,236,220,.11);
       backdrop-filter:blur(16px) saturate(1.1);
       -webkit-backdrop-filter:blur(16px) saturate(1.1);
       color:#ffffff;border-radius:18px;
@@ -281,7 +286,7 @@ h1{font-family:var(--font-display);font-weight:700;font-style:italic;
 /* ---- CONFIRMATION STATE ----
    Nothing left to fill in, so the paper card dissolves: transparent
    panel, white type, sitting straight on the hero art. */
-.card.is-done{background:rgba(255,255,255,.10);color:#ffffff}
+.card.is-done{background:rgba(255,236,220,.09);color:#ffffff}
 .card.is-done .status{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.14);color:#fff;margin:0}
 .card.is-done .status s{color:rgba(255,255,255,.45)}
 .card.is-done .status em{color:var(--amber)}
@@ -328,7 +333,7 @@ section{padding:70px var(--pad)}
 .sec-title{font-family:var(--font-body);font-weight:700;font-size:clamp(27px,7vw,44px);line-height:1.1;letter-spacing:-.01em;max-width:18ch}
 .sec-sub{margin-top:14px;font-size:15px;line-height:1.7;color:var(--mist);max-width:56ch}
 .blocks{display:grid;grid-template-columns:1fr;gap:14px;margin-top:34px}
-.block{border:1px solid var(--line);border-radius:16px;padding:24px;background:linear-gradient(160deg,rgba(255,255,255,.045),rgba(255,255,255,.012));display:flex;flex-direction:column}
+.block{border:1px solid var(--line);border-radius:16px;padding:24px;background:linear-gradient(160deg,rgba(255,178,120,.09),rgba(255,178,120,.02));display:flex;flex-direction:column}
 .block .tag{font-family:var(--font-mono);font-size:9.5px;letter-spacing:.2em;color:var(--amber);margin-bottom:12px}
 .block h3{font-family:var(--font-body);font-size:19px;margin-bottom:9px}
 .block p{font-size:13.5px;line-height:1.65;color:var(--mist)}
@@ -525,234 +530,6 @@ html.motion [data-reveal].in .cd b{animation:none}
 
 
 /* =============================================================
-   LIGHT-GROUND THEMES
-   Shared by every palette whose ground is light (data-mode="light"),
-   so a new light theme only has to supply colours, not re-state all
-   of this. Only colour is overridden — no spacing, no sizes — so the
-   themes cannot drift apart structurally.
-   ============================================================= */
-:root[data-mode="light"]{
-  --ink:#F4F1EC;          /* page ground */
-  /* The ember used on dark fails AA on a light ground at small sizes,
-     so the light theme gets its own, darker accent. */
-  --ember:#9E4000;
-  --coal:#EAE5DE;
-  --paper:#FFFFFF;
-  --mist:rgba(25,21,16,.66);
-  --line:rgba(25,21,16,.14);
-  --card-line:#E2DCD3;
-  --field:#FFFFFF;
-}
-:root[data-mode="light"] body{color:#191510}
-
-/* nav + drawer */
-:root[data-mode="light"] nav{background:rgba(255,255,255,.86);border-bottom-color:var(--line)}
-:root[data-mode="light"] body.scrolled nav{background:rgba(255,255,255,.95);box-shadow:0 10px 30px rgba(25,21,16,.10)}
-:root[data-mode="light"] .logo img,
-:root[data-mode="light"] .foot-logo{filter:invert(1)}   /* the lockup is white artwork */
-:root[data-mode="light"] .nav-links a{color:rgba(25,21,16,.62)}
-:root[data-mode="light"] .nav-links a:hover{color:#191510}
-:root[data-mode="light"] .burger span,
-:root[data-mode="light"] .burger span:before,
-:root[data-mode="light"] .burger span:after{background:#191510}
-:root[data-mode="light"] body.menu-open .burger span{background:transparent}
-:root[data-mode="light"] .drawer{background:rgba(255,255,255,.98)}
-:root[data-mode="light"] .drawer a{color:rgba(25,21,16,.7)}
-:root[data-mode="light"] body.menu-open:after{background:rgba(25,21,16,.35)}
-
-/* hero: the art stays, the ground under it flips */
-
-:root[data-mode="light"] .keyart:after{background:
-  linear-gradient(to top, rgba(244,241,236,.55) 0%, rgba(244,241,236,.10) 30%,
-                  rgba(244,241,236,.55) 72%, rgba(244,241,236,.92) 100%)}
-:root[data-mode="light"] .beams{opacity:.22}
-:root[data-mode="light"] .floor{opacity:.18}
-:root[data-mode="light"] .eyebrow,
-:root[data-mode="light"] .sec-eyebrow{color:var(--ember)}
-:root[data-mode="light"] .meta b{color:#191510}
-:root[data-mode="light"] .lede,
-:root[data-mode="light"] .sec-sub,
-:root[data-mode="light"] .block p,
-:root[data-mode="light"] .pill p,
-:root[data-mode="light"] .lineup p,
-:root[data-mode="light"] .flow p,
-:root[data-mode="light"] .faq .a,
-:root[data-mode="light"] .closer p{color:rgba(25,21,16,.7)}
-:root[data-mode="light"] .ha-lab{color:rgba(25,21,16,.6)}
-:root[data-mode="light"] .ha-txt,
-:root[data-mode="light"] .free-tag{color:var(--ember)}
-:root[data-mode="light"] .free-tag{border-color:rgba(194,78,0,.35);background:rgba(255,255,255,.7)}
-:root[data-mode="light"] .cd{background:rgba(255,255,255,.75);border-color:var(--line)}
-:root[data-mode="light"] .cd span{color:rgba(25,21,16,.55)}
-
-/* the form card: solid white on a light ground, not frosted glass */
-:root[data-mode="light"] .card{background:#fff;color:#191510;
-  backdrop-filter:none;-webkit-backdrop-filter:none;
-  box-shadow:0 20px 60px rgba(25,21,16,.14), 0 0 0 1px rgba(25,21,16,.06)}
-:root[data-mode="light"] .card h2,
-:root[data-mode="light"] .q label,
-:root[data-mode="light"] .counter b{color:#191510}
-:root[data-mode="light"] .card .hint,
-:root[data-mode="light"] .counter,
-:root[data-mode="light"] .consents label{color:#6E6559}
-:root[data-mode="light"] .consents a{color:var(--ember)}
-:root[data-mode="light"] .back{color:#6E6559}
-:root[data-mode="light"] .back:hover{color:#191510}
-:root[data-mode="light"] .fine{color:#9A9084}
-:root[data-mode="light"] .steps span{background:#E8E3DC}
-:root[data-mode="light"] .field .msg,
-:root[data-mode="light"] .err,
-:root[data-mode="light"] .q.bad label{color:#B4400E}
-:root[data-mode="light"] .field input,
-:root[data-mode="light"] .field select{background:#F7F4F0;border-color:var(--card-line)}
-:root[data-mode="light"] .card.is-done{background:#fff;color:#191510}
-:root[data-mode="light"] .card.is-done .status{background:#F2EEE8;border-color:var(--card-line);color:#191510}
-:root[data-mode="light"] .card.is-done .status s{color:#8A8177}
-:root[data-mode="light"] .card.is-done .done .num{color:var(--ember)}
-:root[data-mode="light"] .card.is-done .done .lab{color:#8A8177}
-:root[data-mode="light"] .card.is-done .done p{color:#4B4338}
-:root[data-mode="light"] .card.is-done .done p b{color:#191510}
-:root[data-mode="light"] .card.is-done .share{border-top-color:var(--card-line)}
-:root[data-mode="light"] .card.is-done .share p{color:#8A8177}
-:root[data-mode="light"] .card.is-done .share-row a,
-:root[data-mode="light"] .card.is-done .share-row button{color:#3A342C;background:#F7F4F0;border-color:var(--card-line)}
-
-/* sections */
-:root[data-mode="light"] .block{background:linear-gradient(160deg,rgba(25,21,16,.04),rgba(25,21,16,.015));border-color:var(--line)}
-:root[data-mode="light"] .block.mystery{background:linear-gradient(160deg,rgba(244,121,32,.12),rgba(244,121,32,.03));border-color:rgba(244,121,32,.35)}
-:root[data-mode="light"] .flow li{background:rgba(25,21,16,.03);border-bottom-color:var(--line)}
-:root[data-mode="light"] .flow li:has(.flow-cta):hover{background:rgba(244,121,32,.08)}
-:root[data-mode="light"] .lineup{background:linear-gradient(120deg,rgba(244,121,32,.14),rgba(244,121,32,.03) 60%);border-color:rgba(244,121,32,.35)}
-:root[data-mode="light"] .pill{border-color:var(--line)}
-:root[data-mode="light"] .faq summary:hover,
-:root[data-mode="light"] .faq details[open] summary{color:var(--ember)}
-:root[data-mode="light"] footer .l{color:rgba(25,21,16,.6)}
-:root[data-mode="light"] footer a{color:rgba(25,21,16,.6)}
-:root[data-mode="light"] footer a:hover{color:#191510}
-:root[data-mode="light"] .sticky-cta{background:rgba(255,255,255,.94);border-top-color:var(--line)}
-:root[data-mode="light"] .act{background:rgba(255,255,255,.6)}
-
-/* the toggle itself */
-.theme-toggle{width:38px;height:38px;display:grid;place-items:center;margin-left:auto;margin-right:10px;
-  background:none;border:1px solid var(--line);border-radius:9px;cursor:pointer;color:#fff;flex:none;
-  transition:border-color .2s,color .2s}
-.theme-toggle:hover{border-color:var(--orange);color:var(--amber)}
-:root[data-mode="light"] .theme-toggle{color:#191510}
-.theme-toggle svg{display:block}
-.theme-toggle .moon{display:none}
-:root[data-mode="light"] .theme-toggle .moon{display:block}
-:root[data-mode="light"] .theme-toggle .sun{display:none}
-@media (min-width:1020px){.theme-toggle{margin-left:0;margin-right:14px}}
-
-/* share toast (used by the Instagram fallback) */
-.share-toast{position:fixed;left:50%;bottom:22px;transform:translate(-50%,8px);z-index:60;
-  background:rgba(11,9,7,.94);color:#fff;border:1px solid var(--line);border-radius:10px;
-  padding:12px 16px;font-size:13px;opacity:0;visibility:hidden;
-  transition:opacity .2s,transform .2s,visibility 0s .2s}
-.share-toast.on{opacity:1;visibility:visible;transform:translate(-50%,0);transition:opacity .2s,transform .2s,visibility 0s}
-:root[data-mode="light"] .share-toast{background:#fff;color:#191510;box-shadow:0 12px 40px rgba(25,21,16,.18)}
-
-
-/* =============================================================
-   PALETTES
-   data-theme picks the palette, data-mode tells the sheet whether
-   the ground is light or dark. Both are set together by the picker.
-   ============================================================= */
-
-/* ---- EMBER · the sunset bleeding up through the page ---- */
-:root[data-theme="ember"]{
-  --ink:#140A05;
-  --coal:#1F0E06;
-  --line:rgba(255,196,150,.16);
-  --sky:
-    radial-gradient(1100px 620px at 50% 104%, rgba(255,122,26,.42), transparent 66%),
-    radial-gradient(800px 420px at 20% 88%, rgba(196,54,0,.30), transparent 62%),
-    linear-gradient(#0B0503 0%, #1A0A04 46%, #2E1006 78%, #431705 100%);
-}
-:root[data-theme="ember"] .keyart:after{background:
-  linear-gradient(to top, rgba(20,10,5,.5) 0%, rgba(20,10,5,.08) 32%,
-                  rgba(20,10,5,.42) 74%, rgba(20,10,5,.86) 100%)}
-:root[data-theme="ember"] .beams{opacity:.7}
-:root[data-theme="ember"] .card{background:rgba(255,236,220,.11)}
-:root[data-theme="ember"] .block{background:linear-gradient(160deg,rgba(255,178,120,.09),rgba(255,178,120,.02))}
-:root[data-theme="ember"] .flow li{background:rgba(255,178,120,.05)}
-
-/* ---- STEEL · graphite and cool light, like the X9's paint ---- */
-:root[data-theme="steel"]{
-  --ink:#0B0E12;
-  --coal:#121721;
-  --line:rgba(190,210,235,.16);
-  --mist:rgba(226,235,245,.66);
-  --sky:
-    radial-gradient(1100px 560px at 50% 100%, rgba(120,160,205,.22), transparent 64%),
-    radial-gradient(900px 420px at 46% 96%, rgba(244,121,32,.16), transparent 60%),
-    linear-gradient(#080A0E 0%, #0B0E12 52%, #141A24 100%);
-}
-:root[data-theme="steel"] .keyart:after{background:
-  linear-gradient(to top, rgba(11,14,18,.6) 0%, rgba(11,14,18,.14) 30%,
-                  rgba(11,14,18,.5) 72%, rgba(11,14,18,.9) 100%)}
-:root[data-theme="steel"] .beams{opacity:.28}
-:root[data-theme="steel"] .floor{opacity:.3}
-:root[data-theme="steel"] .card{background:rgba(214,230,248,.10)}
-:root[data-theme="steel"] .block{background:linear-gradient(160deg,rgba(190,210,235,.07),rgba(190,210,235,.02))}
-:root[data-theme="steel"] .flow li{background:rgba(190,210,235,.045)}
-
-/* ---- PAPER · the light ground, neutral ---- */
-:root[data-theme="paper"]{
-  --ink:#F4F1EC;
-  --ember:#9E4000;
-  --sky:
-    radial-gradient(1200px 520px at 46% 96%, rgba(244,121,32,.16), transparent 60%),
-    linear-gradient(#FFFFFF 0%, #F7F4EF 55%, #F1ECE4 100%);
-}
-
-/* ---- SAND · light, warm, taken from the beach in the key art ---- */
-:root[data-theme="sand"]{
-  --ink:#F1E7D9;
-  --coal:#E7DAC7;
-  --paper:#FFFDF9;
-  --field:#FFFDF9;
-  --card-line:#E0D2BC;
-  --ember:#9A3D00;
-  --line:rgba(60,42,26,.16);
-  --mist:rgba(48,34,22,.68);
-  --sky:
-    radial-gradient(1100px 560px at 50% 102%, rgba(244,150,60,.28), transparent 64%),
-    linear-gradient(#FFF9F0 0%, #F6EADA 56%, #EFE0CB 100%);
-}
-:root[data-theme="sand"] body{color:#2E2216}
-:root[data-theme="sand"] .keyart:after{background:
-  linear-gradient(to top, rgba(241,231,217,.5) 0%, rgba(241,231,217,.08) 30%,
-                  rgba(241,231,217,.5) 72%, rgba(241,231,217,.92) 100%)}
-:root[data-theme="sand"] .block{background:linear-gradient(160deg,rgba(96,66,38,.06),rgba(96,66,38,.02))}
-:root[data-theme="sand"] .flow li{background:rgba(96,66,38,.045)}
-
-/* ---- the picker ---- */
-.theme-wrap{position:relative;margin-left:auto;margin-right:10px;flex:none}
-@media (min-width:1020px){.theme-wrap{margin-left:0;margin-right:14px}}
-.theme-menu{position:absolute;top:calc(100% + 10px);right:0;z-index:60;min-width:186px;
-  background:rgba(11,9,7,.97);backdrop-filter:blur(12px);
-  border:1px solid var(--line);border-radius:12px;padding:6px;
-  opacity:0;visibility:hidden;transform:translateY(-6px);
-  transition:opacity .18s ease,transform .18s ease,visibility 0s .18s}
-.theme-menu.on{opacity:1;visibility:visible;transform:none;transition:opacity .18s ease,transform .18s ease,visibility 0s}
-:root[data-mode="light"] .theme-menu{background:rgba(255,255,255,.98);box-shadow:0 20px 50px rgba(25,21,16,.16)}
-.theme-menu button{display:flex;align-items:center;gap:10px;width:100%;
-  background:none;border:none;border-radius:8px;padding:9px 10px;cursor:pointer;
-  font:600 12px/1 var(--font-body);letter-spacing:.04em;color:var(--mist);text-align:left}
-.theme-menu button:hover{background:rgba(255,255,255,.08);color:#fff}
-:root[data-mode="light"] .theme-menu button:hover{background:rgba(25,21,16,.06);color:#191510}
-.theme-menu button[aria-checked="true"]{color:var(--amber)}
-:root[data-mode="light"] .theme-menu button[aria-checked="true"]{color:var(--ember)}
-.sw{width:16px;height:16px;border-radius:5px;flex:none;border:1px solid rgba(255,255,255,.25)}
-.sw-dark{background:linear-gradient(135deg,#0B0907,#241205)}
-.sw-ember{background:linear-gradient(135deg,#2E1006,#FF7A1A)}
-.sw-steel{background:linear-gradient(135deg,#0B0E12,#78A0CD)}
-.sw-paper{background:linear-gradient(135deg,#FFFFFF,#E8E1D6)}
-.sw-sand{background:linear-gradient(135deg,#FFF9F0,#E0B77C)}
-
-
-/* =============================================================
    AMBIENT BACKGROUND
    Large sections were flat expanses of one colour, worst on the
    light palettes. Three very soft colour fields drift behind the
@@ -786,34 +563,11 @@ html.motion [data-reveal].in .cd b{animation:none}
 nav,.drawer,header,section,.closer,footer,.sticky-cta{position:relative;z-index:1}
 nav{z-index:50}.drawer{z-index:49}.sticky-cta{z-index:45}
 
-/* ---- per-palette colour fields ---- */
+/* ---- colour fields ---- */
 :root{
-  --blob-1:radial-gradient(circle, rgba(244,121,32,.22), transparent 70%);
-  --blob-2:radial-gradient(circle, rgba(255,154,61,.16), transparent 70%);
-  --blob-3:radial-gradient(circle, rgba(194,78,0,.18), transparent 70%);
-}
-:root[data-theme="ember"]{
   --blob-1:radial-gradient(circle, rgba(255,122,26,.34), transparent 70%);
   --blob-2:radial-gradient(circle, rgba(196,54,0,.30), transparent 70%);
   --blob-3:radial-gradient(circle, rgba(255,180,90,.22), transparent 70%);
-}
-:root[data-theme="steel"]{
-  --blob-1:radial-gradient(circle, rgba(120,160,205,.24), transparent 70%);
-  --blob-2:radial-gradient(circle, rgba(244,121,32,.14), transparent 70%);
-  --blob-3:radial-gradient(circle, rgba(90,120,165,.22), transparent 70%);
-}
-/* Light grounds need far less — the same strength reads as a stain. */
-:root[data-mode="light"] .ambient .blob{opacity:.42;filter:blur(110px)}
-:root[data-mode="light"] .grain{opacity:.10;mix-blend-mode:multiply}
-:root[data-theme="paper"]{
-  --blob-1:radial-gradient(circle, rgba(244,121,32,.16), transparent 70%);
-  --blob-2:radial-gradient(circle, rgba(120,160,205,.10), transparent 70%);
-  --blob-3:radial-gradient(circle, rgba(255,154,61,.14), transparent 70%);
-}
-:root[data-theme="sand"]{
-  --blob-1:radial-gradient(circle, rgba(226,140,50,.20), transparent 70%);
-  --blob-2:radial-gradient(circle, rgba(180,120,60,.14), transparent 70%);
-  --blob-3:radial-gradient(circle, rgba(255,190,110,.20), transparent 70%);
 }
 
 /* Drifting colour is exactly what motion sensitivity dislikes: the
@@ -831,27 +585,9 @@ nav{z-index:50}.drawer{z-index:49}.sticky-cta{z-index:45}
    stacking context, behind its content but above the page.
    ============================================================= */
 :root{
-  --deco-fill:rgba(244,121,32,.07);
-  --deco-line:rgba(255,255,255,.14);
-  --deco-dot:rgba(255,154,61,.30);
-}
-:root[data-theme="ember"]{
   --deco-fill:rgba(255,138,50,.10);
+  --deco-line:rgba(255,255,255,.14);
   --deco-dot:rgba(255,180,90,.36);
-}
-:root[data-theme="steel"]{
-  --deco-fill:rgba(140,180,225,.09);
-  --deco-line:rgba(190,210,235,.16);
-  --deco-dot:rgba(150,190,235,.30);
-}
-:root[data-mode="light"]{
-  --deco-fill:rgba(244,121,32,.09);
-  --deco-line:rgba(25,21,16,.12);
-  --deco-dot:rgba(194,78,0,.22);
-}
-:root[data-theme="sand"]{
-  --deco-fill:rgba(200,130,60,.12);
-  --deco-dot:rgba(154,61,0,.24);
 }
 
 section,.closer{overflow:hidden}
