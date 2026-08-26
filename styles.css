@@ -657,7 +657,17 @@ header,section,.closer,footer{position:relative;z-index:1}
   --deco-dot:rgba(255,180,90,.36);
 }
 
+/* Clip sideways only. The discs that bleed off the left and right
+   edges must not create horizontal page scroll, but the ones set to
+   bleed DOWN (see #experience:after) were being sliced flat at the
+   section seam. overflow-x:clip is the one value that allows
+   overflow-y:visible alongside it — hidden would force both axes.
+   The plain hidden above it is the fallback for anything that
+   doesn't know clip; there, the disc simply stays cropped. */
 section,.closer{overflow:hidden}
+@supports (overflow:clip){
+  section,.closer{overflow-x:clip;overflow-y:visible}
+}
 
 /* A large disc behind THE EVENT, bleeding off the right edge — the
    shape the reference leans on. */
