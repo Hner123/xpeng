@@ -86,15 +86,21 @@ function make(env) {
     return data;
   }
 
+  /* Semaphore returns field errors as {field: ["msg"]}, but a 500 can
+     carry an array of objects instead. Flatten either shape rather
+     than letting a nested object stringify to "[object Object]" and
+     lose the only description of what went wrong. */
   function describeError(data, raw) {
-    if (data && typeof data === 'object') {
-      const parts = [];
-      for (const [field, msgs] of Object.entries(data)) {
-        parts.push(field + ': ' + (Array.isArray(msgs) ? msgs.join(' ') : msgs));
+    const flat = v => {
+      if (v === null || v === undefined) return '';
+      if (Array.isArray(v)) return v.map(flat).filter(Boolean).join(' ');
+      if (typeof v === 'object') {
+        return Object.entries(v).map(([k, x]) => k + ': ' + flat(x)).filter(Boolean).join('; ');
       }
-      if (parts.length) return parts.join('; ');
-    }
-    return String(raw || '').slice(0, 200);
+      return String(v);
+    };
+    const out = flat(data).trim();
+    return out || String(raw || '').slice(0, 300);
   }
 
   return {
