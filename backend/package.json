@@ -17,7 +17,6 @@
     "nodemailer": "^9.0.5"
   },
   "optionalDependencies": {
-    "mysql2": "^3.19.1",
-    "nodemailer": "^7.0.0"
+    "mysql2": "^3.19.1"
   }
 }
