@@ -24,6 +24,7 @@ const vaultLib = require('./lib/crypto');
 const storeLib = require('./lib/store');
 const authLib  = require('./lib/auth');
 const mailLib  = require('./lib/mailer');
+const smsLib   = require('./lib/sms');
 const tpl      = require('./lib/templates');
 const { validate } = require('./lib/validate');
 
