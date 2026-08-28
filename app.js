@@ -74,7 +74,6 @@
     if (ev.dateLabel && $('v-date'))  $('v-date').textContent  = ev.dateLabel;
     if (ev.venue && $('c-venue'))     $('c-venue').textContent = ev.venue;
     if (ev.dateLabel && $('c-date'))  $('c-date').textContent  = ev.dateLabel;
-    if (ev.forumLabel) $('m-forum').textContent = ev.forumLabel.toUpperCase();
 
     var st = CFG.status || {};
     if (st.waitlistLabel) $('s-waitlist').textContent = st.waitlistLabel;

@@ -12,8 +12,7 @@ window.XPENG_CONFIG = {
     venue:     "MOA Arena",
     dateISO:   "2026-09-25T18:00:00+08:00",   // countdown target
     dateLabel: "September 25, 2026",
-    doorsLabel:"Foyer opens 6:00 PM · Show 7:00 PM",
-    forumLabel:"Physical AI Forum · 3:30 PM · live on @XPENGPhilippines"
+    doorsLabel:"Foyer opens 6:00 PM · Show 7:00 PM"
   },
 
   /* Ticket status is hard-coded for the whole campaign. There is no
@@ -86,7 +85,7 @@ window.XPENG_CONFIG = {
   },
 
   contact: {
-    email:  "futurenight@xpeng.ph",
+    email:  "marketing@xpengphilippines.com",
     privacy:"/privacy",
     terms:  "/terms",
     /* REQUIRED BEFORE GO-LIVE: the official XPENG Philippines

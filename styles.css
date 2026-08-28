@@ -217,8 +217,11 @@ h1{font-family:var(--font-display);font-weight:700;font-style:italic;
 /* Forum line + follow icons share one row, so the icons read as
    part of the same "watch us here" statement rather than a
    second, competing element. They wrap under it on a phone. */
-.hero-tags{position:relative;z-index:2;display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:22px}
-.hero-follow{display:flex;align-items:center;gap:6px}
+.hero-tags{position:relative;z-index:2;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+/* The spacing rides on the icons, not the wrapper: with the row hidden
+   (no social URLs yet) the wrapper is empty, and a margin there would
+   leave a gap under the countdown with nothing in it. */
+.hero-follow{display:flex;align-items:center;gap:6px;margin-top:22px}
 /* Solid orange at rest, not on hover: these sit on busy key art,
    and an outline-only icon disappeared into the car behind it. */
 .hero-follow a{display:grid;place-items:center;width:32px;height:32px;border-radius:50%;
@@ -227,10 +230,6 @@ h1{font-family:var(--font-display);font-weight:700;font-style:italic;
 .hero-follow a:hover{background:var(--amber);border-color:var(--amber)}
 .hero-follow a:focus-visible{outline:2px solid var(--orange);outline-offset:2px}
 .hero-follow svg{display:block;width:15px;height:15px}
-.free-tag{display:inline-flex;align-items:center;gap:9px;padding:9px 15px;border:1px solid rgba(255,154,61,.45);
-  border-radius:999px;font-family:var(--font-mono);font-size:10.5px;letter-spacing:.14em;color:var(--amber)}
-.free-tag i{width:7px;height:7px;border-radius:50%;background:var(--orange);animation:pulse 2.2s infinite;flex:none}
-@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(244,121,32,.5)}55%{box-shadow:0 0 0 8px rgba(244,121,32,0)}}
 
 /* hero artist strip (swaps at reveal) */
 .hero-artist{position:relative;z-index:2;display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:16px}
