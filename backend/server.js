@@ -66,6 +66,7 @@ const PUBLIC_SITE = process.env.PUBLIC_SITE_URL || 'https://x-peng.netlify.app';
    Tickets; until then invitations point back at the campaign page. */
 const SM_CLAIM_URL = (process.env.SM_CLAIM_URL || '').trim();
 let mailerRef = null;   // for the startup banner
+let smsRef    = null;
 /* Origins allowed to call the PUBLIC endpoints cross-site — set this
    to the Netlify URL when the page and API live on different hosts.
    Comma-separated, exact origins only, never '*'. Admin routes are
@@ -221,16 +222,20 @@ function serveStatic(req, res, pathname) {
    written to backend/data/outbox.log instead so the pipeline stays
    observable without sending anything.
 
-   SMS has no provider yet and always logs. */
-function startCommsWorker(store, auth, mailer) {
+   The two channels are independent: email can be live while SMS is
+   still in dry-run, which is exactly the state during onboarding
+   with an aggregator. */
+function startCommsWorker(store, auth, mailer, sms) {
   const outbox = path.join(BACKEND, 'data', 'outbox.log');
-  const sendLive = mailer.enabled && !DRY_RUN;
+  const mailLive = mailer.enabled && !DRY_RUN;
+  const smsLive  = sms.enabled && !DRY_RUN;
 
   function log(msg, extra) {
+    const live = msg.channel === 'sms' ? smsLive : mailLive;
     fs.appendFileSync(outbox, JSON.stringify(Object.assign({
       at: new Date().toISOString(),
       id: msg.id, channel: msg.channel, template: msg.template,
-      to: sendLive ? msg.recipient : '[dry-run] ' + (msg.recipient || ''),
+      to: live ? msg.recipient : '[dry-run] ' + (msg.recipient || ''),
       payload: storeLib.parsePayload(msg.payload)
     }, extra || {})) + '\n');
   }
@@ -242,10 +247,17 @@ function startCommsWorker(store, auth, mailer) {
     if (data.expires_at && !data.expiresAt) data.expiresAt = data.expires_at;
     if (data.code && !data.claimUrl) data.claimUrl = SM_CLAIM_URL || PUBLIC_SITE;
 
-    if (msg.channel === 'sms' || !sendLive) {
-      log(msg);                                   // SMS provider still pending
+    if (msg.channel === 'sms') {
+      if (!smsLive) { log(msg); return; }
+      const body = tpl.sms(msg.template, data);
+      if (!body) throw new Error('no SMS template for ' + msg.template);
+      if (!msg.recipient) throw new Error('no recipient number');
+      const out = await sms.send({ to: msg.recipient, text: body.text, template: msg.template });
+      log(msg, { messageId: out.messageId, status: out.status, network: out.network });
       return;
     }
+
+    if (!mailLive) { log(msg); return; }
     const mail = tpl.build(msg.template, data);
     if (!mail) throw new Error('no template for ' + msg.template);
     if (!msg.recipient) throw new Error('no recipient address');
@@ -310,14 +322,23 @@ async function main() {
   }
 
   const mailer = mailLib.make(process.env);
+  const sms = smsLib.make(process.env);
   mailerRef = mailer;
-  startCommsWorker(store, auth, mailer);
+  smsRef = sms;
+  startCommsWorker(store, auth, mailer, sms);
 
   /* Prove the credentials at boot rather than mid-campaign. */
   if (mailer.enabled && !DRY_RUN) {
     mailer.verify().then(r => console.log(r.ok
       ? '[mail] ready — sending as ' + r.detail
       : '[mail] NOT READY — ' + r.error + ' (queue will retry)'));
+  }
+  /* Credit balance at boot too: running dry mid-campaign is the
+     failure nobody notices until invitations stop arriving. */
+  if (sms.enabled && !DRY_RUN) {
+    sms.verify().then(r => console.log(r.ok
+      ? '[sms]  ready — ' + r.detail
+      : '[sms]  NOT READY — ' + r.error + ' (queue will retry)'));
   }
 
   const server = http.createServer(async (req, res) => {
@@ -560,6 +581,8 @@ async function main() {
     console.log('  database       ' + db.name + (db.name === 'sqlite' ? '  (backend/data/future-night.db)' : ''));
     console.log('  email          ' + (DRY_RUN ? 'DRY RUN -> backend/data/outbox.log'
                  : mailerRef ? mailerRef.describe() : 'not configured'));
+    console.log('  sms            ' + (DRY_RUN ? 'DRY RUN -> backend/data/outbox.log'
+                 : smsRef ? smsRef.describe() : 'not configured'));
     console.log('');
     if (!process.env.ADMIN_PASS) {
       console.log('  user  ' + (process.env.ADMIN_USER || 'admin') + '   password  futurenight   (default)');

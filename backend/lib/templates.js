@@ -206,16 +206,21 @@ ${site}`,
 }
 
 /* SMS is metered per segment, so these stay inside 160 GSM-7
-   characters wherever possible. */
+   characters wherever possible.
+
+   NO LINKS. The NTC directed Globe, Smart and DITO to block messages
+   containing clickable domains, URLs, shorteners or QR codes, so an
+   SMS carrying the claim link is liable to be dropped at the carrier
+   — silently, and for the one message in this campaign that has a
+   72-hour fuse. The code travels by SMS, the link by email. */
 function sms(template, data = {}) {
-  const site = (data.siteUrl || 'x-peng.netlify.app').replace(/^https?:\/\//, '');
   switch (template) {
     case 'waitlist_confirmation':
       return { text: `XPENG: You're on the waitlist for Driving Into A New Day${data.sequence ? ' (#' + data.sequence + ')' : ''}. Invitations go out 1 week before Sept 25. Watch your inbox. Free, never for sale.` };
     case 'invitation':
-      return { text: `XPENG: You're invited to Driving Into A New Day, Sept 25 at MOA Arena. Claim code ${data.code || ''} - claim free on SM Tickets within 72hrs: ${data.claimUrl || site}` };
+      return { text: `XPENG: You're invited to Driving Into A New Day, Sept 25 at MOA Arena. Claim code: ${data.code || ''}. Claim free on SM Tickets in 72hrs - link in your email.` };
     case 'claim_reminder':
-      return { text: `XPENG: 24hrs left to claim your free ticket. Code ${data.code || ''}. ${data.claimUrl || site}` };
+      return { text: `XPENG: 24hrs left to claim your free ticket for Sept 25. Code ${data.code || ''}. The SM Tickets link is in your email.` };
     case 'event_reminder':
       return { text: `XPENG: Tomorrow at MOA Arena. Doors 6PM. Bring your SM Ticket + valid ID matching your name. Keep your registration QR for the play zone.` };
     case 'not_selected':
