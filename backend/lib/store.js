@@ -25,6 +25,17 @@ function nowUTC() {
   return new Date().toISOString().slice(0, 19).replace('T', ' ');
 }
 
+/* comms_queue.payload is JSON on MySQL and TEXT on SQLite, and mysql2
+   parses a JSON column for you — so this arrives as an object on one
+   driver and a string on the other. JSON.parse() on the object gives
+   "[object Object]" and throws, which silently killed every queued
+   message on MySQL. Accept both. */
+function parsePayload(value) {
+  if (value === null || value === undefined) return null;
+  if (typeof value === 'object') return value;
+  try { return JSON.parse(value); } catch (e) { return null; }
+}
+
 function make(db, vault) {
 
   /* ---------- write path (public, hot) ----------------------- */
@@ -291,7 +302,7 @@ function make(db, vault) {
         "SELECT payload FROM comms_queue WHERE registration_id=? AND template='invitation'", [id]
       );
       const already = priorMsgs.some(m => {
-        try { return JSON.parse(m.payload || '{}').code === code; } catch (e) { return false; }
+        return (parsePayload(m.payload) || {}).code === code;
       });
 
       if (already && !resend) {
@@ -475,7 +486,7 @@ function make(db, vault) {
       template: r.template, status: r.status, attempts: r.attempts,
       created_at: r.created_at, sent_at: r.sent_at, error: r.error,
       recipient: vault.decrypt(r.recipient_enc),
-      payload: r.payload ? JSON.parse(r.payload) : null
+      payload: parsePayload(r.payload)
     }));
   }
 
@@ -525,4 +536,4 @@ function make(db, vault) {
   };
 }
 
-module.exports = { make };
+module.exports = { make, parsePayload };

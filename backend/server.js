@@ -231,14 +231,14 @@ function startCommsWorker(store, auth, mailer) {
       at: new Date().toISOString(),
       id: msg.id, channel: msg.channel, template: msg.template,
       to: sendLive ? msg.recipient : '[dry-run] ' + (msg.recipient || ''),
-      payload: msg.payload ? JSON.parse(msg.payload) : null
+      payload: storeLib.parsePayload(msg.payload)
     }, extra || {})) + '\n');
   }
 
   async function deliver(msg) {
     const data = Object.assign(
       { firstName: msg.first_name, sequence: msg.seq, siteUrl: PUBLIC_SITE },
-      msg.payload ? JSON.parse(msg.payload) : {});
+      storeLib.parsePayload(msg.payload) || {});
     if (data.expires_at && !data.expiresAt) data.expiresAt = data.expires_at;
     if (data.code && !data.claimUrl) data.claimUrl = SM_CLAIM_URL || PUBLIC_SITE;
 
