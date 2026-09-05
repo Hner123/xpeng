@@ -59,6 +59,14 @@ const DRY_RUN  = process.env.COMMS_DRY_RUN !== 'false';
 /* Set COOKIE_SECURE=true once the app is behind HTTPS, so the
    session cookie is never sent over plain http. */
 const SECURE_COOKIES = process.env.COOKIE_SECURE === 'true';
+/* Maintenance switch. SITE_OFFLINE=true takes the PUBLIC surface down
+   — the landing page and the registration endpoint — and leaves the
+   admin dashboard, its API and the comms worker running, so the team
+   keeps working and queued messages keep draining. Nothing is deleted
+   and nothing is lost; flip it back and the page returns.
+   Answers 503 (not 404) so search engines treat it as temporary and
+   do not drop the page from their index. */
+const OFFLINE = process.env.SITE_OFFLINE === 'true';
 /* Where the public campaign page is hosted. The dashboard's "View
    landing page" button points here — set it when the front-end moves
    to its own domain, so the link never goes stale. */
@@ -357,6 +365,23 @@ async function main() {
     const q = Object.fromEntries(url.searchParams);
 
     try {
+      /* ---- maintenance mode ---- */
+      if (OFFLINE && !p.startsWith('/admin') && !p.startsWith('/api/admin') && !p.startsWith('/api/auth')) {
+        if (p.startsWith('/api/')) {
+          return json(res, 503, { ok: false, error: 'unavailable',
+            message: 'Registration is temporarily unavailable. Please try again soon.' });
+        }
+        const page = path.join(ROOT, 'maintenance.html');
+        const body = fs.existsSync(page) ? fs.readFileSync(page)
+          : 'Temporarily unavailable. Please try again soon.';
+        return send(res, 503, body, {
+          'Content-Type': 'text/html; charset=utf-8',
+          'Cache-Control': 'no-store',
+          'Retry-After': '3600',
+          'X-Robots-Tag': 'noindex'
+        });
+      }
+
       /* Public API is CORS-aware; preflights end here. */
       if (p.startsWith('/api/waitlist')) {
         if (cors(req, res)) return;

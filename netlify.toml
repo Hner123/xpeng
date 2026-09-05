@@ -15,8 +15,20 @@
   # repo root would also upload backend/, including the admin HTML —
   # harmless but confusing, and it would serve a second, broken copy of
   # the dashboard from the wrong origin.
+  # SITE_OFFLINE=true in the Netlify UI (Site configuration ->
+  # Environment variables) publishes the holding page instead of the
+  # campaign. Nothing is deleted: unset it, redeploy, and the real site
+  # is back. Toggling needs no commit and no code change.
   command = """
     rm -rf dist && mkdir -p dist &&
+    if [ "$SITE_OFFLINE" = "true" ]; then
+      cp maintenance.html dist/index.html &&
+      cp favicon.ico favicon.svg dist/ &&
+      printf 'User-agent: *
+Disallow: /
+' > dist/robots.txt &&
+      exit 0;
+    fi &&
     cp index.html styles.css app.js config.js geo.js dist/ &&
     cp privacy.html terms.html legal.css dist/ &&
     cp favicon.ico favicon.svg site.webmanifest robots.txt dist/ &&
