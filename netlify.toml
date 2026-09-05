@@ -11,6 +11,11 @@
 # =============================================================
 
 [build]
+  # Pause Git-triggered builds once this configuration is pushed.
+  # Remove this line to resume. Build hooks bypass this check;
+  # use Netlify's "Stopped builds" setting to stop all builds.
+  ignore = "exit 0"
+
   # Copy only the front-end into dist/ and publish that. Publishing the
   # repo root would also upload backend/, including the admin HTML —
   # harmless but confusing, and it would serve a second, broken copy of

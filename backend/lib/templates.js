@@ -67,7 +67,7 @@ function shell({ preheader, heading, body, cta, siteUrl }) {
 }
 
 function build(template, data = {}) {
-  const site = (data.siteUrl || 'https://x-peng.netlify.app').replace(/\/$/, '');
+  const site = (data.siteUrl || 'https://xpeng.heineraboka.site').replace(/\/$/, '');
   const name = (data.firstName || '').trim();
   const hi = name ? `Hi ${esc(name)},` : 'Hi,';
   const seq = data.sequence ? '#' + Number(data.sequence).toLocaleString('en-US') : null;

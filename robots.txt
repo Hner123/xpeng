@@ -4,5 +4,3 @@ User-agent: *
 Allow: /
 Disallow: /admin
 Disallow: /api/
-
-Sitemap: https://futurenight.xpeng.ph/sitemap.xml

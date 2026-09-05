@@ -276,18 +276,43 @@
     });
 
     var sticky = $('sticky'), card = $('waitlist');
+    var cardOffscreen = false;
+    function updateSticky() {
+      var registered = !$('step3').hidden;
+      sticky.classList.toggle('on', cardOffscreen && !registered);
+    }
     function onScroll() {
       var r = card.getBoundingClientRect();
-      var offscreen = r.bottom < 0 || r.top > window.innerHeight;
-      var registered = !$('step3').hidden;          // no nagging once they're in
-      sticky.classList.toggle('on', offscreen && !registered);
+      cardOffscreen = r.bottom < 0 || r.top > window.innerHeight;
+      updateSticky();
     }
-    chrome.refreshSticky = onScroll;
-    window.addEventListener('scroll', onScroll, { passive: true });
-    onScroll();
+    chrome.refreshSticky = updateSticky;
+    if ('IntersectionObserver' in window) {
+      var cardObserver = new IntersectionObserver(function (entries) {
+        cardOffscreen = !entries[0].isIntersecting;
+        updateSticky();
+      });
+      cardObserver.observe(card);
+    } else {
+      var stickyQueued = false;
+      function queueSticky() {
+        if (stickyQueued) return;
+        stickyQueued = true;
+        requestAnimationFrame(function () { stickyQueued = false; onScroll(); });
+      }
+      window.addEventListener('scroll', queueSticky, { passive: true });
+      window.addEventListener('resize', queueSticky, { passive: true });
+      onScroll();
+    }
 
     document.querySelectorAll('[data-cta]').forEach(function (el) {
       el.addEventListener('click', function () { track('StartForm', { placement: el.dataset.cta }); });
+    });
+    /* Outbound links get their own event. Firing StartForm for these
+       would count someone leaving for xpeng.com as a registration
+       intent and quietly inflate the campaign's conversion figures. */
+    document.querySelectorAll('[data-out]').forEach(function (el) {
+      el.addEventListener('click', function () { track('OutboundClick', { destination: el.dataset.out }); });
     });
   }
 
@@ -497,7 +522,7 @@
   var s1 = $('step1'), s2 = $('step2'), s2b = $('step2b'), s3 = $('step3');
 
   function focusCard() {
-    $('waitlist').scrollIntoView({ block: 'center', behavior: 'smooth' });
+    $('waitlist').scrollIntoView({ block: 'center', behavior: MOTION ? 'smooth' : 'instant' });
   }
 
   function flow() {
@@ -698,31 +723,8 @@
         e.target.classList.add('in');
         io.unobserve(e.target);       // one-shot: reveals don't re-hide on scroll up
       });
-    }, { rootMargin: '0px 0px -8% 0px', threshold: 0.1 });
+    }, { rootMargin: '0px 0px 40px 0px', threshold: 0 });
     targets.forEach(function (el) { io.observe(el); });
-
-    /* Safety net. The negative rootMargin above creates a dead band at
-       the bottom of the screen: anything that only ever appears inside
-       it — the last element on the page, once you cannot scroll any
-       further — would stay at opacity 0 permanently. This sweeps up
-       whatever is on screen but still hidden. */
-    function sweep() {
-      var left = document.querySelectorAll('[data-reveal]:not(.in)');
-      for (var i = 0; i < left.length; i++) {
-        var r = left[i].getBoundingClientRect();
-        if (r.top < window.innerHeight - 4 && r.bottom > 0) left[i].classList.add('in');
-      }
-      if (!left.length) window.removeEventListener('scroll', queued, { passive: true });
-    }
-    var pending = false;
-    function queued() {
-      if (pending) return;
-      pending = true;
-      requestAnimationFrame(function () { pending = false; sweep(); });
-    }
-    window.addEventListener('scroll', queued, { passive: true });
-    window.addEventListener('resize', queued, { passive: true });
-    setTimeout(sweep, 600);           // also covers a page that loads already scrolled
   }
 
   /* Hero glow drifts at a fraction of scroll speed. rAF-throttled. */
@@ -771,11 +773,21 @@
 
   /* nav condense */
   function navShrink() {
-    var onScroll = function () {
-      document.body.classList.toggle('scrolled', window.pageYOffset > 40);
-    };
+    var queued = false, previous = null;
+    function update() {
+      queued = false;
+      var scrolled = window.pageYOffset > 40;
+      if (scrolled === previous) return;
+      previous = scrolled;
+      document.body.classList.toggle('scrolled', scrolled);
+    }
+    function onScroll() {
+      if (queued) return;
+      queued = true;
+      requestAnimationFrame(update);
+    }
     window.addEventListener('scroll', onScroll, { passive: true });
-    onScroll();
+    update();
   }
 
   /* ---------- FAQ accordion ----------------------------------
@@ -829,7 +841,89 @@
     parallax();
   }
 
+  /* Official X9 sprite: 36 angles, repacked into a 6 by 6 grid.
+     Load near the viewport; a matching still remains until ready. */
+  function x9Rotation() {
+    var host = $('x9-showcase'), canvas = $('x9-canvas');
+    if (!host || !canvas || !window.PointerEvent) return;
+    var ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    var poster = $('x9-poster'), retry = $('x9-retry');
+    var status = $('x9-view-status'), arrows = $('x9-rotate-buttons');
+    var sprite = null, active = false, frame = 29, drag = null;
+    $('x9-view-controls').hidden = false;
+
+    function draw(value) {
+      frame = ((value % 36) + 36) % 36;
+      ctx.clearRect(0, 0, 750, 350);
+      ctx.drawImage(sprite, (frame % 6) * 750, Math.floor(frame / 6) * 350, 750, 350, 0, 0, 750, 350);
+      canvas.setAttribute('aria-valuenow', frame * 10);
+      canvas.setAttribute('aria-valuetext', (frame * 10) + ' degrees');
+    }
+    function loadRotation() {
+      retry.hidden = true;
+      status.textContent = 'Loading 360° view…';
+      var img = new Image();
+      var timer = setTimeout(failed, 20000);
+      function failed() {
+        clearTimeout(timer);
+        img.onload = img.onerror = null;
+        retry.hidden = false;
+        status.textContent = '360° view could not load. Try again.';
+      }
+      img.onerror = failed;
+      img.onload = function () {
+        clearTimeout(timer);
+        if (img.naturalWidth !== 4500 || img.naturalHeight !== 2100) { failed(); return; }
+        sprite = img;
+        active = true;
+        draw(frame);
+        poster.hidden = true;
+        canvas.hidden = false;
+        arrows.hidden = false;
+        status.textContent = '360° exterior view';
+        $('x9-rotate-help').textContent = 'Drag or swipe to explore. Use the left and right arrow keys to rotate.';
+        track('View360', { content: 'x9' });
+      };
+      img.src = 'image/x9/x9-360.webp';
+    }
+    retry.addEventListener('click', loadRotation);
+    if ('IntersectionObserver' in window) {
+      var observer = new IntersectionObserver(function (entries) {
+        if (entries.some(function (entry) { return entry.isIntersecting; })) {
+          observer.disconnect();
+          loadRotation();
+        }
+      }, { rootMargin: '250px' });
+      observer.observe(host);
+    } else loadRotation();
+    $('x9-rotate-left').addEventListener('click', function () { draw(frame - 1); });
+    $('x9-rotate-right').addEventListener('click', function () { draw(frame + 1); });
+    canvas.addEventListener('keydown', function (e) {
+      if (!active) return;
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'Home' || e.key === 'End') {
+        e.preventDefault();
+        draw(e.key === 'Home' ? 0 : e.key === 'End' ? 35 : frame + (e.key === 'ArrowRight' ? 1 : -1));
+      }
+    });
+    canvas.addEventListener('pointerdown', function (e) {
+      if (!active || !e.isPrimary || e.button !== 0) return;
+      drag = { id: e.pointerId, x: e.clientX, frame: frame };
+      canvas.setPointerCapture(e.pointerId);
+    });
+    canvas.addEventListener('pointermove', function (e) {
+      if (!drag || drag.id !== e.pointerId) return;
+      var step = Math.max(5, canvas.getBoundingClientRect().width / 36);
+      draw(drag.frame + Math.round((e.clientX - drag.x) / step));
+    });
+    function endDrag() { drag = null; }
+    canvas.addEventListener('pointerup', endDrag);
+    canvas.addEventListener('pointercancel', endDrag);
+    canvas.addEventListener('lostpointercapture', endDrag);
+  }
+
   /* ---------- boot ------------------------------------------- */
+  x9Rotation();
   paintConfig();
   fillSelects();
   chips();

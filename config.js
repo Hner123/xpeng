@@ -64,7 +64,7 @@ window.XPENG_CONFIG = {
 
   share: {
     text: "I joined the waitlist for XPENG's Driving Into A New Day — the Physical AI Open House at MOA Arena.",
-    url:  "https://futurenight.xpeng.ph"
+    url:  "https://xpeng.heineraboka.site"
   },
 
   /* Where the API lives.

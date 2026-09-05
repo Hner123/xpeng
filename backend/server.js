@@ -70,7 +70,7 @@ const OFFLINE = process.env.SITE_OFFLINE === 'true';
 /* Where the public campaign page is hosted. The dashboard's "View
    landing page" button points here — set it when the front-end moves
    to its own domain, so the link never goes stale. */
-const PUBLIC_SITE = process.env.PUBLIC_SITE_URL || 'https://x-peng.netlify.app';
+const PUBLIC_SITE = process.env.PUBLIC_SITE_URL || 'https://xpeng.heineraboka.site';
 /* Where an invited guest claims their free ticket. Supplied by SM
    Tickets; until then invitations point back at the campaign page. */
 const SM_CLAIM_URL = (process.env.SM_CLAIM_URL || '').trim();

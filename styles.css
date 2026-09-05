@@ -77,7 +77,7 @@
    .counter{display:flex}), so hidden elements would still render.
    Restate it here, in the author sheet, where it wins. */
 [hidden]{display:none!important}
-html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+html{scroll-behavior:smooth;scroll-padding-top:calc(var(--nav-h) + 16px);-webkit-text-size-adjust:100%}
 body{font-family:var(--font-body);background:var(--ink);color:#fff;-webkit-font-smoothing:antialiased;overflow-x:hidden}
 img{max-width:100%;display:block}
 ::selection{background:var(--orange);color:#0B0907}
@@ -393,6 +393,62 @@ section{padding:70px var(--pad)}
   text-transform:uppercase;margin-bottom:7px}
 .venue-facts dd{font-family:var(--font-body);font-weight:600;font-size:14.5px;color:var(--paper)}
 .venue-note{margin-top:14px;font-size:12px;line-height:1.6;color:var(--mist)}
+
+/* Compact vehicle showcase and reservation details. */
+.x9-compact{display:grid;grid-template-columns:minmax(0,1fr);margin-top:28px;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:rgba(255,255,255,.025)}
+.x9-shot{display:flex;flex-direction:column;justify-content:center;min-width:0;margin:0;background:radial-gradient(ellipse at 50% 30%,#786b5d 0%,#3a3530 55%,#211b17 100%)}
+.x9-viewer{padding:24px 12px 18px;background:radial-gradient(ellipse at 50% 30%,#786b5d 0%,#3a3530 55%,#211b17 100%)}
+/* Each source angle is 750 × 350. Keep the stage below that size
+   instead of enlarging the vehicle to fill a wide desktop card. */
+.x9-viewer canvas,.x9-viewer img{display:block;width:100%;max-width:640px;margin-inline:auto;height:auto}
+.x9-viewer canvas{touch-action:pan-y;cursor:grab;outline-offset:-4px}
+.x9-viewer canvas:active{cursor:grabbing}
+.x9-viewer p{margin:8px auto 0;max-width:48ch;text-align:center;font-size:11px;line-height:1.6;color:rgba(255,255,255,.75)}
+.x9-view-controls{display:flex;align-items:center;flex-wrap:wrap;gap:12px;padding:16px 22px;background:#19110c;border-top:1px solid var(--line)}
+.x9-view-controls button{min-height:44px;border:1px solid rgba(255,255,255,.3);border-radius:6px;padding:10px 15px;background:transparent;color:var(--paper);font:700 11px var(--font-body);letter-spacing:.06em;cursor:pointer}
+.x9-view-controls button:hover{border-color:var(--amber);color:var(--amber)}
+.x9-view-controls button:disabled{opacity:.65;cursor:wait}
+.x9-view-controls button:focus-visible,.x9-viewer canvas:focus-visible{outline:2px solid var(--amber);outline-offset:3px}
+.x9-view-controls > span{font-size:11px;color:var(--mist)}
+.x9-rotate-buttons{display:flex;gap:8px;margin-left:auto}
+.x9-rotate-buttons button{min-width:44px;font-size:18px}
+
+.x9-compact .x9-viewer{background:none}
+.x9-detail{min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:16px;padding:26px 22px;border-top:1px solid var(--line)}
+.x9-detail .tag{font-family:var(--font-mono);font-size:9.5px;line-height:1.6;letter-spacing:.16em;color:var(--mist)}
+.x9-detail h3{font-size:22px;line-height:1.2}
+.x9-description{font-size:13.5px;line-height:1.65;color:var(--mist);max-width:48ch}
+.x9-price span{display:block;font-family:var(--font-mono);font-size:9.5px;letter-spacing:.2em;color:var(--mist)}
+.x9-price b{display:block;font-weight:700;font-size:30px;color:var(--paper);margin:6px 0 4px}
+.x9-price i{font-style:normal;font-size:12px;color:var(--mist)}
+.x9-detail .btn{font-size:12px;padding:13px 20px;max-width:100%}
+.x9-note{font-size:11.5px;line-height:1.6;color:var(--mist);max-width:46ch}
+@media (min-width:1020px){
+  .x9-compact{grid-template-columns:minmax(0,1.35fr) minmax(0,1fr)}
+  .x9-detail{padding:30px 32px;border-top:0;border-left:1px solid var(--line)}
+}
+
+.partner-section{padding-top:0;padding-bottom:0}
+.partner-banner{display:grid;grid-template-columns:minmax(0,1fr);overflow:hidden;border:1px solid var(--line);border-radius:16px;background:linear-gradient(110deg,rgba(244,121,32,.09),rgba(255,255,255,.02))}
+.partner-visual{position:relative;min-width:0;height:144px;overflow:hidden;background:var(--coal)}
+.partner-visual img{display:block;width:100%;height:100%;object-fit:cover;object-position:42% 52%}
+.partner-visual:after{content:'';position:absolute;inset:0;background:linear-gradient(0deg,rgba(24,11,5,.8),rgba(125,65,24,.12) 65%);pointer-events:none}
+.partner-image-label{position:absolute;bottom:16px;left:20px;right:16px;z-index:1;font-family:var(--font-mono);font-size:8px;line-height:1.6;letter-spacing:.15em;color:var(--paper)}
+.partner-content{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:20px;min-width:0;padding:24px 22px}
+.partner-copy{min-width:0}
+.partner-copy .sec-eyebrow{font-size:9px;margin-bottom:10px}
+.partner-copy h2{font-size:24px;line-height:1.2;letter-spacing:-.025em;margin-bottom:10px}
+.partner-copy p{max-width:65ch;font-size:13.5px;line-height:1.65;color:var(--mist)}
+.partner-link{display:inline-flex;align-items:center;justify-content:center;gap:16px;min-height:44px;max-width:100%;padding:13px 18px;border:1px solid var(--orange);border-radius:7px;color:var(--paper);font-size:11px;font-weight:700;letter-spacing:.06em;text-decoration:none}
+.partner-link:hover{background:rgba(244,121,32,.12);border-color:var(--amber)}
+.partner-link:focus-visible{outline:2px solid var(--amber);outline-offset:4px}
+.partner-link > span[aria-hidden]{font-size:19px;line-height:1}
+@media (min-width:1020px){
+  .partner-banner{grid-template-columns:minmax(0,3fr) minmax(0,7fr)}
+  .partner-visual{height:auto;min-height:220px}
+  .partner-content{flex-direction:row;align-items:center;gap:28px;padding:28px 32px}
+  .partner-link{flex-shrink:0}
+}
 
 .lineup{margin-top:14px;display:grid;grid-template-columns:1fr;gap:22px;align-items:center;
   border:1px solid rgba(244,121,32,.45);border-radius:16px;padding:24px 20px;
@@ -714,7 +770,7 @@ section,.closer{overflow:hidden}
 /* Phones: fewer, cheaper fields — a 90px blur over most of the screen
    is the most expensive thing on the page. */
 @media (max-width:700px){
-  .ambient .blob{filter:blur(60px);opacity:.42}
+  .ambient .blob{filter:blur(60px);opacity:.42;animation:none;will-change:auto}
   .b3{display:none}
   .grain{opacity:.12}
 }
