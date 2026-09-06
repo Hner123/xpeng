@@ -686,6 +686,8 @@
     ['.block', null, 90],
     ['.pill', 'scale', 60],
     ['.lineup', null, 0],
+    ['.x9-compact', null, 0],
+    ['.partner-banner', null, 0],
     ['.venue-shot', null, 90],
     ['.venue-facts > div', null, 50],
     ['.flow li', 'left', 70],
