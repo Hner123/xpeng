@@ -843,22 +843,64 @@
     parallax();
   }
 
-  /* Official X9 sprite: 36 angles, repacked into a 6 by 6 grid.
+  function modelTabs() {
+    var tabs = $('model-tabs');
+    if (!tabs) return;
+    var buttons = Array.from(tabs.querySelectorAll('[data-model]'));
+    function select(button) {
+      buttons.forEach(function (item) {
+        var selected = item === button;
+        item.setAttribute('aria-selected', String(selected));
+        item.tabIndex = selected ? 0 : -1;
+        var panel = $(item.dataset.model);
+        panel.hidden = !selected;
+        panel.setAttribute('role', 'tabpanel');
+        panel.setAttribute('aria-labelledby', item.id);
+        panel.tabIndex = 0;
+      });
+    }
+    buttons.forEach(function (button, index) {
+      button.addEventListener('click', function () { select(button); });
+      button.addEventListener('keydown', function (event) {
+        var next;
+        if (event.key === 'ArrowRight') next = (index + 1) % buttons.length;
+        else if (event.key === 'ArrowLeft') next = (index + buttons.length - 1) % buttons.length;
+        else if (event.key === 'Home') next = 0;
+        else if (event.key === 'End') next = buttons.length - 1;
+        else return;
+        event.preventDefault();
+        select(buttons[next]);
+        buttons[next].focus();
+      });
+    });
+    function fromHash() {
+      if (location.hash === '#l03') select(buttons[1]);
+      else if (location.hash === '#x9') select(buttons[0]);
+    }
+    select(buttons[0]);
+    fromHash();
+    window.addEventListener('hashchange', fromHash);
+    tabs.hidden = false;
+  }
+
+  /* Official vehicle sprites: 36 angles in a 6 by 6 grid.
      Load near the viewport; a matching still remains until ready. */
-  function x9Rotation() {
-    var host = $('x9-showcase'), canvas = $('x9-canvas');
+  function vehicleRotation(model) {
+    function part(name) { return $(model + '-' + name); }
+    var host = part('showcase'), canvas = part('canvas');
     if (!host || !canvas || !window.PointerEvent) return;
     var ctx = canvas.getContext('2d');
     if (!ctx) return;
-    var poster = $('x9-poster'), retry = $('x9-retry');
-    var status = $('x9-view-status'), arrows = $('x9-rotate-buttons');
+    var frameWidth = canvas.width, frameHeight = canvas.height;
+    var poster = part('poster'), retry = part('retry');
+    var status = part('view-status'), arrows = part('rotate-buttons');
     var sprite = null, active = false, frame = 29, drag = null;
-    $('x9-view-controls').hidden = false;
+    part('view-controls').hidden = false;
 
     function draw(value) {
       frame = ((value % 36) + 36) % 36;
-      ctx.clearRect(0, 0, 750, 350);
-      ctx.drawImage(sprite, (frame % 6) * 750, Math.floor(frame / 6) * 350, 750, 350, 0, 0, 750, 350);
+      ctx.clearRect(0, 0, frameWidth, frameHeight);
+      ctx.drawImage(sprite, (frame % 6) * frameWidth, Math.floor(frame / 6) * frameHeight, frameWidth, frameHeight, 0, 0, frameWidth, frameHeight);
       canvas.setAttribute('aria-valuenow', frame * 10);
       canvas.setAttribute('aria-valuetext', (frame * 10) + ' degrees');
     }
@@ -876,7 +918,7 @@
       img.onerror = failed;
       img.onload = function () {
         clearTimeout(timer);
-        if (img.naturalWidth !== 4500 || img.naturalHeight !== 2100) { failed(); return; }
+        if (img.naturalWidth !== frameWidth * 6 || img.naturalHeight !== frameHeight * 6) { failed(); return; }
         sprite = img;
         active = true;
         draw(frame);
@@ -884,10 +926,10 @@
         canvas.hidden = false;
         arrows.hidden = false;
         status.textContent = '360° exterior view';
-        $('x9-rotate-help').textContent = 'Drag or swipe to explore. Use the left and right arrow keys to rotate.';
-        track('View360', { content: 'x9' });
+        part('rotate-help').textContent = 'Drag or swipe to explore. Use the left and right arrow keys to rotate.';
+        track('View360', { content: model });
       };
-      img.src = 'image/x9/x9-360.webp';
+      img.src = 'image/' + model + '/' + model + '-360.webp';
     }
     retry.addEventListener('click', loadRotation);
     if ('IntersectionObserver' in window) {
@@ -899,8 +941,8 @@
       }, { rootMargin: '250px' });
       observer.observe(host);
     } else loadRotation();
-    $('x9-rotate-left').addEventListener('click', function () { draw(frame - 1); });
-    $('x9-rotate-right').addEventListener('click', function () { draw(frame + 1); });
+    part('rotate-left').addEventListener('click', function () { draw(frame - 1); });
+    part('rotate-right').addEventListener('click', function () { draw(frame + 1); });
     canvas.addEventListener('keydown', function (e) {
       if (!active) return;
       if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'Home' || e.key === 'End') {
@@ -925,7 +967,9 @@
   }
 
   /* ---------- boot ------------------------------------------- */
-  x9Rotation();
+  modelTabs();
+  vehicleRotation('x9');
+  vehicleRotation('l03');
   paintConfig();
   fillSelects();
   chips();
