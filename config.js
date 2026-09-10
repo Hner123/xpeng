@@ -12,7 +12,7 @@ window.XPENG_CONFIG = {
     venue:     "MOA Arena",
     dateISO:   "2026-09-25T18:00:00+08:00",   // countdown target
     dateLabel: "September 25, 2026",
-    doorsLabel:"Foyer opens 6:00 PM · Show 7:00 PM"
+    doorsLabel:"Registration 4:30 PM · Event starts 6:00 PM"
   },
 
   /* Ticket status is hard-coded for the whole campaign. There is no

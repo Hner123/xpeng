@@ -16,8 +16,8 @@ const EVENT = {
   sub:   'The Physical AI Open House',
   venue: 'MOA Arena',
   date:  'September 25, 2026',
-  doors: '6:00 PM',
-  forum: '3:30 PM'
+  registration: '4:30 PM',
+  start: '6:00 PM'
 };
 
 function esc(s) {
@@ -52,7 +52,7 @@ function shell({ preheader, heading, body, cta, siteUrl }) {
    <tr><td style="padding:22px 26px 26px">
      <div style="border-top:1px solid rgba(255,196,150,.18);padding-top:16px;font:400 11.5px/1.6 Arial,Helvetica,sans-serif;color:rgba(255,255,255,.5)">
        ${esc(EVENT.venue)} &middot; ${esc(EVENT.date)} &middot; free, by invitation<br>
-       Doors ${esc(EVENT.doors)} &middot; Physical AI Forum ${esc(EVENT.forum)}, livestreamed<br><br>
+       Registration ${esc(EVENT.registration)} &middot; Event starts ${esc(EVENT.start)}<br><br>
        You are receiving this because you joined the waitlist at
        <a href="${esc(siteUrl)}" style="color:#FF9A3D">${esc(siteUrl.replace(/^https?:\/\//, ''))}</a>.
        Nothing in this campaign is ever for sale — if anyone asks you to pay for entry, it is not us.<br>
@@ -164,17 +164,24 @@ After it expires the seat passes to the next guest on the waitlist.`,
 
 ${EVENT.name} is tomorrow at ${EVENT.venue}.
 
-Doors ${EVENT.doors}. The Physical AI Forum is livestreamed at ${EVENT.forum}.
+Arrival and registration: ${EVENT.registration}, with welcome cocktails.
+Show opens: ${EVENT.start}.
+7:00 PM: XPENG Grand Reveal.
+8:00 PM: Artist performance.
+8:30 PM: After-show experience with XPENG.
+Attire: smart casual. Futuristic looks welcome.
 
 Bring: your claimed SM Ticket, and one valid government-issued ID matching your registered name. Keep your registration QR on your phone — it is your games pass in the foyer play zone.
 
 Arrive early; traffic and entry queues around the SM Mall of Asia complex build up before a full house.`,
         html: shell({
-          preheader: `Doors ${EVENT.doors}. Bring your SM Ticket and a valid ID.`,
+          preheader: `Registration ${EVENT.registration}. Event starts ${EVENT.start}. Bring your SM Ticket and a valid ID.`,
           heading: 'Tomorrow night',
           siteUrl: site,
           body: `<p style="margin:0 0 12px">${hi}</p>
-            <p style="margin:0 0 12px"><b style="color:#fff">${esc(EVENT.name)}</b> is tomorrow at ${esc(EVENT.venue)}. Doors ${esc(EVENT.doors)}, and the Physical AI Forum is livestreamed at ${esc(EVENT.forum)}.</p>
+            <p style="margin:0 0 12px"><b style="color:#fff">${esc(EVENT.name)}</b> is tomorrow at ${esc(EVENT.venue)}. Arrival and registration with welcome cocktails begin at ${esc(EVENT.registration)}. The show opens at ${esc(EVENT.start)}.</p>
+            <p style="margin:0 0 12px">7:00 PM: XPENG Grand Reveal<br>8:00 PM: Artist performance<br>8:30 PM: After-show experience with XPENG</p>
+            <p style="margin:0 0 12px"><b style="color:#fff">Attire:</b> smart casual. Futuristic looks welcome.</p>
             <p style="margin:0 0 12px"><b style="color:#fff">Bring:</b> your claimed SM Ticket, and one valid government-issued ID matching your registered name. Keep your registration QR on your phone — it is your games pass in the foyer play zone.</p>
             <p style="margin:0">Arrive early; traffic and entry queues around the complex build up before a full house.</p>`
         })
@@ -222,7 +229,7 @@ function sms(template, data = {}) {
     case 'claim_reminder':
       return { text: `XPENG: 24hrs left to claim your free ticket for Sept 25. Code ${data.code || ''}. The SM Tickets link is in your email.` };
     case 'event_reminder':
-      return { text: `XPENG: Tomorrow at MOA Arena. Doors 6PM. Bring your SM Ticket + valid ID matching your name. Keep your registration QR for the play zone.` };
+      return { text: `XPENG: Tomorrow at MOA Arena. Registration ${EVENT.registration}, show ${EVENT.start}. Smart casual. Bring your SM Ticket + valid ID. Keep your games pass.` };
     case 'not_selected':
       return { text: `XPENG: Invitations for Sept 25 have closed. Your registration gives you priority access to X Space events and test drives. Thank you.` };
     default:

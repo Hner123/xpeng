@@ -368,6 +368,25 @@ section{padding:70px var(--pad)}
 .sil i:nth-child(2){height:62px}
 .sil span{font-family:var(--font-mono);font-size:9px;letter-spacing:.18em;color:var(--amber);margin-left:6px;padding-bottom:6px}
 
+.schedule-section{padding-top:0;padding-bottom:0}
+.schedule-card{display:grid;gap:24px;padding:26px 22px;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.025)}
+.schedule-intro h2{font-size:28px;line-height:1.15;letter-spacing:-.025em}
+.schedule-intro p{margin-top:10px;font-size:12px;color:var(--mist)}
+.schedule-attire{margin-top:24px;border-left:2px solid var(--orange);padding-left:14px;display:flex;flex-direction:column;gap:5px}
+.schedule-attire > span{font:10px var(--font-mono);letter-spacing:.15em;color:var(--amber)}
+.schedule-attire strong{font-size:17px}
+.schedule-attire small{font-size:12px;color:var(--mist)}
+.schedule-list{list-style:none;margin:0;padding:0;min-width:0}
+.schedule-list li{display:grid;grid-template-columns:78px minmax(0,1fr);gap:18px;align-items:start}
+.schedule-list time{padding-top:15px;font:12px/1.6 var(--font-mono);color:var(--amber);white-space:nowrap}
+.schedule-list li > span{position:relative;padding:14px 0 14px 20px;border-left:1px solid var(--line);font-size:14px;line-height:1.6}
+.schedule-list li > span:before{content:'';position:absolute;left:-3px;top:23px;width:5px;height:5px;border-radius:50%;background:var(--amber)}
+.schedule-list small{display:block;font-size:12px;color:var(--mist)}
+@media (min-width:1020px){
+  .schedule-card{grid-template-columns:1fr 1.4fr;gap:48px;padding:30px 34px}
+  .schedule-list li{grid-template-columns:90px minmax(0,1fr)}
+}
+
 .pillars{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:34px}
 .pill{text-align:center;border:1px solid var(--line);border-radius:14px;padding:22px 12px;transition:border-color .2s,transform .2s}
 .pill:hover{border-color:rgba(244,121,32,.5);transform:translateY(-3px)}
