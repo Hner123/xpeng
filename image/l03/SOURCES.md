@@ -10,6 +10,8 @@ The 43200 x 560 strip contains 36 angles, each 1200 x 560 pixels.
 `l03-360-poster.webp` contains angle 29 as the loading/no-JavaScript fallback.
 The sprite loads when the L03 panel becomes visible near the viewport.
 
-Copy summarizes the official model page's coupe design, storage, and interior.
-No L03 price or reservation promotion is asserted. The CTA links to XPENG's
-official L03 page for current specifications and availability.
+The description summarizes the official model page's design, storage, and interior.
+The PHP 10,000 reservation fee, AI SUV wording, CTA, and waitlist note follow
+the client's September 11, 2026 annotated presale slides. The fee was supplied
+by the client, rather than independently verified on the official model page.
+The CTA links to XPENG's official L03 page.
