@@ -12,11 +12,11 @@
 
 const WEIGHTS = {
   intent: {                       // THE core question — heaviest
-    'Within 3 months': 40,
-    '3–6 months':      30,
-    '6–12 months':     20,
-    'Over a year':     8,
-    'Just exploring':  4
+    'Within 3 months': 30,
+    '3–6 months':      20,
+    '6–12 months':     10,
+    'Over a year':     0,
+    'Just exploring':  0
   },
   budget: {
     '₱4M+':             25,
