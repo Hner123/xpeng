@@ -44,20 +44,19 @@ const WEIGHTS = {
     'Just Exploring':                   2
   },
   ev_experience: {
-    'Current EV Owner (Pure Electric)':   6,
+    'Current EV Owner (Pure Electric)':   10,
     'Current Hybrid Owner (HEV / PHEV)':  7,
-    'Have Driven or Test-Driven an EV':   8,   // warmest: tried one, hasn't bought
+    'Have Driven or Test-Driven an EV':   8,
     'First Time Exploring EVs':           5,
     'Never Tried':                        4
   },
   age: {
-    '18–24': 3, '25–34': 5, '35–44': 5, '45–54': 4, '55+': 3
+    '18–24': 3, '25–34': 5, '35–44': 5, '45–54': 6, '55+': 6
   }
 };
 
 
-/* Conquest bonus: currently driving a rival brand is a stronger
-   signal than no car at all. */
+/* Vehicle ownership bonus applies to any reported vehicle brand. */
 const NO_CAR = 'No car yet';
 
 function scoreOf(row) {
@@ -69,7 +68,7 @@ function scoreOf(row) {
     if (typeof value === 'string' && value.startsWith('Other — ')) value = 'Other';
     if (value && table[value] !== undefined) total += table[value];
   }
-  if (row.drives && row.drives !== NO_CAR) total += 4;
+  if (row.drives && row.drives !== NO_CAR) total += 8;
   return Math.max(0, Math.min(100, total));
 }
 
