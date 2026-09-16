@@ -177,11 +177,27 @@ function make(db, vault) {
     city:   'city ASC, lead_score DESC'
   };
 
+  // Names remain encrypted at rest. Match only inside the authenticated
+  // read path, before pagination, so searches cover every filtered record.
+  function filterNames(rows, name) {
+    const normalize = value => String(value || '').normalize('NFKC').toLowerCase().replace(/\s+/g, ' ').trim();
+    const needle = normalize(name);
+    return needle ? rows.filter(r => normalize(vault.decrypt(r.name_enc)).includes(needle)) : rows;
+  }
+
   async function list(q) {
     const w = whereFrom(q);
     const order = SORTS[q.sort] || SORTS.recent;
     const limit = Math.min(500, Math.max(1, Number(q.limit || 50)));
     const offset = Math.max(0, Number(q.offset || 0));
+
+    if (String(q.name || '').trim()) {
+      const candidates = await db.all(
+        `SELECT * FROM registrations ${w.sql} ORDER BY ${order}`, w.args
+      );
+      const matches = filterNames(candidates, q.name);
+      return { total: matches.length, limit, offset, rows: matches.slice(offset, offset + limit).map(decorate) };
+    }
 
     const rows = await db.all(
       `SELECT * FROM registrations ${w.sql} ORDER BY ${order} LIMIT ? OFFSET ?`,
@@ -442,7 +458,7 @@ function make(db, vault) {
     const rows = await db.all(
       `SELECT * FROM registrations ${w.sql} ORDER BY lead_score DESC, created_at ASC`, w.args
     );
-    const data = rows.map(decorate);
+    const data = filterNames(rows, q.name).map(decorate);
 
     const esc = v => {
       const s = v === null || v === undefined ? '' : String(v);

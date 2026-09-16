@@ -69,7 +69,7 @@
   .spark-x{display:flex;justify-content:space-between;font-size:9px;color:var(--mute);margin-top:6px}
 
   .toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:18px 0 10px}
-  select,input[type=text],input[type=date],input[type=number]{
+  select,input[type=text],input[type=search],input[type=date],input[type=number]{
     font:13px var(--font-body);color:var(--ink);background:#12100D;border:1px solid var(--line);
     border-radius:8px;padding:9px 10px;outline:none}
   select:focus,input:focus{border-color:var(--orange)}
@@ -193,6 +193,7 @@
   <!-- ===== REGISTRATIONS ===== -->
   <div class="view on" id="view-regs">
     <div class="toolbar">
+      <input type="search" id="f-name" placeholder="Search by name" aria-label="Search registrations by name" autocomplete="off" maxlength="200">
       <select id="f-status">
         <option value="">All statuses</option>
         <option>REGISTERED</option><option>INVITED</option><option>CLAIMED</option><option>ATTENDED</option>
@@ -398,6 +399,7 @@ const state = { offset: 0, limit: 50, total: 0, selected: new Set() };
 
 function filters() {
   const q = {
+    name: $('f-name').value.trim(),
     status: $('f-status').value, complete: $('f-complete').value, city: $('f-city').value,
     intent: $('f-intent').value, source: $('f-source').value,
     min_score: $('f-score').value, sort: $('f-sort').value
@@ -458,8 +460,12 @@ function fillOnce(sel, values) {
 }
 
 /* ---------- registrations ---------- */
+let rowsRequest = 0;
 async function loadRows() {
-  const res = await api('/api/admin/registrations?' + qs({ limit: state.limit, offset: state.offset }));
+  const request = ++rowsRequest;
+  const query = qs({ limit: state.limit, offset: state.offset });
+  const res = await api('/api/admin/registrations?' + query);
+  if (request !== rowsRequest || query !== qs({ limit: state.limit, offset: state.offset })) return;
   state.total = res.total;
   $('count').textContent = res.total.toLocaleString() + ' matching';
   $('range').textContent = res.total
@@ -469,7 +475,7 @@ async function loadRows() {
   $('next').disabled = state.offset + state.limit >= res.total;
 
   if (!res.rows.length) {
-    $('rows').innerHTML = '<tr><td colspan="19" class="empty">Nothing here yet. Register on the landing page and refresh.</td></tr>';
+    $('rows').innerHTML = '<tr><td colspan="19" class="empty">No registrations match your search or filters.</td></tr>';
     return;
   }
 
@@ -604,6 +610,16 @@ async function loadExports() {
 }
 
 /* ---------- wiring ---------- */
+let nameSearchTimer;
+$('f-name').addEventListener('input', () => {
+  clearTimeout(nameSearchTimer);
+  state.offset = 0;
+  state.selected.clear();
+  $('all').checked = false;
+  document.querySelectorAll('.pick').forEach(cb => { cb.checked = false; });
+  syncInvite();
+  nameSearchTimer = setTimeout(() => loadRows().catch(() => toast('Unable to search registrations. Please try again.')), 300);
+});
 ['f-status','f-complete','f-city','f-intent','f-source','f-sort'].forEach(id =>
   $(id).addEventListener('change', () => { state.offset = 0; loadRows(); }));
 $('f-score').addEventListener('input', () => { state.offset = 0; loadRows(); });
