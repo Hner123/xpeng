@@ -336,6 +336,8 @@ async function main() {
   const sms = smsLib.make(process.env);
   mailerRef = mailer;
   smsRef = sms;
+  const batchEmail = require('./lib/batch-email').make(db,store,vault,mailer,{dryRun:DRY_RUN,siteUrl:PUBLIC_SITE});
+  batchEmail.start();
   startCommsWorker(store, auth, mailer, sms);
 
   /* Prove the credentials at boot rather than mid-campaign. */
@@ -464,6 +466,25 @@ async function main() {
         }
         if (p === '/api/admin/me' && req.method === 'GET') {
           return json(res, 200, { ok: true, user: session, publicSite: PUBLIC_SITE });
+        }
+        if (p === '/api/admin/invitations/email') {
+          if (!isAdmin) return needAdmin(res);
+          res.setHeader('Cache-Control', 'no-store');
+          try {
+            if (req.method === 'GET') return json(res,200,{ok:true,...await batchEmail.state(q.id,actor)});
+            if (req.method === 'POST') {
+              const body=await readBody(req);
+              if (!body.id || !await batches.detail(body.id)) return json(res,404,{ok:false,error:'Saved batch not found.'});
+              let result;
+              if(body.action==='test') result=await batchEmail.test(body.id,body.to,actor);
+              else if(body.action==='send' && body.confirm==='SEND') result=await batchEmail.queue(body.id,actor,body.reviewed);
+              else if(body.action==='retry' && body.confirm==='RETRY') result=await batchEmail.retry(body.id,actor);
+              else return json(res,422,{ok:false,error:'Confirm the requested email action.'});
+              return json(res,200,{ok:true,...result});
+            }
+          } catch(e) {
+            return json(res,409,{ok:false,error:e.code ? 'Email operation could not complete. Check the email migration and refresh progress before retrying.' : e.message});
+          }
         }
         if (p === '/api/admin/ticket-codes') {
           if (!isAdmin) return needAdmin(res);

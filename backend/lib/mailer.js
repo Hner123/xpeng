@@ -61,6 +61,7 @@ function make(env) {
     /* True when the worker should actually send rather than log. */
     enabled: configured,
     from,
+    replyTo: replyTo || from.address,
     describe() {
       if (!configured) return 'dry run (no SMTP_HOST set)';
       return from.address + ' via ' + host + ':' + (env.SMTP_PORT || 587);

@@ -76,6 +76,12 @@ function build(template, data = {}) {
   const seq = data.sequence ? '#' + Number(data.sequence).toLocaleString('en-US') : null;
 
   switch (template) {
+    case 'batch_invitation': {
+      const row = require('./batch-preview').messageRow({first_name: name, name: data.name || 'Guest'}, data.ticketType, data.code);
+      return {subject: row.subject, text: row.message + '\n\n' + site,
+        html: shell({preheader: 'Your XPENG invitation and ticket claim code.', heading: "You're invited", siteUrl: site,
+          body: row.message.split('\n\n').map(p => '<p style="margin:0 0 14px">' + esc(p).replace(/\n/g,'<br>') + '</p>').join('')})};
+    }
 
     case 'waitlist_confirmation':
       return {

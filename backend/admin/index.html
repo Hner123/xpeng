@@ -281,7 +281,7 @@
   <div class="view admin-only" id="view-invitations">
     <div class="invite-heading">
       <div><h2>Manage invitations</h2><p>Open a saved batch or prepare a new group of guests.</p></div>
-      <span class="draft-badge">Drafts only &middot; sending not enabled</span>
+      <span class="draft-badge">Email invitations &middot; SMS not included</span>
     </div>
     <div class="invite-workspace">
       <section class="invite-card saved" aria-labelledby="saved-batches-title">
@@ -300,6 +300,18 @@
       </section>
     </div>
     <p id="batch-result" role="status" aria-live="polite">Choose a saved batch or upload a CSV to get started.</p>
+    <section class="invite-card" id="batch-email-panel" hidden>
+      <h3>Send batch emails</h3>
+      <p id="batch-email-sender"></p>
+      <p>Send a test to your team first. Test codes are marked TEST-NOT-VALID. Review the wording, sender, Reply-To and ticket instructions before sending to guests. Replies are handled in your inbox; automatic confirmation is not connected.</p>
+      <div class="toolbar"><label for="batch-test-to">Test recipient</label><input type="text" id="batch-test-to" placeholder="team@example.com" autocomplete="off"><button class="btn ghost" id="batch-test-send">Send test email</button></div>
+      <label><input type="checkbox" id="batch-email-reviewed"> I received and reviewed the test email and approve the recipient list and ticket instructions.</label>
+      <div class="toolbar"><button class="btn" id="batch-email-send" disabled>Send unsent invitations</button><button class="btn ghost" id="batch-email-retry" disabled>Retry rejected emails</button><button class="btn ghost" id="batch-email-refresh">Refresh progress</button></div>
+      <p id="batch-email-result" role="status" aria-live="polite"></p>
+      <p id="batch-email-counts"></p>
+      <p>Sent means accepted by the email provider, not delivered or read. Review/Sending records with uncertain outcomes are not automatically retried. No SMS is sent, and no ticket expiry is applied.</p>
+      <details class="csv-help"><summary>Per-recipient sending results</summary><div class="tablewrap"><table><thead><tr><th>Registration</th><th>Guest</th><th>Email status</th></tr></thead><tbody id="batch-email-rows"></tbody></table></div></details>
+    </section>
     <h3 class="batch-list-heading">Batch recipients</h3>
     <div class="tablewrap"><table><thead><tr><th>Registration</th><th>Name</th><th>Email</th><th>Ticket type</th><th>Code</th><th>Preview</th></tr></thead><tbody id="batch-rows"></tbody></table></div>
     <div id="batch-preview" hidden><h3 id="batch-subject"></h3><pre id="batch-message" style="white-space:pre-wrap;overflow-wrap:anywhere;font:inherit;line-height:1.7"></pre></div>
@@ -736,7 +748,54 @@ $('codes-import').addEventListener('click',async()=>{
   finally{$('codes-import').disabled=false;$('codes-file').disabled=false;}
 });
 let batchPreviewRows = [], validatedBatchCsv = null;
-function clearValidatedBatch() { validatedBatchCsv = null; $('batch-save').disabled = true; }
+let activeEmailBatch='', emailState=null, emailBusy=false;
+function emailButtons(){
+  $('batch-test-send').disabled=emailBusy || !emailState || !emailState.ready;
+  $('batch-email-send').disabled=emailBusy || !emailState || !emailState.ready || !emailState.tested || !$('batch-email-reviewed').checked || !emailState.counts.UNSENT;
+  $('batch-email-retry').disabled=emailBusy || !emailState || !emailState.ready || !emailState.counts.FAILED;
+}
+function resetEmailPanel(){activeEmailBatch='';emailState=null;$('batch-email-panel').hidden=true;$('batch-email-reviewed').checked=false;}
+async function loadEmailState(id){
+  try{
+    const res=await api('/api/admin/invitations/email?id='+encodeURIComponent(id));
+    if(id!==activeEmailBatch)return;
+    if(!res.ok)throw new Error(res.error);
+    emailState=res;
+    $('batch-email-sender').textContent='From: '+(res.from.name ? res.from.name+' <'+res.from.address+'>' : res.from.address)+' | Reply-To: '+res.replyTo+(res.ready?'':' | Live email is disabled');
+    $('batch-email-counts').textContent=Object.entries(res.counts).map(([k,v])=>k+': '+v).join(' | ');
+    $('batch-email-rows').replaceChildren();
+    for(const row of res.rows){const tr=document.createElement('tr');for(const value of [row.registration_id,row.name,row.status]){const td=document.createElement('td');td.textContent=value;tr.appendChild(td);}$('batch-email-rows').appendChild(tr);}
+    if(res.errors.length)$('batch-email-result').textContent=res.errors.map(e=>'#'+e.registration_id+' '+e.status+': '+(e.error || 'Processing; if this persists, check the email provider.')).join(' | ');
+    emailButtons();
+  }catch(e){if(id===activeEmailBatch){emailState=null;emailButtons();$('batch-email-result').textContent=e.message || 'Unable to load email progress.';}}
+}
+$('batch-email-reviewed').addEventListener('change',emailButtons);
+$('batch-email-refresh').addEventListener('click',()=>{if(activeEmailBatch)loadEmailState(activeEmailBatch);});
+async function emailAction(action){
+  const id=activeEmailBatch;if(!id || emailBusy)return;
+  const to=$('batch-test-to').value.trim();
+  if(action==='test' && !/^[^\s<>@,;]+@[^\s<>@,;]+\.[^\s<>@,;]+$/.test(to))return toast('Enter one valid test email address.');
+  const count=emailState ? emailState.counts[action==='retry'?'FAILED':'UNSENT'] : 0;
+  const approved=await ask({title:action==='test'?'Send a test email?':action==='retry'?'Retry rejected emails?':'Send batch invitations?',
+    body:action==='test'?'This sends one real email to the test recipient you entered. The ticket code is a non-redeemable sample.':'This sends real invitation emails to '+count+' guests in the selected saved batch. SMS will not be sent.',
+    confirm:action==='test'?'Send test':action==='retry'?'Retry emails':'Send emails',requireWord:action==='test'?undefined:action==='retry'?'RETRY':'SEND'});
+  if(!approved || id!==activeEmailBatch)return;
+  emailBusy=true;emailButtons();
+  $('batch-email-result').textContent='Processing email request...';
+  try{
+    const res=await api('/api/admin/invitations/email',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,action,to,reviewed:$('batch-email-reviewed').checked,confirm:action==='retry'?'RETRY':'SEND'})});
+    if(!res.ok)throw new Error(res.error);
+    if(id===activeEmailBatch)$('batch-email-result').textContent=res.message || res.queued+' emails queued.';
+    if(action==='test')$('batch-email-reviewed').checked=false;
+    await loadEmailState(id);
+  }catch(e){if(id===activeEmailBatch)$('batch-email-result').textContent=e.message || 'Request failed. Refresh progress before retrying.';}
+  finally{emailBusy=false;emailButtons();}
+}
+$('batch-test-send').addEventListener('click',()=>emailAction('test'));
+$('batch-email-send').addEventListener('click',()=>emailAction('send'));
+$('batch-email-retry').addEventListener('click',()=>emailAction('retry'));
+setInterval(()=>{if(activeEmailBatch && !emailBusy && location.hash==='#invitations')loadEmailState(activeEmailBatch);},10000);
+function clearValidatedBatch() { validatedBatchCsv = null; $('batch-save').disabled = true; resetEmailPanel(); }
 $('batch-file').addEventListener('change', () => {
   $('batch-saved').value = '';
   clearValidatedBatch(); batchPreviewRows = []; $('batch-rows').replaceChildren(); $('batch-result').textContent = ''; $('batch-preview').hidden = true;
@@ -796,6 +855,8 @@ async function openBatch(id) {
     if ($('batch-saved').value !== id) return;
     if (!res.ok) throw new Error(res.error);
     renderBatchRows(res.batch.rows);
+    activeEmailBatch=id;$('batch-email-panel').hidden=false;$('batch-email-result').textContent='';
+    await loadEmailState(id);
     $('batch-result').textContent = res.batch.name + ': ' + res.batch.total + ' saved assignments. Codes reserved. No messages sent by saving this batch.';
   } catch(e) { $('batch-result').textContent = e.message || 'Unable to open batch.'; }
 }

@@ -162,3 +162,19 @@ CREATE TABLE IF NOT EXISTS ticket_codes (
  imported_at TEXT NOT NULL,
  imported_by TEXT NOT NULL
 );
+
+
+CREATE TABLE IF NOT EXISTS batch_email_tests (
+ id TEXT PRIMARY KEY, batch_id TEXT NOT NULL REFERENCES invitation_batches(id),
+ fingerprint TEXT NOT NULL, actor TEXT NOT NULL, recipient_enc TEXT NOT NULL,
+ status TEXT NOT NULL, created_at TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS batch_emails (
+ id TEXT PRIMARY KEY, batch_id TEXT NOT NULL REFERENCES invitation_batches(id),
+ invitation_id INTEGER NOT NULL UNIQUE REFERENCES invitations(id) ON DELETE CASCADE,
+ recipient_enc TEXT NOT NULL, content_enc TEXT NOT NULL,
+ status TEXT NOT NULL DEFAULT 'PENDING', attempts INTEGER NOT NULL DEFAULT 0,
+ created_at TEXT NOT NULL, updated_at TEXT NOT NULL, sent_at TEXT,
+ actor TEXT NOT NULL, message_id TEXT, error TEXT
+);
+CREATE INDEX IF NOT EXISTS ix_batch_email_status ON batch_emails(status);
