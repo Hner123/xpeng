@@ -88,6 +88,10 @@
   .pill.INVITED{color:var(--amber);border-color:rgba(255,154,61,.4)}
   .pill.CLAIMED{color:var(--green);border-color:rgba(63,178,127,.4)}
   .pill.ATTENDED{color:#7FD4FF;border-color:rgba(127,212,255,.4)}
+  .pill.UNSENT,.pill.UNKNOWN{color:#BFB4A7;border-color:#65503D}
+  .pill.PENDING,.pill.SENDING{color:var(--amber);border-color:#8B592C}
+  .pill.SENT{color:#75D9AB;border-color:#337653}
+  .pill.FAILED,.pill.REVIEW{color:#FFAD91;border-color:#A6543A}
   .score{font-variant-numeric:tabular-nums;font-weight:600}
   .score.hi{color:var(--amber)} .score.lo{color:var(--mute)}
   .yes{color:var(--green)} .no{color:#5C534A}
@@ -310,10 +314,9 @@
       <p id="batch-email-result" role="status" aria-live="polite"></p>
       <p id="batch-email-counts"></p>
       <p>Sent means accepted by the email provider, not delivered or read. Review/Sending records with uncertain outcomes are not automatically retried. No SMS is sent, and no ticket expiry is applied.</p>
-      <details class="csv-help"><summary>Per-recipient sending results</summary><div class="tablewrap"><table><thead><tr><th>Registration</th><th>Guest</th><th>Email status</th></tr></thead><tbody id="batch-email-rows"></tbody></table></div></details>
     </section>
     <h3 class="batch-list-heading">Batch recipients</h3>
-    <div class="tablewrap"><table><thead><tr><th>Registration</th><th>Name</th><th>Email</th><th>Ticket type</th><th>Code</th><th>Preview</th></tr></thead><tbody id="batch-rows"></tbody></table></div>
+    <div class="tablewrap"><table><thead><tr><th>Registration</th><th>Name</th><th>Email</th><th>Ticket type</th><th>Code</th><th>Email status</th><th>Preview</th></tr></thead><tbody id="batch-rows"></tbody></table></div>
     <div id="batch-preview" hidden><h3 id="batch-subject"></h3><pre id="batch-message" style="white-space:pre-wrap;overflow-wrap:anywhere;font:inherit;line-height:1.7"></pre></div>
   </div>
 
@@ -763,11 +766,10 @@ async function loadEmailState(id){
     emailState=res;
     $('batch-email-sender').textContent='From: '+(res.from.name ? res.from.name+' <'+res.from.address+'>' : res.from.address)+' | Reply-To: '+res.replyTo+(res.ready?'':' | Live email is disabled');
     $('batch-email-counts').textContent=Object.entries(res.counts).map(([k,v])=>k+': '+v).join(' | ');
-    $('batch-email-rows').replaceChildren();
-    for(const row of res.rows){const tr=document.createElement('tr');for(const value of [row.registration_id,row.name,row.status]){const td=document.createElement('td');td.textContent=value;tr.appendChild(td);}$('batch-email-rows').appendChild(tr);}
+    updateBatchEmailStatuses(res.rows,res.errors);
     if(res.errors.length)$('batch-email-result').textContent=res.errors.map(e=>'#'+e.registration_id+' '+e.status+': '+(e.error || 'Processing; if this persists, check the email provider.')).join(' | ');
     emailButtons();
-  }catch(e){if(id===activeEmailBatch){emailState=null;emailButtons();$('batch-email-result').textContent=e.message || 'Unable to load email progress.';}}
+  }catch(e){if(id===activeEmailBatch){emailState=null;emailButtons();updateBatchEmailStatuses([]);$('batch-email-result').textContent=e.message || 'Unable to load email progress.';}}
 }
 $('batch-email-reviewed').addEventListener('change',emailButtons);
 $('batch-email-refresh').addEventListener('click',()=>{if(activeEmailBatch)loadEmailState(activeEmailBatch);});
@@ -826,11 +828,26 @@ $('batch-validate').addEventListener('click', async () => {
   } catch (e) { $('batch-result').textContent = e.message || 'Unable to validate batch.'; }
   finally { $('batch-validate').disabled = false; $('batch-file').disabled = false; $('batch-saved').disabled = false; $('batch-refresh').disabled = false; }
 });
-function renderBatchRows(rows) {
+function updateBatchEmailStatuses(rows,errors=[]) {
+  const statuses=new Map(rows.map(r=>[String(r.registration_id),r.status]));
+  const issues=new Map(errors.map(r=>[String(r.registration_id),r.error]));
+  const labels={UNSENT:'Not sent',PENDING:'Queued',SENDING:'Sending',SENT:'Sent',FAILED:'Rejected',REVIEW:'Needs review',UNKNOWN:'Unavailable'};
+  document.querySelectorAll('#batch-rows [data-email-status]').forEach(badge=>{
+    const id=badge.dataset.emailStatus;
+    const value=statuses.get(id);
+    const status=Object.hasOwn(labels,value)?value:'UNKNOWN';
+    badge.className='pill '+status;badge.textContent=labels[status];
+    badge.title=issues.get(id) || (status==='SENT'?'Accepted by the email provider; delivery and attendance are not confirmed.':status==='UNKNOWN'?'Refresh progress to load the current email status.':labels[status]);
+  });
+}
+function renderBatchRows(rows,saved=false) {
   batchPreviewRows = rows; $('batch-rows').replaceChildren(); $('batch-preview').hidden = true;
     for (const [i, r] of rows.entries()) {
       const tr = document.createElement('tr');
       for (const value of [r.registration_id, r.name, r.email, r.ticket_type, r.ticket_code]) { const td = document.createElement('td'); td.textContent = value; tr.appendChild(td); }
+      const statusCell=document.createElement('td'),badge=document.createElement('span');
+      badge.dataset.emailStatus=String(r.registration_id);badge.className='pill '+(saved?'UNKNOWN':'UNSENT');badge.textContent=saved?'Loading...':'Not sent';
+      statusCell.appendChild(badge);tr.appendChild(statusCell);
       const td = document.createElement('td'), btn = document.createElement('button'); btn.className = 'btn ghost'; btn.textContent = 'Preview';
       btn.addEventListener('click', () => { const entry = batchPreviewRows[i]; $('batch-subject').textContent = entry.subject; $('batch-message').textContent = entry.message; $('batch-preview').hidden = false; $('batch-preview').scrollIntoView({ block: 'nearest' }); });
       td.appendChild(btn); tr.appendChild(td); $('batch-rows').appendChild(tr);
@@ -854,7 +871,7 @@ async function openBatch(id) {
     const res = await api('/api/admin/invitations/batches?id=' + encodeURIComponent(id));
     if ($('batch-saved').value !== id) return;
     if (!res.ok) throw new Error(res.error);
-    renderBatchRows(res.batch.rows);
+    renderBatchRows(res.batch.rows,true);
     activeEmailBatch=id;$('batch-email-panel').hidden=false;$('batch-email-result').textContent='';
     await loadEmailState(id);
     $('batch-result').textContent = res.batch.name + ': ' + res.batch.total + ' saved assignments. Codes reserved. No messages sent by saving this batch.';
