@@ -761,7 +761,7 @@ $('invite').addEventListener('click', async () => {
   await Promise.all([loadRows(), loadStats(), loadComms()]);
 });
 
-$('refresh').addEventListener('click', refreshAll);
+$('refresh').addEventListener('click', () => { refreshAll(); restoreTab(); });
 $('export-all').addEventListener('click', e => {
   e.preventDefault();
   window.location = '/api/admin/export.csv?' + qs();
@@ -785,15 +785,29 @@ $('d-save').addEventListener('click', async () => {
   else toast(res.error || 'Could not save.');
 });
 
+// Keep the tab in the URL so reloads, bookmarks and Back/Forward restore it.
+// Only tab names are stored; uploaded CSV data and guest details are not.
+function restoreTab() {
+  if (!ME) return;
+  const tabs = [...document.querySelectorAll('.tab')];
+  let tab = tabs.find(t => t.dataset.view === location.hash.slice(1));
+  if (!tab || (tab.classList.contains('admin-only') && ME.role !== 'admin')) {
+    tab = tabs.find(t => t.dataset.view === 'regs');
+    history.replaceState(null, '', location.pathname + location.search + '#regs');
+  }
+  tabs.forEach(t => t.classList.toggle('on', t === tab));
+  document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === 'view-' + tab.dataset.view));
+  const load = { invitations: () => loadBatches(), comms: loadComms, dealers: loadDealers, exports: loadExports }[tab.dataset.view];
+  if (load) Promise.resolve(load()).catch(() => toast('Unable to refresh this tab. Please try again.'));
+}
 document.querySelectorAll('.tab').forEach(t => {
   t.addEventListener('click', () => {
-    document.querySelectorAll('.tab').forEach(x => x.classList.remove('on'));
-    document.querySelectorAll('.view').forEach(x => x.classList.remove('on'));
-    t.classList.add('on');
-    $('view-' + t.dataset.view).classList.add('on');
-    ({ invitations: () => loadBatches(), comms: loadComms, dealers: loadDealers, exports: loadExports }[t.dataset.view] || (() => {}))();
+    const hash = '#' + t.dataset.view;
+    if (location.hash === hash) restoreTab();
+    else location.hash = hash;
   });
 });
+window.addEventListener('hashchange', restoreTab);
 
 /* ---------- session ---------- */
 let ME = null;
@@ -853,7 +867,7 @@ window.fetch = function (...a) {
 };
 
 function refreshAll() { loadStats(); loadRows(); }
-loadMe().then(ok => { if (ok) refreshAll(); });
+loadMe().then(ok => { if (ok) { refreshAll(); restoreTab(); } });
 setInterval(() => { if (ME) refreshAll(); }, 20000);   // live-ish view during the campaign
 </script>
 </body>
