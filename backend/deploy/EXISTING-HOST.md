@@ -1,8 +1,16 @@
 # Deploy to xpeng.heineraboka.site
 
-The Node server serves the campaign, assets, legal pages, API, and admin
-dashboard together. Netlify is not required for this deployment. Keep its
-published deploy locked if that copy must remain unchanged.
+The Node server hosts the API and staff dashboard. The public campaign
+is published on https://x-peng.netlify.app. Node can still serve a local
+copy for development and backend-host checks.
+
+Publish the latest commit on Netlify as well as updating this server.
+The repository intentionally skips automatic Netlify builds, and the
+production deploy may be locked. Use the team's manual build/publish
+workflow to publish the new frontend and netlify.toml together.
+The public waitlist paths are HTTP 200 proxy rewrites; do not change
+them back to redirects. Check the browser's registration requests stay
+on the Netlify origin and the count endpoint returns JSON after publishing.
 
 ## Existing host update
 
@@ -16,13 +24,14 @@ published deploy locked if that copy must remain unchanged.
 3. In the host's existing environment, set:
 
    ```ini
-   PUBLIC_SITE_URL=https://xpeng.heineraboka.site
+   PUBLIC_SITE_URL=https://x-peng.netlify.app
    SITE_OFFLINE=false
    COOKIE_SECURE=true
    ```
 
    Preserve database, encryption, provider, and other existing settings.
-   An existing PUBLIC_SITE_URL overrides the updated code default.
+   Legacy heineraboka PUBLIC_SITE_URL values are mapped to the Netlify
+   public URL by the application. Set the value above explicitly for clarity.
 4. The domain should proxy to the running Node application. A standalone Caddy
    site block is provided as `xpeng.heineraboka.site.Caddyfile` if the host uses
    Caddy. Merge it with the existing configuration only if necessary; validate

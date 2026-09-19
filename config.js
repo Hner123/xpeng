@@ -67,19 +67,10 @@ window.XPENG_CONFIG = {
     url:  "https://x-peng.netlify.app/"
   },
 
-  /* Where the API lives.
-     base = "" when the page is served by the backend (local dev, or
-     one-server production). Set it to the API origin when the page
-     is hosted separately, e.g. on Netlify:
-       base: "https://api.futurenight.xpeng.ph"
-     That origin must also be listed in ALLOWED_ORIGINS on the
-     server, or the browser will block the request. */
+  /* Public requests stay on the page's origin. Netlify proxies the
+     waitlist routes to the backend; local development stays local. */
   api: {
-    /* Only used when the page is served from somewhere OTHER than the
-       API host — i.e. the Netlify copy. On localhost and on the API
-       domain itself, app.js ignores this and uses relative paths, so
-       local development can never write into the live database. */
-    base:   "https://xpeng.heineraboka.site",
+    base:   "",
     submit: "/api/waitlist",
     count:  "/api/waitlist/count"
   },

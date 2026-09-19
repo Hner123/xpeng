@@ -6,8 +6,8 @@
 # cookie can keep SameSite=Strict.
 #
 # Two things must line up with this file:
-#   1. config.js  -> api.base = "https://xpeng.heineraboka.site"
-#   2. server .env -> ALLOWED_ORIGINS includes this site's URL
+#   1. config.js -> api.base = "" (same-origin public API proxy)
+#   2. public /api/waitlist routes below must stay status 200 rewrites
 # =============================================================
 
 [build]
@@ -50,10 +50,10 @@ Disallow: /
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
     X-Frame-Options = "SAMEORIGIN"
-    # connect-src must name the API host, or the browser blocks the
-    # form POST. Google Fonts serves IBM Plex Mono; the brand faces are
+    # Public API calls use Netlify's same-origin proxy.
+    # Google Fonts serves IBM Plex Mono; the brand faces are
     # self-hosted, so no other origin is needed.
-    Content-Security-Policy = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://xpeng.heineraboka.site; frame-ancestors 'self'"
+    Content-Security-Policy = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; frame-ancestors 'self'"
 
 [[headers]]
   for = "/*.css"
@@ -84,6 +84,20 @@ Disallow: /
   from = "/admin/*"
   to = "https://xpeng.heineraboka.site/admin/:splat"
   status = 302
+  force = true
+
+# Public form and counter stay on Netlify in the browser. These specific
+# rules precede the fallback for staff/API routes.
+[[redirects]]
+  from = "/api/waitlist"
+  to = "https://xpeng.heineraboka.site/api/waitlist"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/waitlist/count"
+  to = "https://xpeng.heineraboka.site/api/waitlist/count"
+  status = 200
   force = true
 
 [[redirects]]

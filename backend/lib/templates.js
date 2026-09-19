@@ -68,7 +68,9 @@ function shell({ preheader, heading, body, cta, siteUrl }) {
 }
 
 function build(template, data = {}) {
-  const site = (data.siteUrl || 'https://xpeng.heineraboka.site').replace(/\/$/, '');
+  const site = require('./public-site').publicSite(data.siteUrl);
+  // Preserve official claim destinations, but replace legacy backend links.
+  if (data.claimUrl) data = { ...data, claimUrl: require('./public-site').publicSite(data.claimUrl) };
   const name = (data.firstName || '').trim();
   const hi = name ? `Hi ${esc(name)},` : 'Hi,';
   const seq = data.sequence ? '#' + Number(data.sequence).toLocaleString('en-US') : null;
