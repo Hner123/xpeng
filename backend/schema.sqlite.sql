@@ -139,3 +139,18 @@ CREATE TABLE IF NOT EXISTS admin_sessions (
   user_agent TEXT
 );
 CREATE INDEX IF NOT EXISTS ix_sess_expires ON admin_sessions(expires_at);
+
+
+CREATE TABLE IF NOT EXISTS invitation_batches (
+  id TEXT PRIMARY KEY,
+  import_key TEXT NOT NULL UNIQUE,
+  name TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  created_by TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS invitation_batch_items (
+  invitation_id INTEGER PRIMARY KEY REFERENCES invitations(id) ON DELETE CASCADE,
+  batch_id TEXT NOT NULL REFERENCES invitation_batches(id),
+  ticket_type TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS ix_batch_items ON invitation_batch_items(batch_id);

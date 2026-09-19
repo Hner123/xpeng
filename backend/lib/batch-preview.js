@@ -48,10 +48,13 @@ async function preview(csv, store, db) {
     const used = await db.get('SELECT id FROM invitations WHERE registration_id=? OR code=?', [Number.isSafeInteger(id) ? id : 0, code]);
     if (used) issues.push('Recipient or code already has an invitation');
     if (issues.length) errors.push({ row: i + 2, registration_id: r.registration_id, issues });
-    else rows.push({ registration_id: id, name: guest.name, email: guest.email, ticket_type: r.ticket_type, ticket_code: code,
-      subject: "You're invited! Your XPENG " + r.ticket_type + ' invitation',
-      message: `Hi ${guest.first_name || guest.name},\n\nYou're invited as a ${r.ticket_type} guest to XPENG Driving Into A New Day at MOA Arena on September 25, 2026!\n\nYour unique ticket claim code: ${code}\n\nPlease visit an SM Tickets outlet at an SM mall and present your code to claim your complimentary ticket.\n\n${r.ticket_type === 'VIP' ? 'VIP gates open: 3:30 PM' : 'General guest gates open: 5:00 PM'}\nShow starts: 6:00 PM\nAttire: Smart casual - futuristic looks welcome.\n\nPlease reply to this email with CONFIRM to confirm your attendance. You will still need to claim your ticket before the event and bring it together with a valid government-issued ID.\n\nYour invitation and ticket code are personal and non-transferable.\n\nWe look forward to seeing you!\nThe XPENG Events Team` });
+    else rows.push(messageRow(guest, r.ticket_type, code));
   }
   return { batch: input[0].batch, total: input.length, valid: !errors.length, errors, rows: errors.length ? [] : rows };
 }
-module.exports = { parseCsv, preview };
+function messageRow(guest, ticketType, code) {
+  return { registration_id: guest.id, name: guest.name, email: guest.email, ticket_type: ticketType, ticket_code: code,
+      subject: "You're invited! Your XPENG " + ticketType + ' invitation',
+      message: `Hi ${guest.first_name || guest.name},\n\nYou're invited as a ${ticketType} guest to XPENG Driving Into A New Day at MOA Arena on September 25, 2026!\n\nYour unique ticket claim code: ${code}\n\nPlease visit an SM Tickets outlet at an SM mall and present your code to claim your complimentary ticket.\n\n${ticketType === 'VIP' ? 'VIP gates open: 3:30 PM' : 'General guest gates open: 5:00 PM'}\nShow starts: 6:00 PM\nAttire: Smart casual - futuristic looks welcome.\n\nPlease reply to this email with CONFIRM to confirm your attendance. You will still need to claim your ticket before the event and bring it together with a valid government-issued ID.\n\nYour invitation and ticket code are personal and non-transferable.\n\nWe look forward to seeing you!\nThe XPENG Events Team` };
+}
+module.exports = { parseCsv, preview, messageRow };

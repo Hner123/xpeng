@@ -249,11 +249,13 @@
   <div class="view admin-only" id="view-invitations">
     <h2>Import and preview an invitation batch</h2>
     <p>Upload the assigned-code CSV with batch, registration_id, email, ticket_type and ticket_code columns.</p>
-    <p>This preview does not reserve codes, save a batch, change guest status or send messages. Reply tracking is not connected yet.</p>
+    <p>Validate your CSV, then save the batch to reserve its codes. Saving does not send messages or mark guests as invited. Reply tracking is not connected yet.</p>
     <div class="toolbar">
       <input type="file" id="batch-file" accept=".csv,text/csv" aria-label="Invitation batch CSV">
       <button class="btn" id="batch-validate">Validate and preview</button>
+      <button class="btn" id="batch-save" disabled>Save batch</button>
     </div>
+    <div class="toolbar"><label for="batch-saved">Saved batches</label><select id="batch-saved"><option value="">Choose a saved batch</option></select><button class="btn ghost" id="batch-refresh">Refresh batches</button></div>
     <p id="batch-result" role="status" aria-live="polite"></p>
     <div class="tablewrap"><table><thead><tr><th>Registration</th><th>Name</th><th>Email</th><th>Ticket type</th><th>Code</th><th>Preview</th></tr></thead><tbody id="batch-rows"></tbody></table></div>
     <div id="batch-preview" hidden><h3 id="batch-subject"></h3><pre id="batch-message" style="white-space:pre-wrap;overflow-wrap:anywhere;font:inherit;line-height:1.7"></pre></div>
@@ -624,35 +626,85 @@ async function loadExports() {
 }
 
 /* ---------- wiring ---------- */
-let batchPreviewRows = [];
+let batchPreviewRows = [], validatedBatchCsv = null;
+function clearValidatedBatch() { validatedBatchCsv = null; $('batch-save').disabled = true; }
 $('batch-file').addEventListener('change', () => {
-  batchPreviewRows = []; $('batch-rows').replaceChildren(); $('batch-result').textContent = ''; $('batch-preview').hidden = true;
+  $('batch-saved').value = '';
+  clearValidatedBatch(); batchPreviewRows = []; $('batch-rows').replaceChildren(); $('batch-result').textContent = ''; $('batch-preview').hidden = true;
 });
 $('batch-validate').addEventListener('click', async () => {
   const file = $('batch-file').files[0];
   if (!file) return toast('Choose the assigned-code CSV first.');
   if (file.size > 2 * 1024 * 1024) return toast('Choose a file smaller than 2 MB.');
+  clearValidatedBatch();
+  $('batch-saved').value = '';
   $('batch-validate').disabled = true; $('batch-file').disabled = true;
+  $('batch-saved').disabled = true; $('batch-refresh').disabled = true;
   $('batch-rows').replaceChildren(); $('batch-preview').hidden = true; batchPreviewRows = [];
   $('batch-result').textContent = 'Checking recipients and ticket codes...';
   try {
-    const res = await api('/api/admin/invitations/preview', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ csv: await file.text() }) });
+    const csv = await file.text();
+    const res = await api('/api/admin/invitations/preview', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ csv }) });
     if (!res.ok) throw new Error(res.error || 'Validation failed.');
     if (!res.valid) {
       $('batch-result').textContent = res.errors.length + ' row(s) need correction. ' + res.errors.map(e => 'Row ' + e.row + ': ' + e.issues.join(', ')).join('; ');
       return;
     }
+    validatedBatchCsv = csv; $('batch-save').disabled = false;
+    $('batch-saved').value = '';
     batchPreviewRows = res.rows;
     $('batch-result').textContent = res.batch + ': ' + res.total + ' recipients validated. Preview only; nothing sent or reserved.';
-    for (const [i, r] of res.rows.entries()) {
+    renderBatchRows(res.rows);
+  } catch (e) { $('batch-result').textContent = e.message || 'Unable to validate batch.'; }
+  finally { $('batch-validate').disabled = false; $('batch-file').disabled = false; $('batch-saved').disabled = false; $('batch-refresh').disabled = false; }
+});
+function renderBatchRows(rows) {
+  batchPreviewRows = rows; $('batch-rows').replaceChildren(); $('batch-preview').hidden = true;
+    for (const [i, r] of rows.entries()) {
       const tr = document.createElement('tr');
       for (const value of [r.registration_id, r.name, r.email, r.ticket_type, r.ticket_code]) { const td = document.createElement('td'); td.textContent = value; tr.appendChild(td); }
       const td = document.createElement('td'), btn = document.createElement('button'); btn.className = 'btn ghost'; btn.textContent = 'Preview';
       btn.addEventListener('click', () => { const entry = batchPreviewRows[i]; $('batch-subject').textContent = entry.subject; $('batch-message').textContent = entry.message; $('batch-preview').hidden = false; $('batch-preview').scrollIntoView({ block: 'nearest' }); });
       td.appendChild(btn); tr.appendChild(td); $('batch-rows').appendChild(tr);
     }
-  } catch (e) { $('batch-result').textContent = e.message || 'Unable to validate batch.'; }
-  finally { $('batch-validate').disabled = false; $('batch-file').disabled = false; }
+}
+async function loadBatches(selected) {
+  const keep = selected || $('batch-saved').value;
+  try {
+    const res = await api('/api/admin/invitations/batches');
+    if (!res.ok) throw new Error(res.error);
+    const select = $('batch-saved'); select.replaceChildren(new Option('Choose a saved batch', ''));
+    for (const b of res.rows) select.add(new Option(b.name + ' (' + b.total + ' guests) - ' + b.created_at, b.id));
+    if (keep) select.value = keep;
+  } catch(e) { $('batch-result').textContent = e.message || 'Unable to load saved batches.'; }
+}
+async function openBatch(id) {
+  clearValidatedBatch(); renderBatchRows([]);
+  if (!id) { $('batch-result').textContent = ''; return; }
+  $('batch-result').textContent = 'Loading saved batch...';
+  try {
+    const res = await api('/api/admin/invitations/batches?id=' + encodeURIComponent(id));
+    if ($('batch-saved').value !== id) return;
+    if (!res.ok) throw new Error(res.error);
+    renderBatchRows(res.batch.rows);
+    $('batch-result').textContent = res.batch.name + ': ' + res.batch.total + ' saved assignments. Codes reserved. No messages sent by saving this batch.';
+  } catch(e) { $('batch-result').textContent = e.message || 'Unable to open batch.'; }
+}
+$('batch-refresh').addEventListener('click', () => loadBatches($('batch-saved').value));
+$('batch-saved').addEventListener('change', () => openBatch($('batch-saved').value));
+$('batch-save').addEventListener('click', async () => {
+  if (!validatedBatchCsv) return;
+  for (const id of ['batch-save','batch-file','batch-validate','batch-saved','batch-refresh']) $(id).disabled = true;
+  try {
+    const res = await api('/api/admin/invitations/batches', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({csv:validatedBatchCsv})});
+    if (!res.ok) throw new Error(res.error);
+    clearValidatedBatch(); await loadBatches(res.id); await openBatch(res.id);
+    toast(res.existing ? 'This batch was already saved.' : 'Batch saved. Codes reserved; nothing sent.');
+  } catch(e) { $('batch-result').textContent = e.message || 'Unable to save batch.'; }
+  finally {
+    for (const id of ['batch-file','batch-validate','batch-saved','batch-refresh']) $(id).disabled = false;
+    $('batch-save').disabled = !validatedBatchCsv;
+  }
 });
 let nameSearchTimer;
 $('f-name').addEventListener('input', () => {
@@ -739,7 +791,7 @@ document.querySelectorAll('.tab').forEach(t => {
     document.querySelectorAll('.view').forEach(x => x.classList.remove('on'));
     t.classList.add('on');
     $('view-' + t.dataset.view).classList.add('on');
-    ({ comms: loadComms, dealers: loadDealers, exports: loadExports }[t.dataset.view] || (() => {}))();
+    ({ invitations: () => loadBatches(), comms: loadComms, dealers: loadDealers, exports: loadExports }[t.dataset.view] || (() => {}))();
   });
 });
 

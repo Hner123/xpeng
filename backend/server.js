@@ -321,6 +321,7 @@ async function main() {
   }
   const vault = vaultLib.make(process.env.APP_KEY);
   const store = storeLib.make(db, vault);
+  const batches = require('./lib/batches').make(db, store);
   const auth = authLib.make(db);
   const GEO = loadGeo();
 
@@ -462,6 +463,28 @@ async function main() {
         }
         if (p === '/api/admin/me' && req.method === 'GET') {
           return json(res, 200, { ok: true, user: session, publicSite: PUBLIC_SITE });
+        }
+        if (p === '/api/admin/invitations/batches') {
+          if (!isAdmin) return needAdmin(res);
+          res.setHeader('Cache-Control', 'no-store');
+          try {
+            if (req.method === 'GET') {
+              if (q.id) {
+                const batch = await batches.detail(q.id);
+                return json(res, batch ? 200 : 404, batch ? { ok: true, batch } : { ok: false, error: 'Batch not found.' });
+              }
+              return json(res, 200, { ok: true, rows: await batches.list() });
+            }
+            if (req.method === 'POST') {
+              const body = await readBody(req, 3 * 1024 * 1024);
+              const saved = await batches.save(body.csv, actor);
+              if (saved.valid === false) return json(res, 409, { ok: false, error: 'Batch validation failed. Revalidate the CSV.', errors: saved.errors });
+              return json(res, 200, { ok: true, ...saved });
+            }
+          } catch (e) {
+            console.error('[batches]', e.code || 'save_or_read_failed');
+            return json(res, 409, { ok: false, error: 'Could not read or save batch. Ensure the batch database migration is installed, then revalidate for changed recipients or reserved codes.' });
+          }
         }
         if (p === '/api/admin/invitations/preview' && req.method === 'POST') {
           if (!isAdmin) return needAdmin(res);

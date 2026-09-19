@@ -292,7 +292,9 @@ function make(db, vault) {
       const reg = await db.get('SELECT * FROM registrations WHERE id=?', [id]);
       if (!reg || reg.partial) { out.skipped++; continue; }
 
-      const existing = await db.get('SELECT code FROM invitations WHERE registration_id=?', [id]);
+      const existing = await db.get('SELECT code, status FROM invitations WHERE registration_id=?', [id]);
+      // Saved official-code drafts must never enter the legacy send flow.
+      if (existing && existing.status === 'ISSUED') { out.skipped++; continue; }
       let code = existing && existing.code;
       const sent = nowUTC();
       const expires = new Date(Date.now() + hours * 3600e3).toISOString().slice(0, 19).replace('T', ' ');

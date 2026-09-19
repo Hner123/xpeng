@@ -58,6 +58,16 @@ function sqliteDriver(cfg) {
       return `INSERT INTO ${table} (${cols.join(',')}) VALUES (${ph})
               ON CONFLICT(${conflictCol}) DO UPDATE SET ${set}`;
     },
+    async atomic(statements) {
+      db.exec('BEGIN IMMEDIATE');
+      try {
+        for (const s of statements) {
+          const r = db.prepare(s.sql).run(...(s.args || []));
+          if (s.expect !== undefined && Number(r.changes) !== s.expect) throw new Error('Batch changed during save. Revalidate it.');
+        }
+        db.exec('COMMIT');
+      } catch (e) { db.exec('ROLLBACK'); throw e; }
+    },
     async close() { db.close(); }
   };
 }
@@ -122,6 +132,18 @@ function mysqlDriver(cfg) {
       const set = updateCols.map(c => `${c}=VALUES(${c})`).join(',');
       return `INSERT INTO ${table} (${cols.join(',')}) VALUES (${ph})
               ON DUPLICATE KEY UPDATE ${set}`;
+    },
+    async atomic(statements) {
+      const conn = await pool.getConnection();
+      try {
+        await conn.beginTransaction();
+        for (const s of statements) {
+          const [r] = await conn.query(s.sql, s.args || []);
+          if (s.expect !== undefined && r.affectedRows !== s.expect) throw new Error('Batch changed during save. Revalidate it.');
+        }
+        await conn.commit();
+      } catch (e) { await conn.rollback(); throw e; }
+      finally { conn.release(); }
     },
     async close() { await pool.end(); }
   };
