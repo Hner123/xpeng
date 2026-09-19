@@ -97,10 +97,41 @@
   .toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#1F1913;border:1px solid var(--line);
     border-radius:10px;padding:12px 18px;font-size:13px;z-index:20;display:none}
   .toast.on{display:block}
-  .tabs{display:flex;gap:4px;margin:18px 0 0}
+  .tabs{display:flex;gap:6px;margin:24px 0 0;overflow-x:auto;padding:6px;background:#17130F;border:1px solid var(--line);border-radius:12px}
   .tab{font:600 11px/1 var(--font-body);letter-spacing:.14em;text-transform:uppercase;color:var(--mute);
-    background:none;border:1px solid var(--line);border-bottom:none;border-radius:8px 8px 0 0;padding:11px 14px;cursor:pointer}
-  .tab.on{color:var(--ink);background:var(--panel)}
+    background:none;border:1px solid transparent;border-radius:8px;padding:14px;min-height:44px;white-space:nowrap;cursor:pointer}
+  .tab:hover{color:var(--ink);background:#241C15}
+  .tab.on{color:#180B00;background:var(--amber);border-color:var(--amber)}
+  .tab:focus-visible,.btn:focus-visible{outline:2px solid var(--amber);outline-offset:3px}
+  .invite-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin:28px 0 20px}
+  .invite-heading h2{font-size:26px;letter-spacing:-.03em;margin-bottom:4px}
+  .invite-heading p,.invite-card p{color:#BFB4A7;font-size:14px;line-height:1.6}
+  .draft-badge{display:inline-flex;align-items:center;gap:8px;color:#FFD3A7;border:1px solid #6C4726;background:#2B2015;border-radius:999px;padding:8px 12px;font-size:12px}
+  .draft-badge::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--amber)}
+  .invite-workspace{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:18px;margin-bottom:20px}
+  .invite-card{min-width:0;background:var(--panel);border:1px solid #453426;border-radius:14px;padding:24px}
+  .invite-card.saved{background:linear-gradient(135deg,#2A2016,var(--panel));border-top:3px solid var(--amber)}
+  .invite-card h3{font-size:18px;margin-bottom:8px}
+  .invite-card .field-label{display:block;font-size:13px;font-weight:700;margin:22px 0 8px}
+  .saved-controls{display:flex;gap:10px;align-items:stretch;flex-wrap:wrap}
+  .saved-controls select{flex:1;min-width:0;width:100%;min-height:46px;font-size:14px;border-color:#65503D}
+  .invite-card .btn{min-height:44px;line-height:1.3}
+  .invite-card .btn:disabled{opacity:1;background:#302A24;color:#AFA395;border:1px solid #4A3F34}
+  .upload-field{display:block;margin:18px 0;padding:16px;border:1px dashed #866344;border-radius:10px;background:#100E0B}
+  .upload-field span{display:block;font-size:13px;font-weight:700;margin-bottom:10px}
+  .upload-field input{width:100%;min-width:0;font:13px var(--font-body);color:#D6CBBE}
+  .upload-field input::file-selector-button{font:700 13px var(--font-body);background:#33271B;color:var(--ink);border:1px solid #765335;border-radius:6px;padding:10px 12px;margin-right:12px;cursor:pointer}
+  .upload-field:focus-within{outline:2px solid var(--amber);outline-offset:3px}
+  .invite-actions{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px}
+  .invite-card .step-help{font-size:12px;color:#BFB4A7}
+  .csv-help{margin-top:16px;font-size:12px;color:#BFB4A7;overflow-wrap:anywhere}
+  .csv-help summary{cursor:pointer;min-height:30px}
+  #batch-result{padding:16px 18px;background:#261E15;border:1px solid #74502C;border-left:4px solid var(--amber);border-radius:9px;margin:18px 0;font-size:14px;line-height:1.6;overflow-wrap:anywhere}
+  #batch-result:empty{display:none}
+  .batch-list-heading{font-size:16px;margin:24px 0 12px}
+  #batch-preview{margin-top:20px;padding:24px;background:var(--panel);border:1px solid #65503D;border-radius:14px;max-width:850px}
+  #batch-subject{font-size:18px;margin-bottom:16px}
+  @media(max-width:800px){.invite-workspace{grid-template-columns:1fr}.invite-card{padding:18px}.invite-heading h2{font-size:23px}.invite-actions .btn{flex:1}.saved-controls select{flex-basis:100%}}
   .view{display:none} .view.on{display:block}
   .who{display:flex;flex-direction:column;line-height:1.25;margin-right:6px;text-align:right}
   .who b{font-size:12.5px}
@@ -248,16 +279,28 @@
   </div>
 
   <div class="view admin-only" id="view-invitations">
-    <h2>Import and preview an invitation batch</h2>
-    <p>Upload the assigned-code CSV with batch, registration_id, email, ticket_type and ticket_code columns.</p>
-    <p>Validate your CSV, then save the batch to reserve its codes. Saving does not send messages or mark guests as invited. Reply tracking is not connected yet.</p>
-    <div class="toolbar">
-      <input type="file" id="batch-file" accept=".csv,text/csv" aria-label="Invitation batch CSV">
-      <button class="btn" id="batch-validate">Validate and preview</button>
-      <button class="btn" id="batch-save" disabled>Save batch</button>
+    <div class="invite-heading">
+      <div><h2>Manage invitations</h2><p>Open a saved batch or prepare a new group of guests.</p></div>
+      <span class="draft-badge">Drafts only &middot; sending not enabled</span>
     </div>
-    <div class="toolbar"><label for="batch-saved">Saved batches</label><select id="batch-saved"><option value="">Choose a saved batch</option></select><button class="btn ghost" id="batch-refresh">Refresh batches</button></div>
-    <p id="batch-result" role="status" aria-live="polite"></p>
+    <div class="invite-workspace">
+      <section class="invite-card saved" aria-labelledby="saved-batches-title">
+        <h3 id="saved-batches-title">Your saved batches</h3>
+        <p>Return to your guest list, assigned ticket codes and invitation previews. Saved batches stay here after refresh.</p>
+        <label class="field-label" for="batch-saved">Select a batch to open</label>
+        <div class="saved-controls"><select id="batch-saved"><option value="">Choose a saved batch</option></select><button class="btn ghost" id="batch-refresh">Refresh list</button></div>
+      </section>
+      <section class="invite-card" aria-labelledby="new-batch-title">
+        <h3 id="new-batch-title">Prepare a new batch</h3>
+        <p>Choose your assigned-code CSV, check the recipients, then save to reserve their codes.</p>
+        <label class="upload-field" for="batch-file"><span>1. Choose your batch file</span><input type="file" id="batch-file" accept=".csv,text/csv" aria-describedby="batch-save-help"></label>
+        <div class="invite-actions"><button class="btn" id="batch-validate">2. Validate &amp; preview</button><button class="btn" id="batch-save" disabled>3. Save batch</button></div>
+        <p class="step-help" id="batch-save-help">Save becomes available after validation. Saving reserves codes; it does not send invitations.</p>
+        <details class="csv-help"><summary>CSV file requirements</summary><p>Required columns: batch, registration_id, email, ticket_type, ticket_code. Maximum file size: 2 MB. Reply tracking is not connected yet.</p></details>
+      </section>
+    </div>
+    <p id="batch-result" role="status" aria-live="polite">Choose a saved batch or upload a CSV to get started.</p>
+    <h3 class="batch-list-heading">Batch recipients</h3>
     <div class="tablewrap"><table><thead><tr><th>Registration</th><th>Name</th><th>Email</th><th>Ticket type</th><th>Code</th><th>Preview</th></tr></thead><tbody id="batch-rows"></tbody></table></div>
     <div id="batch-preview" hidden><h3 id="batch-subject"></h3><pre id="batch-message" style="white-space:pre-wrap;overflow-wrap:anywhere;font:inherit;line-height:1.7"></pre></div>
   </div>
