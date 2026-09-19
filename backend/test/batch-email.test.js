@@ -17,11 +17,16 @@ test('batch email approval, queue uniqueness, delivery states and retry safety',
   const dry=require('../lib/batch-email').make(db,store,vault,mailer,{dryRun:true});
   await a.rejects(dry.test(id,'team@example.com','admin'));await a.rejects(dry.queue(id,'admin',true));a.equal(await dry.processOne(),false);a.equal(calls.length,0);
   await a.rejects(service.queue(id,'admin',true));
+  const draft=await service.preview({batchId:id,registration_id:1});
+  a.equal(draft.snapshot,false);a.match(draft.html,/VIP0001/);a.match(draft.html,/<table/);a.equal(calls.length,0);
+  await a.rejects(service.preview({batchId:id,registration_id:999}));
   await a.rejects(service.test(id,'bad@example.com,other@example.com','admin'));
   await service.test(id,'team@example.com','admin');a.match(calls[0].text,/TEST-NOT-VALID/);a.ok(!calls[0].text.includes('VIP0001'));a.match(calls[0].html,/SM Tickets outlet/);
   await a.rejects(service.queue(id,'admin',false));await a.rejects(service.queue(id,'other-admin',true));
   mailer.replyTo='changed@example.com';await a.rejects(service.queue(id,'admin',true));mailer.replyTo='reply@example.com';
   a.equal((await service.queue(id,'admin',true)).queued,3);a.equal((await service.queue(id,'admin',true)).queued,0);
+  const snapshot=await service.preview({batchId:id,registration_id:1});
+  a.equal(snapshot.snapshot,true);a.equal(snapshot.html,draft.html);a.equal(snapshot.to,'test1@example.com');
   a.equal((await db.get('SELECT COUNT(*) AS n FROM comms_queue')).n,0);
   a.equal((await service.state(id,'admin')).counts.PENDING,3);
   await service.processOne();a.equal((await service.state(id,'admin')).counts.SENT,1);

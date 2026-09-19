@@ -467,6 +467,13 @@ async function main() {
         if (p === '/api/admin/me' && req.method === 'GET') {
           return json(res, 200, { ok: true, user: session, publicSite: PUBLIC_SITE });
         }
+        if (p === '/api/admin/invitations/email-preview' && req.method === 'POST') {
+          if (!isAdmin) return needAdmin(res);
+          res.setHeader('Cache-Control', 'no-store');
+          try {
+            return json(res,200,{ok:true,...await batchEmail.preview(await readBody(req))});
+          } catch(e) { return json(res,422,{ok:false,error:'Unable to load this invitation preview. Refresh the batch and try again.'}); }
+        }
         if (p === '/api/admin/invitations/email') {
           if (!isAdmin) return needAdmin(res);
           res.setHeader('Cache-Control', 'no-store');

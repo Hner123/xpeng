@@ -18,6 +18,21 @@ function make(db,store,vault,mailer,{dryRun=true,siteUrl}={}) {
   }
   function fingerprint(rows){return crypto.createHash('sha256').update(JSON.stringify({from:mailer.from,replyTo:mailer.replyTo,
     rows:rows.map(r=>[r.id,store.decorate(r).email,render(r)])})).digest('hex');}
+  async function preview(input){
+    let record,mail,to,snapshot=false;
+    if(input.batchId){
+      record=(await records(input.batchId)).find(r=>r.id===Number(input.registration_id));
+      if(!record)throw new Error('Recipient not found in this saved batch.');
+      const queued=await db.get('SELECT recipient_enc,content_enc FROM batch_emails WHERE invitation_id=?',[record.invitation_id]);
+      if(queued){mail=JSON.parse(vault.decrypt(queued.content_enc));to=vault.decrypt(queued.recipient_enc);snapshot=true;}
+    }else{
+      if(!Number.isSafeInteger(Number(input.registration_id)) || !['VIP','General Public'].includes(input.ticket_type) || !/^[A-Z0-9-]{4,32}$/.test(input.ticket_code || ''))throw new Error('Invalid preview selection.');
+      record=await db.get('SELECT * FROM registrations WHERE id=?',[Number(input.registration_id)]);
+      if(!record)throw new Error('Registration not found.');
+      record={...record,ticket_type:input.ticket_type,code:input.ticket_code};
+    }
+    return {from:mailer.from,replyTo:mailer.replyTo,to:to || store.decorate(record).email,snapshot,...(mail || render(record))};
+  }
   async function state(id,actor){
     const rows=await records(id),counts={UNSENT:0,PENDING:0,SENDING:0,SENT:0,FAILED:0,REVIEW:0};
     rows.forEach(r=>counts[r.email_status || 'UNSENT']++);
@@ -103,6 +118,6 @@ function make(db,store,vault,mailer,{dryRun=true,siteUrl}={}) {
     const timer=setInterval(async()=>{if(busy)return;busy=true;try{for(let i=0;i<10;i++){if(!await processOne())break;}}catch(e){console.error('[batch-email] Worker needs review:',e.code || 'delivery_state_error');}finally{busy=false;}},10000);
     timer.unref();return timer;
   }
-  return {state,test,queue,retry,processOne,start};
+  return {state,test,queue,retry,processOne,start,preview};
 }
 module.exports={make};
