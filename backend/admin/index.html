@@ -186,6 +186,7 @@
   <div class="tabs">
     <button class="tab on" data-view="regs">Registrations</button>
     <button class="tab admin-only" data-view="invitations">Invitations</button>
+    <button class="tab admin-only" data-view="codes">Ticket codes</button>
     <button class="tab" data-view="comms">Comms queue</button>
     <button class="tab" data-view="dealers">Dealer territories</button>
     <button class="tab" data-view="exports">Export log</button>
@@ -259,6 +260,23 @@
     <p id="batch-result" role="status" aria-live="polite"></p>
     <div class="tablewrap"><table><thead><tr><th>Registration</th><th>Name</th><th>Email</th><th>Ticket type</th><th>Code</th><th>Preview</th></tr></thead><tbody id="batch-rows"></tbody></table></div>
     <div id="batch-preview" hidden><h3 id="batch-subject"></h3><pre id="batch-message" style="white-space:pre-wrap;overflow-wrap:anywhere;font:inherit;line-height:1.7"></pre></div>
+  </div>
+
+  <div class="view admin-only" id="view-codes">
+    <h2>Ticket code inventory</h2>
+    <p>Import a CSV with ticket_code and ticket_type columns (VIP or General Public). Existing assignments are matched automatically. Importing does not send messages.</p>
+    <div class="toolbar"><input type="file" id="codes-file" accept=".csv,text/csv" aria-label="Ticket code inventory CSV"><button class="btn" id="codes-import">Import codes</button></div>
+    <p id="codes-import-result" role="status"></p>
+    <p id="codes-totals" aria-live="polite"></p>
+    <div class="toolbar">
+      <input type="search" id="codes-search" placeholder="Code, guest, ID or batch" aria-label="Search ticket inventory" maxlength="200">
+      <select id="codes-type" aria-label="Ticket type"><option value="">All ticket types</option><option>VIP</option><option>General Public</option></select>
+      <select id="codes-status" aria-label="Ticket status"><option value="">All statuses</option><option value="AVAILABLE">Available</option><option value="RESERVED">Reserved</option><option value="SENT">Sent</option><option value="CLAIMED">Claimed</option><option value="EXPIRED">Expired</option></select>
+      <button class="btn ghost" id="codes-refresh">Refresh codes</button>
+    </div>
+    <p>Reserved means assigned, not sent. Sent reflects the invitation record, not confirmed delivery. Claimed reflects a recorded ticket claim, not an attendance reply. Expired codes remain assigned.</p>
+    <div class="tablewrap"><table><thead><tr><th>Code</th><th>Type</th><th>Status</th><th>Registration</th><th>Guest</th><th>Batch</th></tr></thead><tbody id="codes-rows"></tbody></table></div>
+    <div class="pager"><button class="btn ghost" id="codes-prev">Prev</button><span id="codes-range"></span><button class="btn ghost" id="codes-next">Next</button></div>
   </div>
 
   <!-- ===== COMMS ===== -->
@@ -626,6 +644,45 @@ async function loadExports() {
 }
 
 /* ---------- wiring ---------- */
+let codesOffset=0, codesTotal=0, codesRequest=0, codesTimer;
+async function loadCodes() {
+  const request=++codesRequest;
+  const query=new URLSearchParams({search:$('codes-search').value.trim(),type:$('codes-type').value,status:$('codes-status').value,offset:codesOffset});
+  try {
+    const res=await api('/api/admin/ticket-codes?'+query);
+    if (request!==codesRequest) return;
+    if (!res.ok) throw new Error(res.error);
+    codesTotal=res.total;
+    const t=res.totals;
+    $('codes-totals').textContent=`${t.total} total | ${t.VIP} VIP | ${t['General Public']} General Public | ${t.AVAILABLE} available | ${t.RESERVED} reserved | ${t.SENT} sent | ${t.CLAIMED} claimed | ${t.EXPIRED} expired`;
+    $('codes-rows').replaceChildren();
+    for (const r of res.rows) {
+      const tr=document.createElement('tr');
+      for(const value of [r.ticket_code,r.ticket_type,r.status,r.registration_id || '',r.name,r.batch]) { const td=document.createElement('td');td.textContent=value;tr.appendChild(td); }
+      $('codes-rows').appendChild(tr);
+    }
+    $('codes-range').textContent=res.total ? `${res.offset+1}-${Math.min(res.offset+res.limit,res.total)} of ${res.total}` : 'No matching codes';
+    $('codes-prev').disabled=codesOffset===0; $('codes-next').disabled=codesOffset+res.limit>=res.total;
+  } catch(e) { if(request===codesRequest) {$('codes-totals').textContent=e.message || 'Unable to load codes.';$('codes-rows').replaceChildren();} }
+}
+for(const id of ['codes-type','codes-status']) $(id).addEventListener('change',()=>{codesOffset=0;loadCodes();});
+$('codes-search').addEventListener('input',()=>{clearTimeout(codesTimer);codesRequest++;codesOffset=0;codesTimer=setTimeout(loadCodes,300);});
+$('codes-refresh').addEventListener('click',()=>{codesOffset=0;loadCodes();});
+$('codes-prev').addEventListener('click',()=>{codesOffset=Math.max(0,codesOffset-100);loadCodes();});
+$('codes-next').addEventListener('click',()=>{if(codesOffset+100<codesTotal){codesOffset+=100;loadCodes();}});
+$('codes-import').addEventListener('click',async()=>{
+  const file=$('codes-file').files[0];
+  if(!file || file.size>2*1024*1024) return toast('Choose a CSV smaller than 2 MB.');
+  $('codes-import').disabled=true;$('codes-file').disabled=true;
+  $('codes-import-result').textContent='Checking and importing codes...';
+  try {
+    const res=await api('/api/admin/ticket-codes',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({csv:await file.text()})});
+    if(!res.ok) throw new Error(res.error);
+    $('codes-import-result').textContent=`${res.imported} codes added; ${res.existing} already in inventory. Nothing sent.`;
+    codesOffset=0;await loadCodes();
+  }catch(e){$('codes-import-result').textContent=e.message || 'Unable to import codes.';}
+  finally{$('codes-import').disabled=false;$('codes-file').disabled=false;}
+});
 let batchPreviewRows = [], validatedBatchCsv = null;
 function clearValidatedBatch() { validatedBatchCsv = null; $('batch-save').disabled = true; }
 $('batch-file').addEventListener('change', () => {
@@ -797,7 +854,7 @@ function restoreTab() {
   }
   tabs.forEach(t => t.classList.toggle('on', t === tab));
   document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === 'view-' + tab.dataset.view));
-  const load = { invitations: () => loadBatches(), comms: loadComms, dealers: loadDealers, exports: loadExports }[tab.dataset.view];
+  const load = { codes: loadCodes, invitations: () => loadBatches(), comms: loadComms, dealers: loadDealers, exports: loadExports }[tab.dataset.view];
   if (load) Promise.resolve(load()).catch(() => toast('Unable to refresh this tab. Please try again.'));
 }
 document.querySelectorAll('.tab').forEach(t => {

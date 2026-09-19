@@ -1,7 +1,7 @@
 'use strict';
 
 // RFC-style quoted CSV fields, including embedded commas and newlines.
-function parseCsv(text) {
+function parseCsv(text, required = ['batch', 'registration_id', 'email', 'ticket_type', 'ticket_code']) {
   if (typeof text !== 'string' || text.length > 2 * 1024 * 1024) throw new Error('Choose a CSV file smaller than 2 MB.');
   text = text.replace(/^\uFEFF/, '');
   const rows = []; let row = [], field = '', quoted = false, closed = false;
@@ -19,7 +19,7 @@ function parseCsv(text) {
   if (quoted) throw new Error('Unclosed quote in CSV.');
   row.push(field); if (row.some(x => x.trim())) rows.push(row);
   const headers = (rows.shift() || []).map(x => x.trim());
-  for (const h of ['batch', 'registration_id', 'email', 'ticket_type', 'ticket_code']) if (!headers.includes(h)) throw new Error('Missing column: ' + h);
+  for (const h of required) if (!headers.includes(h)) throw new Error('Missing column: ' + h);
   if (new Set(headers).size !== headers.length) throw new Error('Duplicate column names.');
   if (!rows.length || rows.length > 2500) throw new Error('Import between 1 and 2,500 recipients.');
   return rows.map((r, i) => { if (r.length !== headers.length) throw new Error('Column count mismatch at row ' + (i + 2)); return Object.fromEntries(headers.map((h, n) => [h, r[n].trim()])); });
@@ -27,6 +27,8 @@ function parseCsv(text) {
 
 async function preview(csv, store, db) {
   const input = parseCsv(csv), ids = new Set(), codes = new Set(), errors = [], rows = [];
+  const inventory = await db.all('SELECT ticket_code,ticket_type FROM ticket_codes');
+  const catalog = new Map(inventory.map(r => [r.ticket_code.toUpperCase(),r.ticket_type]));
   const batches = new Set(input.map(r => r.batch));
   if (batches.size !== 1 || !input[0].batch || input[0].batch.length > 120) throw new Error('Use one batch name of up to 120 characters.');
   for (const [i, r] of input.entries()) {
@@ -36,6 +38,8 @@ async function preview(csv, store, db) {
     if (!/^[A-Z0-9-]{4,32}$/.test(code)) issues.push('Invalid ticket code');
     if (codes.has(code)) issues.push('Duplicate ticket code'); codes.add(code);
     if (!['VIP', 'General Public'].includes(r.ticket_type)) issues.push('Invalid ticket type');
+    if (catalog.size && !catalog.has(code)) issues.push('Code is not in the imported inventory');
+    else if (catalog.has(code) && catalog.get(code) !== r.ticket_type) issues.push('Ticket type differs from inventory');
     const reg = Number.isSafeInteger(id) ? await db.get('SELECT * FROM registrations WHERE id=?', [id]) : null;
     let guest;
     if (!reg) issues.push('Registration not found');

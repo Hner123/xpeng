@@ -322,6 +322,7 @@ async function main() {
   const vault = vaultLib.make(process.env.APP_KEY);
   const store = storeLib.make(db, vault);
   const batches = require('./lib/batches').make(db, store);
+  const ticketCodes = require('./lib/ticket-codes').make(db, store);
   const auth = authLib.make(db);
   const GEO = loadGeo();
 
@@ -463,6 +464,20 @@ async function main() {
         }
         if (p === '/api/admin/me' && req.method === 'GET') {
           return json(res, 200, { ok: true, user: session, publicSite: PUBLIC_SITE });
+        }
+        if (p === '/api/admin/ticket-codes') {
+          if (!isAdmin) return needAdmin(res);
+          res.setHeader('Cache-Control', 'no-store');
+          try {
+            if (req.method === 'GET') return json(res, 200, {ok:true, ...await ticketCodes.list(q)});
+            if (req.method === 'POST') {
+              const body = await readBody(req, 3 * 1024 * 1024);
+              return json(res, 200, {ok:true, ...await ticketCodes.importCsv(body.csv,actor)});
+            }
+          } catch (e) {
+            const validation = /^(Invalid code|Duplicate code|Ticket type conflicts|Missing column|Duplicate column|Import between|Choose a CSV|Invalid CSV|Unclosed quote|Column count)/.test(e.message);
+            return json(res, 409, {ok:false,error:validation ? e.message : 'Unable to load or import inventory. Check the ticket-code migration and retry; a concurrent import may have reserved the same code.'});
+          }
         }
         if (p === '/api/admin/invitations/batches') {
           if (!isAdmin) return needAdmin(res);

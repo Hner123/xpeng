@@ -165,3 +165,10 @@ CREATE TABLE IF NOT EXISTS invitation_batch_items (
   FOREIGN KEY (invitation_id) REFERENCES invitations(id) ON DELETE CASCADE,
   FOREIGN KEY (batch_id) REFERENCES invitation_batches(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS ticket_codes (
+ ticket_code VARCHAR(32) NOT NULL PRIMARY KEY,
+ ticket_type VARCHAR(20) NOT NULL,
+ imported_at DATETIME NOT NULL,
+ imported_by VARCHAR(255) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

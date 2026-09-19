@@ -154,3 +154,11 @@ CREATE TABLE IF NOT EXISTS invitation_batch_items (
   ticket_type TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS ix_batch_items ON invitation_batch_items(batch_id);
+
+
+CREATE TABLE IF NOT EXISTS ticket_codes (
+ ticket_code TEXT PRIMARY KEY,
+ ticket_type TEXT NOT NULL,
+ imported_at TEXT NOT NULL,
+ imported_by TEXT NOT NULL
+);
