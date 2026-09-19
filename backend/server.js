@@ -463,6 +463,17 @@ async function main() {
         if (p === '/api/admin/me' && req.method === 'GET') {
           return json(res, 200, { ok: true, user: session, publicSite: PUBLIC_SITE });
         }
+        if (p === '/api/admin/invitations/preview' && req.method === 'POST') {
+          if (!isAdmin) return needAdmin(res);
+          try {
+            const body = await readBody(req, 3 * 1024 * 1024);
+            const preview = await require('./lib/batch-preview').preview(body.csv, store, db);
+            res.setHeader('Cache-Control', 'no-store');
+            return json(res, 200, { ok: true, ...preview });
+          } catch (e) {
+            return json(res, 422, { ok: false, error: 'Could not validate CSV. Check the required columns, file format, and database connection.' });
+          }
+        }
         if (p === '/api/admin/stats' && req.method === 'GET') {
           return json(res, 200, { ok: true, ...(await store.stats()) });
         }

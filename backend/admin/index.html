@@ -185,6 +185,7 @@
 
   <div class="tabs">
     <button class="tab on" data-view="regs">Registrations</button>
+    <button class="tab admin-only" data-view="invitations">Invitations</button>
     <button class="tab" data-view="comms">Comms queue</button>
     <button class="tab" data-view="dealers">Dealer territories</button>
     <button class="tab" data-view="exports">Export log</button>
@@ -243,6 +244,19 @@
       <span id="range">—</span>
       <button class="btn ghost" id="next">Next</button>
     </div>
+  </div>
+
+  <div class="view admin-only" id="view-invitations">
+    <h2>Import and preview an invitation batch</h2>
+    <p>Upload the assigned-code CSV with batch, registration_id, email, ticket_type and ticket_code columns.</p>
+    <p>This preview does not reserve codes, save a batch, change guest status or send messages. Reply tracking is not connected yet.</p>
+    <div class="toolbar">
+      <input type="file" id="batch-file" accept=".csv,text/csv" aria-label="Invitation batch CSV">
+      <button class="btn" id="batch-validate">Validate and preview</button>
+    </div>
+    <p id="batch-result" role="status" aria-live="polite"></p>
+    <div class="tablewrap"><table><thead><tr><th>Registration</th><th>Name</th><th>Email</th><th>Ticket type</th><th>Code</th><th>Preview</th></tr></thead><tbody id="batch-rows"></tbody></table></div>
+    <div id="batch-preview" hidden><h3 id="batch-subject"></h3><pre id="batch-message" style="white-space:pre-wrap;overflow-wrap:anywhere;font:inherit;line-height:1.7"></pre></div>
   </div>
 
   <!-- ===== COMMS ===== -->
@@ -610,6 +624,36 @@ async function loadExports() {
 }
 
 /* ---------- wiring ---------- */
+let batchPreviewRows = [];
+$('batch-file').addEventListener('change', () => {
+  batchPreviewRows = []; $('batch-rows').replaceChildren(); $('batch-result').textContent = ''; $('batch-preview').hidden = true;
+});
+$('batch-validate').addEventListener('click', async () => {
+  const file = $('batch-file').files[0];
+  if (!file) return toast('Choose the assigned-code CSV first.');
+  if (file.size > 2 * 1024 * 1024) return toast('Choose a file smaller than 2 MB.');
+  $('batch-validate').disabled = true; $('batch-file').disabled = true;
+  $('batch-rows').replaceChildren(); $('batch-preview').hidden = true; batchPreviewRows = [];
+  $('batch-result').textContent = 'Checking recipients and ticket codes...';
+  try {
+    const res = await api('/api/admin/invitations/preview', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ csv: await file.text() }) });
+    if (!res.ok) throw new Error(res.error || 'Validation failed.');
+    if (!res.valid) {
+      $('batch-result').textContent = res.errors.length + ' row(s) need correction. ' + res.errors.map(e => 'Row ' + e.row + ': ' + e.issues.join(', ')).join('; ');
+      return;
+    }
+    batchPreviewRows = res.rows;
+    $('batch-result').textContent = res.batch + ': ' + res.total + ' recipients validated. Preview only; nothing sent or reserved.';
+    for (const [i, r] of res.rows.entries()) {
+      const tr = document.createElement('tr');
+      for (const value of [r.registration_id, r.name, r.email, r.ticket_type, r.ticket_code]) { const td = document.createElement('td'); td.textContent = value; tr.appendChild(td); }
+      const td = document.createElement('td'), btn = document.createElement('button'); btn.className = 'btn ghost'; btn.textContent = 'Preview';
+      btn.addEventListener('click', () => { const entry = batchPreviewRows[i]; $('batch-subject').textContent = entry.subject; $('batch-message').textContent = entry.message; $('batch-preview').hidden = false; $('batch-preview').scrollIntoView({ block: 'nearest' }); });
+      td.appendChild(btn); tr.appendChild(td); $('batch-rows').appendChild(tr);
+    }
+  } catch (e) { $('batch-result').textContent = e.message || 'Unable to validate batch.'; }
+  finally { $('batch-validate').disabled = false; $('batch-file').disabled = false; }
+});
 let nameSearchTimer;
 $('f-name').addEventListener('input', () => {
   clearTimeout(nameSearchTimer);
