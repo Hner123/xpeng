@@ -307,8 +307,11 @@
 
   <div class="view admin-only" id="view-codes">
     <h2>Ticket code inventory</h2>
+    <details id="codes-import-panel" class="csv-help">
+    <summary id="codes-import-label">Import more codes</summary>
     <p>Import a CSV with ticket_code and ticket_type columns (VIP or General Public). Existing assignments are matched automatically. Importing does not send messages.</p>
     <div class="toolbar"><input type="file" id="codes-file" accept=".csv,text/csv" aria-label="Ticket code inventory CSV"><button class="btn" id="codes-import">Import codes</button></div>
+    </details>
     <p id="codes-import-result" role="status"></p>
     <p id="codes-totals" aria-live="polite"></p>
     <div class="toolbar">
@@ -687,7 +690,7 @@ async function loadExports() {
 }
 
 /* ---------- wiring ---------- */
-let codesOffset=0, codesTotal=0, codesRequest=0, codesTimer;
+let codesOffset=0, codesTotal=0, codesRequest=0, codesTimer, codesInventoryLoaded=false;
 async function loadCodes() {
   const request=++codesRequest;
   const query=new URLSearchParams({search:$('codes-search').value.trim(),type:$('codes-type').value,status:$('codes-status').value,offset:codesOffset});
@@ -697,6 +700,11 @@ async function loadCodes() {
     if (!res.ok) throw new Error(res.error);
     codesTotal=res.total;
     const t=res.totals;
+    if (!codesInventoryLoaded) {
+      $('codes-import-panel').open = t.total === 0;
+      codesInventoryLoaded = true;
+    }
+    $('codes-import-label').textContent = t.total ? 'Import more codes' : 'Import ticket codes';
     $('codes-totals').textContent=`${t.total} total | ${t.VIP} VIP | ${t['General Public']} General Public | ${t.AVAILABLE} available | ${t.RESERVED} reserved | ${t.SENT} sent | ${t.CLAIMED} claimed | ${t.EXPIRED} expired`;
     $('codes-rows').replaceChildren();
     for (const r of res.rows) {
@@ -722,6 +730,7 @@ $('codes-import').addEventListener('click',async()=>{
     const res=await api('/api/admin/ticket-codes',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({csv:await file.text()})});
     if(!res.ok) throw new Error(res.error);
     $('codes-import-result').textContent=`${res.imported} codes added; ${res.existing} already in inventory. Nothing sent.`;
+    $('codes-import-panel').open = false;
     codesOffset=0;await loadCodes();
   }catch(e){$('codes-import-result').textContent=e.message || 'Unable to import codes.';}
   finally{$('codes-import').disabled=false;$('codes-file').disabled=false;}
