@@ -896,7 +896,13 @@ async function loadBatches(selected) {
     if (!res.ok) throw new Error(res.error);
     const select = $('batch-saved'); select.replaceChildren(new Option('Choose a saved batch', ''));
     for (const b of res.rows) select.add(new Option(b.name + ' (' + b.total + ' guests) - ' + b.created_at, b.id));
-    if (keep) select.value = keep;
+    // Keep the current batch where possible; otherwise open the first one.
+    // Do not replace a CSV the administrator is preparing to import.
+    if (!selected && !keep && (validatedBatchCsv || $('batch-file').files.length)) return;
+    const chosen = res.rows.find(b => b.id === keep) || res.rows[0];
+    select.value = chosen ? chosen.id : '';
+    if (chosen && (selected || activeEmailBatch !== chosen.id)) await openBatch(chosen.id);
+    else if (!chosen && activeEmailBatch) await openBatch('');
   } catch(e) { $('batch-result').textContent = e.message || 'Unable to load saved batches.'; }
 }
 async function openBatch(id) {
@@ -921,7 +927,7 @@ $('batch-save').addEventListener('click', async () => {
   try {
     const res = await api('/api/admin/invitations/batches', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({csv:validatedBatchCsv})});
     if (!res.ok) throw new Error(res.error);
-    clearValidatedBatch(); await loadBatches(res.id); await openBatch(res.id);
+    clearValidatedBatch(); await loadBatches(res.id);
     toast(res.existing ? 'This batch was already saved.' : 'Batch saved. Codes reserved; nothing sent.');
   } catch(e) { $('batch-result').textContent = e.message || 'Unable to save batch.'; }
   finally {
