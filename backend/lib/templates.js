@@ -78,8 +78,10 @@ function build(template, data = {}) {
   switch (template) {
     case 'batch_invitation': {
       const row = require('./batch-preview').messageRow({first_name: name, name: data.name || 'Guest'}, data.ticketType, data.code);
+      if(data.confirmationUrl) row.message=row.message.replace('Please reply to this email with CONFIRM to confirm your attendance.', 'Confirm your attendance using this link: '+data.confirmationUrl);
       return {subject: row.subject, text: row.message + '\n\n' + site,
         html: shell({preheader: 'Your XPENG invitation and ticket claim code.', heading: "You're invited", siteUrl: site,
+          cta: data.confirmationUrl ? {label:'CONFIRM ATTENDANCE',href:data.confirmationUrl} : null,
           body: row.message.split('\n\n').map(p => '<p style="margin:0 0 14px">' + esc(p).replace(/\n/g,'<br>') + '</p>').join('')})};
     }
 

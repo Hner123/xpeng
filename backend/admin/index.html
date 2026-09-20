@@ -326,12 +326,13 @@
     <div class="toolbar">
       <input type="search" id="batch-search" placeholder="Name, email, registration or code" aria-label="Search batch recipients" style="width:290px;max-width:100%" maxlength="200">
       <select id="batch-type-filter" aria-label="Filter recipients by ticket type"><option value="">All ticket types</option><option>VIP</option><option>General Public</option></select>
+      <select id="batch-attendance-filter" aria-label="Filter by attendance"><option value="">All attendance</option><option value="CONFIRMED">Confirmed</option><option value="AWAITING">Not confirmed</option></select>
       <select id="batch-status-filter" aria-label="Filter recipients by email status"><option value="">All email statuses</option><option value="UNSENT">Not sent</option><option value="PENDING">Queued</option><option value="SENDING">Sending</option><option value="SENT">Sent</option><option value="FAILED">Rejected</option><option value="REVIEW">Needs review</option><option value="UNKNOWN">Unavailable</option></select>
       <button class="btn ghost" id="batch-clear-filters">Clear filters</button>
       <span class="count" id="batch-filter-count" role="status" aria-live="polite"></span>
     </div>
     <p class="count" style="margin-bottom:12px">Filters only change this table. Sending still applies to all unsent recipients in the saved batch.</p>
-    <div class="tablewrap"><table><thead><tr><th>Registration</th><th>Name</th><th>Email</th><th>Ticket type</th><th>Code</th><th>Email status</th><th>Preview</th></tr></thead><tbody id="batch-rows"></tbody></table></div>
+    <div class="tablewrap"><table><thead><tr><th>Registration</th><th>Name</th><th>Email</th><th>Ticket type</th><th>Code</th><th>Email status</th><th>Attendance</th><th>Preview</th></tr></thead><tbody id="batch-rows"></tbody></table></div>
     <div id="batch-preview" hidden></div>
     <dialog id="email-preview-dialog" aria-labelledby="email-preview-title">
       <div class="email-preview-heading"><h3 id="email-preview-title">Invitation preview</h3><button class="btn ghost" id="email-preview-close" type="button">Close</button></div>
@@ -865,6 +866,15 @@ function updateBatchEmailStatuses(rows,errors=[]) {
     badge.dataset.status=status;badge.className='pill '+status;badge.textContent=labels[status];
     badge.title=issues.get(id) || (status==='SENT'?'Accepted by the email provider; delivery and attendance are not confirmed.':status==='UNKNOWN'?'Refresh progress to load the current email status.':labels[status]);
     });
+  const attendance=new Map(rows.map(r=>[String(r.registration_id),r]));
+  document.querySelectorAll('#batch-rows [data-attendance]').forEach(badge=>{
+    const record=attendance.get(badge.dataset.attendance),stamp=record && record.confirmed_at;
+    badge.dataset.status=record?(stamp?'CONFIRMED':'AWAITING'):'UNKNOWN';
+    badge.className='pill '+(stamp?'SENT':'');
+    badge.textContent=stamp?'Confirmed':'Not confirmed';
+    badge.title=stamp?'Confirmed '+stamp+' UTC':record?'No attendance confirmation recorded.':'Refresh progress to load attendance.';
+    if(!record)badge.textContent='Unavailable';
+  });
   filterBatchRows();
   }
 function filterBatchRows(){
@@ -873,15 +883,16 @@ function filterBatchRows(){
   const rows=[...document.querySelectorAll('#batch-rows [data-batch-recipient]')];
   let shown=0;
   for(const row of rows){
-    const match=(!search || row.dataset.search.includes(search)) && (!type || row.dataset.ticketType===type) && (!status || row.querySelector('[data-email-status]').dataset.status===status);
+    const attendance=$('batch-attendance-filter').value;
+    const match=(!attendance || row.querySelector('[data-attendance]').dataset.status===attendance) && (!search || row.dataset.search.includes(search)) && (!type || row.dataset.ticketType===type) && (!status || row.querySelector('[data-email-status]').dataset.status===status);
     row.hidden=!match;if(match)shown++;
   }
   $('batch-filter-count').textContent=shown+' of '+rows.length+' recipients';
   const empty=$('batch-filter-empty');if(empty){empty.hidden=shown>0;empty.firstChild.textContent=rows.length?'No recipients match these filters.':'Choose a saved batch or validate a CSV to view recipients.';}
 }
 $('batch-search').addEventListener('input',filterBatchRows);
-for(const id of ['batch-type-filter','batch-status-filter'])$(id).addEventListener('change',filterBatchRows);
-$('batch-clear-filters').addEventListener('click',()=>{for(const id of ['batch-search','batch-type-filter','batch-status-filter'])$(id).value='';filterBatchRows();});
+for(const id of ['batch-type-filter','batch-status-filter','batch-attendance-filter'])$(id).addEventListener('change',filterBatchRows);
+$('batch-clear-filters').addEventListener('click',()=>{for(const id of ['batch-search','batch-type-filter','batch-status-filter','batch-attendance-filter'])$(id).value='';filterBatchRows();});
 let emailPreviewRequest=0;
 $('email-preview-close').addEventListener('click',()=>$('email-preview-dialog').close());
 $('email-preview-dialog').addEventListener('close',()=>{emailPreviewRequest++;$('email-preview-frame').srcdoc='';});
@@ -911,11 +922,13 @@ function renderBatchRows(rows,saved=false) {
       const statusCell=document.createElement('td'),badge=document.createElement('span');
         badge.dataset.emailStatus=String(r.registration_id);badge.dataset.status=saved?'UNKNOWN':'UNSENT';badge.className='pill '+badge.dataset.status;badge.textContent=saved?'Loading...':'Not sent';
       statusCell.appendChild(badge);tr.appendChild(statusCell);
+      const attendanceCell=document.createElement('td'),attendanceBadge=document.createElement('span');
+      attendanceBadge.dataset.attendance=String(r.registration_id);attendanceBadge.dataset.status=saved?'UNKNOWN':'AWAITING';attendanceBadge.className='pill';attendanceBadge.textContent=saved?'Loading...':'Not confirmed';attendanceCell.appendChild(attendanceBadge);tr.appendChild(attendanceCell);
       const td = document.createElement('td'), btn = document.createElement('button'); btn.className = 'btn ghost'; btn.textContent = 'Preview';
       btn.addEventListener('click', () => showEmailPreview(batchPreviewRows[i]));
       td.appendChild(btn); tr.appendChild(td); $('batch-rows').appendChild(tr);
       }
-    const empty=document.createElement('tr'),cell=document.createElement('td');empty.id='batch-filter-empty';cell.colSpan=7;cell.className='empty';empty.appendChild(cell);$('batch-rows').appendChild(empty);
+    const empty=document.createElement('tr'),cell=document.createElement('td');empty.id='batch-filter-empty';cell.colSpan=8;cell.className='empty';empty.appendChild(cell);$('batch-rows').appendChild(empty);
     filterBatchRows();
   }
 async function loadBatches(selected) {

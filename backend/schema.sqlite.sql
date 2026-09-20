@@ -178,3 +178,8 @@ CREATE TABLE IF NOT EXISTS batch_emails (
  actor TEXT NOT NULL, message_id TEXT, error TEXT
 );
 CREATE INDEX IF NOT EXISTS ix_batch_email_status ON batch_emails(status);
+
+CREATE TABLE IF NOT EXISTS attendance_confirmations (
+ invitation_id INTEGER PRIMARY KEY REFERENCES invitations(id) ON DELETE CASCADE,
+ confirmed_at TEXT NOT NULL
+);

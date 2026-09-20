@@ -193,7 +193,7 @@ function needAdmin(res) {
 }
 
 /* ---------- static ------------------------------------------ */
-const STATIC_OK = new Set(['/', '/index.html', '/styles.css', '/app.js', '/config.js', '/geo.js',
+const STATIC_OK = new Set(['/', '/index.html', '/confirm.html', '/confirm.js', '/styles.css', '/app.js', '/config.js', '/geo.js',
                            '/favicon.ico', '/favicon.svg', '/site.webmanifest', '/robots.txt',
                            '/privacy.html', '/terms.html', '/legal.css']);
 
@@ -393,6 +393,14 @@ async function main() {
 
       /* ---- public: static page ---- */
       if (req.method === 'GET' && serveStatic(req, res, p)) return;
+
+      if (p === '/api/attendance' && req.method === 'POST') {
+        res.setHeader('Cache-Control','no-store');
+        if (!writeLimit(clientIp(req))) return json(res,429,{ok:false,error:'Please try again shortly.'});
+        const body=await readBody(req,4096);
+        const result=await require('./lib/attendance').make(db,vault).confirm(body.token);
+        return json(res,result.ok?200:422,result);
+      }
 
       /* ---- public: register ---- */
       if (p === '/api/waitlist' && req.method === 'POST') {

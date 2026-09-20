@@ -6,15 +6,15 @@ function make(db,store,vault,mailer,{dryRun=true,siteUrl}={}) {
   const ready=()=>mailer.enabled && !dryRun;
   function requireLive(){if(!ready())throw new Error('Live email is not enabled. Configure SMTP and disable COMMS_DRY_RUN first.');}
   async function records(id){
-    return db.all(`SELECT r.*,v.id AS invitation_id,v.code,v.status AS invitation_status,i.ticket_type,e.status AS email_status
+    return db.all(`SELECT r.*,v.id AS invitation_id,v.code,v.status AS invitation_status,i.ticket_type,e.status AS email_status,c.confirmed_at
       FROM invitation_batch_items i JOIN invitations v ON v.id=i.invitation_id
       JOIN registrations r ON r.id=v.registration_id LEFT JOIN batch_emails e ON e.invitation_id=v.id
-      WHERE i.batch_id=? ORDER BY r.id`,[id]);
+      LEFT JOIN attendance_confirmations c ON c.invitation_id=v.id WHERE i.batch_id=? ORDER BY r.id`,[id]);
   }
   function render(r, test=false){
     const guest=store.decorate(r);
     return templates.build('batch_invitation',{firstName:guest.first_name || guest.name,name:guest.name,
-      code:test?'TEST-NOT-VALID':r.code,ticketType:r.ticket_type,siteUrl});
+      code:test?'TEST-NOT-VALID':r.code,ticketType:r.ticket_type,siteUrl,confirmationUrl:require('./attendance').make(db,vault).link(r,siteUrl,test)});
   }
   function fingerprint(rows){return crypto.createHash('sha256').update(JSON.stringify({from:mailer.from,replyTo:mailer.replyTo,
     rows:rows.map(r=>[r.id,store.decorate(r).email,render(r)])})).digest('hex');}
@@ -40,7 +40,7 @@ function make(db,store,vault,mailer,{dryRun=true,siteUrl}={}) {
     const errors=await db.all(`SELECT v.registration_id,e.status,e.error FROM batch_emails e JOIN invitations v ON v.id=e.invitation_id
       WHERE e.batch_id=? AND e.status IN ('FAILED','REVIEW','SENDING') ORDER BY v.registration_id`,[id]);
     return {ready:ready(),from:mailer.from,replyTo:mailer.replyTo,counts,tested:!!approved,errors,
-      rows:rows.map(r=>({registration_id:r.id,name:store.decorate(r).name,status:r.email_status || 'UNSENT'}))};
+      rows:rows.map(r=>({registration_id:r.id,name:store.decorate(r).name,status:r.email_status || 'UNSENT',confirmed_at:r.confirmed_at || null}))};
   }
   async function test(id,to,actor){
     requireLive();if(!emailOK(to))throw new Error('Enter one valid test email address.');
