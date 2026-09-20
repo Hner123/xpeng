@@ -323,6 +323,14 @@
       <p>Sent means accepted by the email provider, not delivered or read. Review/Sending records with uncertain outcomes are not automatically retried. No SMS is sent, and no ticket expiry is applied.</p>
     </section>
     <h3 class="batch-list-heading">Batch recipients</h3>
+    <div class="toolbar">
+      <input type="search" id="batch-search" placeholder="Name, email, registration or code" aria-label="Search batch recipients" style="width:290px;max-width:100%" maxlength="200">
+      <select id="batch-type-filter" aria-label="Filter recipients by ticket type"><option value="">All ticket types</option><option>VIP</option><option>General Public</option></select>
+      <select id="batch-status-filter" aria-label="Filter recipients by email status"><option value="">All email statuses</option><option value="UNSENT">Not sent</option><option value="PENDING">Queued</option><option value="SENDING">Sending</option><option value="SENT">Sent</option><option value="FAILED">Rejected</option><option value="REVIEW">Needs review</option><option value="UNKNOWN">Unavailable</option></select>
+      <button class="btn ghost" id="batch-clear-filters">Clear filters</button>
+      <span class="count" id="batch-filter-count" role="status" aria-live="polite"></span>
+    </div>
+    <p class="count" style="margin-bottom:12px">Filters only change this table. Sending still applies to all unsent recipients in the saved batch.</p>
     <div class="tablewrap"><table><thead><tr><th>Registration</th><th>Name</th><th>Email</th><th>Ticket type</th><th>Code</th><th>Email status</th><th>Preview</th></tr></thead><tbody id="batch-rows"></tbody></table></div>
     <div id="batch-preview" hidden></div>
     <dialog id="email-preview-dialog" aria-labelledby="email-preview-title">
@@ -818,7 +826,7 @@ setInterval(()=>{if(activeEmailBatch && !emailBusy && location.hash==='#invitati
 function clearValidatedBatch() { validatedBatchCsv = null; $('batch-save').disabled = true; resetEmailPanel(); }
 $('batch-file').addEventListener('change', () => {
   $('batch-saved').value = '';
-  clearValidatedBatch(); batchPreviewRows = []; $('batch-rows').replaceChildren(); $('batch-result').textContent = ''; $('batch-preview').hidden = true;
+  clearValidatedBatch(); renderBatchRows([]); $('batch-result').textContent = '';
 });
 $('batch-validate').addEventListener('click', async () => {
   const file = $('batch-file').files[0];
@@ -828,7 +836,7 @@ $('batch-validate').addEventListener('click', async () => {
   $('batch-saved').value = '';
   $('batch-validate').disabled = true; $('batch-file').disabled = true;
   $('batch-saved').disabled = true; $('batch-refresh').disabled = true;
-  $('batch-rows').replaceChildren(); $('batch-preview').hidden = true; batchPreviewRows = [];
+  renderBatchRows([]);
   $('batch-result').textContent = 'Checking recipients and ticket codes...';
   try {
     const csv = await file.text();
@@ -854,10 +862,26 @@ function updateBatchEmailStatuses(rows,errors=[]) {
     const id=badge.dataset.emailStatus;
     const value=statuses.get(id);
     const status=Object.hasOwn(labels,value)?value:'UNKNOWN';
-    badge.className='pill '+status;badge.textContent=labels[status];
+    badge.dataset.status=status;badge.className='pill '+status;badge.textContent=labels[status];
     badge.title=issues.get(id) || (status==='SENT'?'Accepted by the email provider; delivery and attendance are not confirmed.':status==='UNKNOWN'?'Refresh progress to load the current email status.':labels[status]);
-  });
+    });
+  filterBatchRows();
+  }
+function filterBatchRows(){
+  const search=$('batch-search').value.trim().toLowerCase().replace(/\s+/g,' ');
+  const type=$('batch-type-filter').value,status=$('batch-status-filter').value;
+  const rows=[...document.querySelectorAll('#batch-rows [data-batch-recipient]')];
+  let shown=0;
+  for(const row of rows){
+    const match=(!search || row.dataset.search.includes(search)) && (!type || row.dataset.ticketType===type) && (!status || row.querySelector('[data-email-status]').dataset.status===status);
+    row.hidden=!match;if(match)shown++;
+  }
+  $('batch-filter-count').textContent=shown+' of '+rows.length+' recipients';
+  const empty=$('batch-filter-empty');if(empty){empty.hidden=shown>0;empty.firstChild.textContent=rows.length?'No recipients match these filters.':'Choose a saved batch or validate a CSV to view recipients.';}
 }
+$('batch-search').addEventListener('input',filterBatchRows);
+for(const id of ['batch-type-filter','batch-status-filter'])$(id).addEventListener('change',filterBatchRows);
+$('batch-clear-filters').addEventListener('click',()=>{for(const id of ['batch-search','batch-type-filter','batch-status-filter'])$(id).value='';filterBatchRows();});
 let emailPreviewRequest=0;
 $('email-preview-close').addEventListener('click',()=>$('email-preview-dialog').close());
 $('email-preview-dialog').addEventListener('close',()=>{emailPreviewRequest++;$('email-preview-frame').srcdoc='';});
@@ -879,16 +903,21 @@ async function showEmailPreview(entry){
 function renderBatchRows(rows,saved=false) {
   batchPreviewRows = rows; $('batch-rows').replaceChildren(); $('batch-preview').hidden = true;
     for (const [i, r] of rows.entries()) {
-      const tr = document.createElement('tr');
+        const tr = document.createElement('tr');
+        tr.dataset.batchRecipient=String(r.registration_id);
+        tr.dataset.search=[r.registration_id,r.name,r.email,r.ticket_code].join(' ').toLowerCase().replace(/\s+/g,' ');
+        tr.dataset.ticketType=r.ticket_type;
       for (const value of [r.registration_id, r.name, r.email, r.ticket_type, r.ticket_code]) { const td = document.createElement('td'); td.textContent = value; tr.appendChild(td); }
       const statusCell=document.createElement('td'),badge=document.createElement('span');
-      badge.dataset.emailStatus=String(r.registration_id);badge.className='pill '+(saved?'UNKNOWN':'UNSENT');badge.textContent=saved?'Loading...':'Not sent';
+        badge.dataset.emailStatus=String(r.registration_id);badge.dataset.status=saved?'UNKNOWN':'UNSENT';badge.className='pill '+badge.dataset.status;badge.textContent=saved?'Loading...':'Not sent';
       statusCell.appendChild(badge);tr.appendChild(statusCell);
       const td = document.createElement('td'), btn = document.createElement('button'); btn.className = 'btn ghost'; btn.textContent = 'Preview';
       btn.addEventListener('click', () => showEmailPreview(batchPreviewRows[i]));
       td.appendChild(btn); tr.appendChild(td); $('batch-rows').appendChild(tr);
-    }
-}
+      }
+    const empty=document.createElement('tr'),cell=document.createElement('td');empty.id='batch-filter-empty';cell.colSpan=7;cell.className='empty';empty.appendChild(cell);$('batch-rows').appendChild(empty);
+    filterBatchRows();
+  }
 async function loadBatches(selected) {
   const keep = selected || $('batch-saved').value;
   try {
