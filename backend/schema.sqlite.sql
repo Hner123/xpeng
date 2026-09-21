@@ -183,3 +183,10 @@ CREATE TABLE IF NOT EXISTS attendance_confirmations (
  invitation_id INTEGER PRIMARY KEY REFERENCES invitations(id) ON DELETE CASCADE,
  confirmed_at TEXT NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS invitation_batch_guests (
+ registration_id INTEGER PRIMARY KEY REFERENCES registrations(id) ON DELETE CASCADE,
+ batch_id TEXT NOT NULL REFERENCES invitation_batches(id) ON DELETE CASCADE
+);
+INSERT OR IGNORE INTO invitation_batch_guests(registration_id,batch_id)
+ SELECT v.registration_id,i.batch_id FROM invitation_batch_items i JOIN invitations v ON v.id=i.invitation_id;

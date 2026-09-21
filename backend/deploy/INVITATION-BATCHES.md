@@ -46,3 +46,13 @@ the production database or contact any messaging provider.
 Use Create a batch to save an empty named batch (for example Batch 2). Select it, then use Add guests to this batch to search by name, email or registration ID. Search shows up to 100 eligible registrations; refine the search to find others. Select guests and their ticket type, then Add selected guests. Available inventory codes are assigned atomically. Registrations with existing invitations are excluded. Conflicting assignments roll back the entire addition; refresh and retry. No messages are queued or sent by these actions.
 
 New guests change the email approval fingerprint, so send and review a new test before sending unsent invitations. Existing queued email snapshots and assignments remain unchanged. No additional schema migration is needed for manual batch creation.
+
+## Import guest lists before assigning tickets
+
+Deploy this update with `sudo mysql xpeng_future_night < backend/migrations/2026-09-21-batch-guests.sql` before restarting PM2. The migration preserves current invitation assignments and backfills membership into invitation_batch_guests. SQLite migrations run automatically.
+
+Open Batch 2 (or create it), choose the registration-export CSV under Import a guest list, then Preview guest list. Supported identity columns are sequence or registration_id plus email. Review eligible and skipped counts and row reasons, then Import unassigned guests. The server checks current data again on save; an assignment conflict rolls back the addition. No tickets or emails are created during import.
+
+Use Assign tickets to imported guests to select up to 100 people, choose VIP or General Public, and assign available codes. Insufficient inventory or a conflict rolls back the entire assignment. Guests without codes cannot be emailed or previewed as invitations. UNASSIGNED is a separate email-panel count; UNSENT counts only assigned recipients. Existing send/test review gates still apply.
+
+Validation uses synthetic SQLite registrations and fake SMTP. It covers preview with no changes, ID/email mismatch, duplicates, existing members/invitees, repeat imports, inventory remaining untouched, wrong-batch assignment rejection, assignment and no automatic sending. Production MySQL migration and visual browser verification were not run locally.

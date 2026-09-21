@@ -21,6 +21,21 @@ test('manual batches and guest assignment reserve unique inventory without sendi
   a.equal((await batches.candidates('Guest 1')).total,0);
   a.equal((await batches.add(c.id,[2],'VIP')).added,1);
   a.notEqual((await batches.detail(b.id)).rows[0].ticket_code,(await batches.detail(c.id)).rows[0].ticket_code);
+  const d=await batches.create('Batch 4','admin');
+  const csv='sequence,email\n3,guest3@example.com\n1,guest1@example.com\n3,guest3@example.com\n999,missing@example.com';
+  const preview=await batches.importGuests(d.id,csv);a.equal(preview.eligible,1);a.equal(preview.skipped,3);
+  a.equal((await batches.detail(d.id)).total,0);
+  a.equal((await batches.importGuests(d.id,'sequence,email\n3,wrong@example.com',true)).imported,0);
+  a.equal((await batches.importGuests(d.id,csv,true)).imported,1);
+  a.equal((await batches.detail(d.id)).rows[0].ticket_code,'Unassigned');
+  a.equal((await db.get('SELECT COUNT(*) AS n FROM invitations')).n,2);
+  a.equal((await batches.importGuests(d.id,csv,true)).imported,0);
+  a.equal((await batches.candidates('Guest 3')).total,0);
+  a.equal((await store.invite([3])).skipped,1);
+  await a.rejects(batches.add(c.id,[3],'VIP',true));
+  a.equal((await batches.add(d.id,[3],'VIP',true)).added,1);
+  a.notEqual((await batches.detail(d.id)).rows[0].ticket_code,'Unassigned');
+  a.equal((await batches.list()).find(b=>b.id===d.id).total,1);
   a.equal((await db.get('SELECT COUNT(*) AS n FROM batch_emails')).n,0);
   a.equal((await db.get('SELECT COUNT(*) AS n FROM comms_queue')).n,0);
  }finally{await db.close();}

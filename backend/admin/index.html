@@ -391,7 +391,14 @@
       <p>Sent means accepted by the email provider, not delivered or read. Review/Sending records with uncertain outcomes are not automatically retried. No SMS is sent, and no ticket expiry is applied.</p>
     </section>
     <section class="invite-card" id="batch-add-panel" hidden>
-      <h3>Add guests to this batch</h3><p>Search registered guests who have no invitation yet. Adding guests reserves available ticket codes and sends no emails.</p>
+      <h3>Import a guest list</h3><p>Upload your registration export (sequence or registration_id, and email). Preview matches, then import without assigning tickets or sending emails.</p>
+      <label class="upload-field">Guest-list CSV<input type="file" id="guest-import-file" accept=".csv,text/csv"></label>
+      <div class="toolbar"><button class="btn ghost" id="guest-import-preview">Preview guest list</button><button class="btn" id="guest-import-save" disabled>Import unassigned guests</button></div>
+      <p id="guest-import-result" role="status"></p><div id="guest-import-issues" style="max-height:220px;overflow:auto"></div>
+      <h3 style="margin-top:24px">Assign tickets to imported guests</h3><p>Select up to 100 unassigned guests at a time and choose a ticket type. Assignment reserves available codes; sending is a separate step.</p>
+      <div class="toolbar"><select id="guest-assign-type" aria-label="Ticket type"><option>VIP</option><option>General Public</option></select><button class="btn ghost" id="guest-assign-all">Select first 100</button><button class="btn" id="guest-assign">Assign codes to selected</button></div>
+      <div id="guest-unassigned" style="max-height:260px;overflow:auto"></div><p id="guest-assign-result" role="status"></p>
+      <h3 style="margin-top:24px">Add guests with tickets</h3><p>Search registered guests who have no invitation yet. Adding guests reserves available ticket codes and sends no emails.</p>
       <div class="toolbar"><input type="search" id="batch-guest-search" placeholder="Name, email or registration ID" aria-label="Search eligible guests"><button class="btn ghost" id="batch-guest-find">Find guests</button><select id="batch-guest-type" aria-label="Ticket type for selected guests"><option>VIP</option><option>General Public</option></select><button class="btn" id="batch-guest-add">Add selected guests</button></div>
       <p id="batch-guest-result" role="status"></p><div id="batch-guest-options" style="max-height:320px;overflow:auto"></div>
     </section>
@@ -400,7 +407,7 @@
       <input type="search" id="batch-search" placeholder="Name, email, registration or code" aria-label="Search batch recipients" style="width:290px;max-width:100%" maxlength="200">
       <select id="batch-type-filter" aria-label="Filter recipients by ticket type"><option value="">All ticket types</option><option>VIP</option><option>General Public</option></select>
       <select id="batch-attendance-filter" aria-label="Filter by attendance"><option value="">All attendance</option><option value="CONFIRMED">Confirmed</option><option value="AWAITING">Not confirmed</option></select>
-      <select id="batch-status-filter" aria-label="Filter recipients by email status"><option value="">All email statuses</option><option value="UNSENT">Not sent</option><option value="PENDING">Queued</option><option value="SENDING">Sending</option><option value="SENT">Sent</option><option value="FAILED">Rejected</option><option value="REVIEW">Needs review</option><option value="UNKNOWN">Unavailable</option></select>
+      <select id="batch-status-filter" aria-label="Filter recipients by email status"><option value="">All email statuses</option><option value="UNSENT">Not sent</option><option value="PENDING">Queued</option><option value="SENDING">Sending</option><option value="SENT">Sent</option><option value="FAILED">Rejected</option><option value="REVIEW">Needs review</option><option value="UNKNOWN">Unavailable</option><option value="UNASSIGNED">Assign ticket first</option></select>
       <button class="btn ghost" id="batch-clear-filters">Clear filters</button>
       <span class="count" id="batch-filter-count" role="status" aria-live="polite"></span>
     </div>
@@ -851,13 +858,14 @@ $('codes-import').addEventListener('click',async()=>{
   finally{$('codes-import').disabled=false;$('codes-file').disabled=false;}
 });
 let batchPreviewRows = [], validatedBatchCsv = null;
+let guestImportDraft=null;
 let activeEmailBatch='', emailState=null, emailBusy=false;
 function emailButtons(){
   $('batch-test-send').disabled=emailBusy || !emailState || !emailState.ready;
   $('batch-email-send').disabled=emailBusy || !emailState || !emailState.ready || !emailState.tested || !$('batch-email-reviewed').checked || !emailState.counts.UNSENT;
   $('batch-email-retry').disabled=emailBusy || !emailState || !emailState.ready || !emailState.counts.FAILED;
 }
-function resetEmailPanel(){$('batch-add-panel').hidden=true;$('batch-guest-options').replaceChildren();activeEmailBatch='';emailState=null;$('batch-email-panel').hidden=true;$('batch-email-reviewed').checked=false;}
+function resetEmailPanel(){guestImportDraft=null;$('guest-import-save').disabled=true;$('guest-import-result').textContent='';$('guest-import-issues').replaceChildren();$('guest-unassigned').replaceChildren();$('guest-assign-result').textContent='';$('batch-add-panel').hidden=true;$('batch-guest-options').replaceChildren();activeEmailBatch='';emailState=null;$('batch-email-panel').hidden=true;$('batch-email-reviewed').checked=false;}
 async function loadEmailState(id){
   try{
     const res=await api('/api/admin/invitations/email?id='+encodeURIComponent(id));
@@ -934,6 +942,7 @@ function updateBatchEmailStatuses(rows,errors=[]) {
   const labels={UNSENT:'Not sent',PENDING:'Queued',SENDING:'Sending',SENT:'Sent',FAILED:'Rejected',REVIEW:'Needs review',UNKNOWN:'Unavailable'};
   document.querySelectorAll('#batch-rows [data-email-status]').forEach(badge=>{
     const id=badge.dataset.emailStatus;
+    if(badge.dataset.unassigned==='true'){badge.dataset.status='UNASSIGNED';badge.className='pill UNSENT';badge.textContent='Assign ticket first';return;}
     const value=statuses.get(id);
     const status=Object.hasOwn(labels,value)?value:'UNKNOWN';
     badge.dataset.status=status;badge.className='pill '+status;badge.textContent=labels[status];
@@ -993,11 +1002,11 @@ function renderBatchRows(rows,saved=false) {
         tr.dataset.ticketType=r.ticket_type;
       for (const value of [r.registration_id, r.name, r.email, r.ticket_type, r.ticket_code]) { const td = document.createElement('td'); td.textContent = value; tr.appendChild(td); }
       const statusCell=document.createElement('td'),badge=document.createElement('span');
-        badge.dataset.emailStatus=String(r.registration_id);badge.dataset.status=saved?'UNKNOWN':'UNSENT';badge.className='pill '+badge.dataset.status;badge.textContent=saved?'Loading...':'Not sent';
+        badge.dataset.unassigned=String(r.ticket_code==='Unassigned');badge.dataset.emailStatus=String(r.registration_id);badge.dataset.status=saved?'UNKNOWN':'UNSENT';badge.className='pill '+badge.dataset.status;badge.textContent=saved?'Loading...':'Not sent';
       statusCell.appendChild(badge);tr.appendChild(statusCell);
       const attendanceCell=document.createElement('td'),attendanceBadge=document.createElement('span');
       attendanceBadge.dataset.attendance=String(r.registration_id);attendanceBadge.dataset.status=saved?'UNKNOWN':'AWAITING';attendanceBadge.className='pill';attendanceBadge.textContent=saved?'Loading...':'Not confirmed';attendanceCell.appendChild(attendanceBadge);tr.appendChild(attendanceCell);
-      const td = document.createElement('td'), btn = document.createElement('button'); btn.className = 'btn ghost'; btn.textContent = 'Preview';
+      const td = document.createElement('td'), btn = document.createElement('button'); btn.className = 'btn ghost'; btn.textContent = r.ticket_code==='Unassigned'?'Assign ticket first':'Preview';btn.disabled=r.ticket_code==='Unassigned';
       btn.addEventListener('click', () => showEmailPreview(batchPreviewRows[i]));
       td.appendChild(btn); tr.appendChild(td); $('batch-rows').appendChild(tr);
       }
@@ -1030,9 +1039,14 @@ async function openBatch(id) {
     if ($('batch-saved').value !== id) return;
     if (!res.ok) throw new Error(res.error);
     renderBatchRows(res.batch.rows,true);
+    $('guest-unassigned').replaceChildren();
+    for(const r of res.batch.rows.filter(r=>r.ticket_code==='Unassigned')){
+      const label=document.createElement('label'),check=document.createElement('input');check.type='checkbox';check.value=r.registration_id;label.style.display='block';label.style.padding='8px';label.append(check,document.createTextNode(' #'+r.registration_id+' - '+r.name+' - '+r.email));$('guest-unassigned').appendChild(label);
+    }
+    if(!$('guest-unassigned').children.length)$('guest-unassigned').textContent='No unassigned guests in this batch.';
     activeEmailBatch=id;$('batch-add-panel').hidden=false;$('batch-email-panel').hidden=false;$('batch-email-result').textContent='';
     await loadEmailState(id);
-    $('batch-result').textContent = res.batch.name + ': ' + res.batch.total + ' saved assignments. Codes reserved. No messages sent by saving this batch.';
+    $('batch-result').textContent = res.batch.name + ': ' + res.batch.total + ' guests. '+res.batch.rows.filter(r=>r.ticket_code==='Unassigned').length+' unassigned. Saving does not send emails.';
   } catch(e) { $('batch-result').textContent = e.message || 'Unable to open batch.'; }
 }
 $('batch-refresh').addEventListener('click', () => loadBatches($('batch-saved').value));
@@ -1050,6 +1064,34 @@ $('batch-save').addEventListener('click', async () => {
     for (const id of ['batch-file','batch-validate','batch-saved','batch-refresh']) $(id).disabled = false;
     $('batch-save').disabled = !validatedBatchCsv;
   }
+});
+$('guest-import-file').addEventListener('change',()=>{guestImportDraft=null;$('guest-import-save').disabled=true;});
+async function importGuestList(commit){
+  const id=activeEmailBatch,file=$('guest-import-file').files[0];if(!id || (!commit && !file))return toast('Select a saved batch and a CSV file.');
+  if(commit && (!guestImportDraft || guestImportDraft.id!==id))return;
+  $('guest-import-preview').disabled=true;$('guest-import-save').disabled=true;
+  try{
+    if(file && file.size>2*1024*1024)throw new Error('Choose a CSV smaller than 2 MB.');
+    const csv=commit?guestImportDraft.csv:await file.text();
+    const res=await api('/api/admin/invitations/batches',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'import-guests',id,csv,commit})});
+    if(id!==activeEmailBatch)return;if(!res.ok)throw new Error(res.error);
+    if(commit){await loadBatches(id);toast(res.imported+' guests imported without tickets. '+res.skipped+' rows skipped.');return;}
+    guestImportDraft={id,csv};$('guest-import-result').textContent=res.eligible+' ready to import; '+res.skipped+' skipped out of '+res.total+' rows.';
+    $('guest-import-issues').replaceChildren();for(const row of res.rows.filter(r=>r.status!=='Ready to import')){const line=document.createElement('p');line.textContent='Row '+row.row+' (#'+row.registration_id+'): '+row.status;$('guest-import-issues').appendChild(line);}
+    $('guest-import-save').disabled=!res.eligible;
+  }catch(e){guestImportDraft=null;$('guest-import-result').textContent=e.message;}finally{$('guest-import-preview').disabled=false;}
+}
+$('guest-import-preview').addEventListener('click',()=>importGuestList(false));
+$('guest-import-save').addEventListener('click',()=>importGuestList(true));
+$('guest-assign-all').addEventListener('click',()=>{[...$('guest-unassigned').querySelectorAll('input')].forEach((el,i)=>el.checked=i<100);});
+$('guest-assign').addEventListener('click',async()=>{
+  const id=activeEmailBatch,ids=[...$('guest-unassigned').querySelectorAll('input:checked')].map(el=>Number(el.value));
+  if(!ids.length || ids.length>100)return toast('Select 1 to 100 unassigned guests.');
+  $('guest-assign').disabled=true;
+  try{
+    const res=await api('/api/admin/invitations/batches',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'assign',id,ids,type:$('guest-assign-type').value})});
+    if(!res.ok)throw new Error(res.error);await loadBatches(id);toast(res.added+' ticket codes assigned. No emails sent.');
+  }catch(e){$('guest-assign-result').textContent=e.message;}finally{$('guest-assign').disabled=false;}
 });
 $('batch-create').addEventListener('click',async()=>{
   $('batch-create').disabled=true;

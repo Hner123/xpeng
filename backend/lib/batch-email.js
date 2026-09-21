@@ -35,6 +35,7 @@ function make(db,store,vault,mailer,{dryRun=true,siteUrl}={}) {
   }
   async function state(id,actor){
     const rows=await records(id),counts={UNSENT:0,PENDING:0,SENDING:0,SENT:0,FAILED:0,REVIEW:0};
+    counts.UNASSIGNED=Number((await db.get(`SELECT COUNT(*) AS n FROM invitation_batch_guests g WHERE g.batch_id=? AND NOT EXISTS (SELECT 1 FROM invitations v WHERE v.registration_id=g.registration_id)`,[id])).n);
     rows.forEach(r=>counts[r.email_status || 'UNSENT']++);
     const approved=await db.get("SELECT id FROM batch_email_tests WHERE batch_id=? AND fingerprint=? AND actor=? AND status='SENT'",[id,fingerprint(rows),actor]);
     const errors=await db.all(`SELECT v.registration_id,e.status,e.error FROM batch_emails e JOIN invitations v ON v.id=e.invitation_id

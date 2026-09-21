@@ -529,7 +529,7 @@ async function main() {
             }
             if (req.method === 'POST') {
               const body = await readBody(req, 3 * 1024 * 1024);
-              const saved = body.action==='create' ? await batches.create(body.name,actor) : body.action==='add' ? await batches.add(body.id,body.ids,body.type) : await batches.save(body.csv, actor);
+              const saved = body.action==='import-guests' ? await batches.importGuests(body.id,body.csv,body.commit===true) : body.action==='assign' ? await batches.add(body.id,body.ids,body.type,true) : body.action==='create' ? await batches.create(body.name,actor) : body.action==='add' ? await batches.add(body.id,body.ids,body.type) : await batches.save(body.csv, actor);
               if (saved.valid === false) return json(res, 409, { ok: false, error: 'Batch validation failed. Revalidate the CSV.', errors: saved.errors });
               return json(res, 200, { ok: true, ...saved });
             }
