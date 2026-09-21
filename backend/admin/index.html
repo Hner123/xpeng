@@ -241,6 +241,12 @@
   .page-intro p{color:#BFB4A7}
   input::placeholder{color:var(--mute)}input[type=checkbox]{accent-color:var(--orange)}
 
+  .batch-disclosure>summary{cursor:pointer;font-size:17px;font-weight:700;min-height:28px;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:16px}
+  .batch-disclosure>summary::-webkit-details-marker{display:none}
+  .batch-disclosure>summary::after{content:'+';font-size:23px;font-weight:400;color:var(--amber)}
+  .batch-disclosure[open]>summary::after{content:'?'}
+  .batch-disclosure>summary:focus-visible{outline:2px solid var(--amber);outline-offset:6px;border-radius:4px}
+  .batch-disclosure-body{margin-top:20px;padding-top:20px;border-top:1px solid var(--line)}
 </style>
 </head>
 <body>
@@ -379,8 +385,8 @@
       </section>
     </div>
     <p id="batch-result" role="status" aria-live="polite">Choose a saved batch or upload a CSV to get started.</p>
-    <section class="invite-card" id="batch-email-panel" hidden>
-      <h3>Send batch emails</h3>
+    <details class="invite-card batch-disclosure" id="batch-email-panel" hidden>
+      <summary>Send batch emails</summary><div class="batch-disclosure-body">
       <p id="batch-email-sender"></p>
       <p>Send a test to your team first. Test codes are marked TEST-NOT-VALID. Review the wording, sender, Reply-To and ticket instructions before sending to guests. Replies are handled in your inbox; attendance confirmations are tracked through the button in each new invitation email.</p>
       <div class="toolbar"><label for="batch-test-to">Test recipient</label><input type="text" id="batch-test-to" placeholder="team@example.com" autocomplete="off"><button class="btn ghost" id="batch-test-send">Send test email</button></div>
@@ -389,8 +395,10 @@
       <p id="batch-email-result" role="status" aria-live="polite"></p>
       <p id="batch-email-counts"></p>
       <p>Sent means accepted by the email provider, not delivered or read. Review/Sending records with uncertain outcomes are not automatically retried. No SMS is sent, and no ticket expiry is applied.</p>
-    </section>
-    <section class="invite-card" id="batch-add-panel" hidden>
+      </div>
+    </details>
+    <details class="invite-card batch-disclosure" id="batch-add-panel" hidden>
+      <summary>Import and manage guests</summary><div class="batch-disclosure-body">
       <h3>Import a guest list</h3><p>Upload your registration export (sequence or registration_id, and email). Preview matches, then import without assigning tickets or sending emails.</p>
       <label class="upload-field">Guest-list CSV<input type="file" id="guest-import-file" accept=".csv,text/csv"></label>
       <div class="toolbar"><button class="btn ghost" id="guest-import-preview">Preview guest list</button><button class="btn" id="guest-import-save" disabled>Import unassigned guests</button></div>
@@ -402,7 +410,8 @@
       <h3 style="margin-top:24px">Add guests with tickets</h3><p>Search registered guests who have no invitation yet. Adding guests reserves available ticket codes and sends no emails.</p>
       <div class="toolbar"><input type="search" id="batch-guest-search" placeholder="Name, email or registration ID" aria-label="Search eligible guests"><button class="btn ghost" id="batch-guest-find">Find guests</button><select id="batch-guest-type" aria-label="Ticket type for selected guests"><option>VIP</option><option>General Public</option></select><button class="btn" id="batch-guest-add">Add selected guests</button></div>
       <p id="batch-guest-result" role="status"></p><div id="batch-guest-options" style="max-height:320px;overflow:auto"></div>
-    </section>
+      </div>
+    </details>
     <h3 class="batch-list-heading">Batch recipients</h3>
     <div class="toolbar">
       <input type="search" id="batch-search" placeholder="Name, email, registration or code" aria-label="Search batch recipients" style="width:290px;max-width:100%" maxlength="200">
