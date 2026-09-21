@@ -77,6 +77,7 @@ function make(db, store) {
       if(assign){
         const member=await db.get('SELECT batch_id FROM invitation_batch_guests WHERE registration_id=?',[regId]);
         if(!member || member.batch_id!==id)throw new Error('Guest is not in this batch.');
+        statements.push({sql:'UPDATE invitation_batch_guests SET batch_id=? WHERE registration_id=? AND batch_id=?',args:[id,regId,id],expect:1});
       }else statements.push({sql:'INSERT INTO invitation_batch_guests(registration_id,batch_id) VALUES (?,?)',args:[regId,id],expect:1});
       statements.push({sql:`INSERT INTO invitations(registration_id,code,status)
         SELECT id,?,'ISSUED' FROM registrations WHERE id=? AND partial=0 AND status='REGISTERED' AND email_hash=?`,args:[codes[index].ticket_code,regId,reg.email_hash],expect:1});
@@ -110,6 +111,15 @@ function make(db, store) {
     if(commit && statements.length)await db.atomic(statements);
     return {id,total:rows.length,eligible:statements.length,skipped:rows.length-statements.length,imported:commit?statements.length:0,rows};
   }
-  return { list, detail, save, create, candidates, add, importGuests };
+  async function moveUnassigned(source,target,ids){
+    if(source===target)throw new Error('Choose a different destination batch.');
+    if(!await detail(source) || !await detail(target))throw new Error('Source or destination batch not found.');
+    if(!Array.isArray(ids) || !ids.length || ids.length>2500 || ids.some(n=>!Number.isSafeInteger(n) || n<1) || new Set(ids).size!==ids.length)throw new Error('Select 1 to 2,500 unassigned guests.');
+    const statements=ids.map(id=>({sql:`UPDATE invitation_batch_guests SET batch_id=? WHERE registration_id=? AND batch_id=?
+      AND NOT EXISTS (SELECT 1 FROM invitations WHERE registration_id=?)`,args:[target,id,source,id],expect:1}));
+    try{await db.atomic(statements);}catch(e){throw new Error('Nothing moved. A selected guest is no longer unassigned in this batch. Refresh and try again.');}
+    return {id:target,moved:ids.length};
+  }
+  return { list, detail, save, create, candidates, add, importGuests, moveUnassigned };
 }
 module.exports = { make };

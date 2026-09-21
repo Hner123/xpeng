@@ -32,6 +32,16 @@ test('manual batches and guest assignment reserve unique inventory without sendi
   a.equal((await batches.importGuests(d.id,csv,true)).imported,0);
   a.equal((await batches.candidates('Guest 3')).total,0);
   a.equal((await store.invite([3])).skipped,1);
+  await a.rejects(batches.moveUnassigned(d.id,d.id,[3]));
+  await a.rejects(batches.moveUnassigned(d.id,'missing',[3]));
+  await a.rejects(batches.moveUnassigned(d.id,c.id,[3,2]));
+  a.equal((await batches.detail(d.id)).total,1);
+  await a.rejects(batches.moveUnassigned(b.id,c.id,[1]));
+  a.equal((await batches.moveUnassigned(d.id,c.id,[3])).moved,1);
+  a.equal((await batches.detail(d.id)).total,0);
+  a.equal((await batches.detail(c.id)).rows.find(r=>r.registration_id===3).ticket_code,'Unassigned');
+  await a.rejects(batches.moveUnassigned(d.id,c.id,[3]));
+  await batches.moveUnassigned(c.id,d.id,[3]);
   await a.rejects(batches.add(c.id,[3],'VIP',true));
   a.equal((await batches.add(d.id,[3],'VIP',true)).added,1);
   a.notEqual((await batches.detail(d.id)).rows[0].ticket_code,'Unassigned');

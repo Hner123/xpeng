@@ -397,6 +397,7 @@
       <p id="guest-import-result" role="status"></p><div id="guest-import-issues" style="max-height:220px;overflow:auto"></div>
       <h3 style="margin-top:24px">Assign tickets to imported guests</h3><p>Select up to 100 unassigned guests at a time and choose a ticket type. Assignment reserves available codes; sending is a separate step.</p>
       <div class="toolbar"><select id="guest-assign-type" aria-label="Ticket type"><option>VIP</option><option>General Public</option></select><button class="btn ghost" id="guest-assign-all">Select first 100</button><button class="btn" id="guest-assign">Assign codes to selected</button></div>
+      <div class="toolbar"><button class="btn ghost" id="guest-move-all">Select all unassigned</button><select id="guest-move-target" aria-label="Destination batch"><option value="">Move to batch...</option></select><button class="btn ghost" id="guest-move">Move selected guests</button></div>
       <div id="guest-unassigned" style="max-height:260px;overflow:auto"></div><p id="guest-assign-result" role="status"></p>
       <h3 style="margin-top:24px">Add guests with tickets</h3><p>Search registered guests who have no invitation yet. Adding guests reserves available ticket codes and sends no emails.</p>
       <div class="toolbar"><input type="search" id="batch-guest-search" placeholder="Name, email or registration ID" aria-label="Search eligible guests"><button class="btn ghost" id="batch-guest-find">Find guests</button><select id="batch-guest-type" aria-label="Ticket type for selected guests"><option>VIP</option><option>General Public</option></select><button class="btn" id="batch-guest-add">Add selected guests</button></div>
@@ -1044,6 +1045,8 @@ async function openBatch(id) {
       const label=document.createElement('label'),check=document.createElement('input');check.type='checkbox';check.value=r.registration_id;label.style.display='block';label.style.padding='8px';label.append(check,document.createTextNode(' #'+r.registration_id+' - '+r.name+' - '+r.email));$('guest-unassigned').appendChild(label);
     }
     if(!$('guest-unassigned').children.length)$('guest-unassigned').textContent='No unassigned guests in this batch.';
+    $('guest-move-target').replaceChildren(new Option('Move to batch...',''));
+    for(const option of $('batch-saved').options)if(option.value && option.value!==id)$('guest-move-target').add(new Option(option.text,option.value));
     activeEmailBatch=id;$('batch-add-panel').hidden=false;$('batch-email-panel').hidden=false;$('batch-email-result').textContent='';
     await loadEmailState(id);
     $('batch-result').textContent = res.batch.name + ': ' + res.batch.total + ' guests. '+res.batch.rows.filter(r=>r.ticket_code==='Unassigned').length+' unassigned. Saving does not send emails.';
@@ -1083,6 +1086,19 @@ async function importGuestList(commit){
 }
 $('guest-import-preview').addEventListener('click',()=>importGuestList(false));
 $('guest-import-save').addEventListener('click',()=>importGuestList(true));
+$('guest-move-all').addEventListener('click',()=>{for(const el of $('guest-unassigned').querySelectorAll('input'))el.checked=true;});
+$('guest-move').addEventListener('click',async()=>{
+  const id=activeEmailBatch,target=$('guest-move-target').value,ids=[...$('guest-unassigned').querySelectorAll('input:checked')].map(el=>Number(el.value));
+  if(!target || !ids.length)return toast('Select unassigned guests and a destination batch.');
+  const name=$('guest-move-target').selectedOptions[0].text;
+  const approved=await ask({title:'Move unassigned guests?',body:'Move '+ids.length+' selected guests to '+name+'? Ticket codes will not be assigned and no emails will be sent.',confirm:'Move guests'});
+  if(!approved || id!==activeEmailBatch)return;
+  $('guest-move').disabled=true;
+  try{
+    const res=await api('/api/admin/invitations/batches',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'move-unassigned',id,target,ids})});
+    if(!res.ok)throw new Error(res.error);await loadBatches(target);toast(res.moved+' unassigned guests moved.');
+  }catch(e){$('guest-assign-result').textContent=e.message;}finally{$('guest-move').disabled=false;}
+});
 $('guest-assign-all').addEventListener('click',()=>{[...$('guest-unassigned').querySelectorAll('input')].forEach((el,i)=>el.checked=i<100);});
 $('guest-assign').addEventListener('click',async()=>{
   const id=activeEmailBatch,ids=[...$('guest-unassigned').querySelectorAll('input:checked')].map(el=>Number(el.value));

@@ -56,3 +56,7 @@ Open Batch 2 (or create it), choose the registration-export CSV under Import a g
 Use Assign tickets to imported guests to select up to 100 people, choose VIP or General Public, and assign available codes. Insufficient inventory or a conflict rolls back the entire assignment. Guests without codes cannot be emailed or previewed as invitations. UNASSIGNED is a separate email-panel count; UNSENT counts only assigned recipients. Existing send/test review gates still apply.
 
 Validation uses synthetic SQLite registrations and fake SMTP. It covers preview with no changes, ID/email mismatch, duplicates, existing members/invitees, repeat imports, inventory remaining untouched, wrong-batch assignment rejection, assignment and no automatic sending. Production MySQL migration and visual browser verification were not run locally.
+
+## Correct an import into the wrong batch
+
+Open the source batch and use Select all unassigned (or check individual guests), choose the destination batch, then Move selected guests. Review the count and destination in the confirmation dialog. Only guests without an invitation can move; any stale or assigned selection cancels the entire transaction. Assigned guests, codes and sent emails are unaffected. No additional migration is needed beyond 2026-09-21-batch-guests.sql. This does not automatically move any production records during deployment.
