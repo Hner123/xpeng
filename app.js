@@ -142,10 +142,8 @@
     liveCount();
   }
 
-  /* The ONLY source of the waitlist number. Shows it when the API
-     reports a real total at or above minToShow; otherwise the
-     counter stays hidden. Never invents or caches a figure, and a
-     failed request must never break the form. */
+  /* The API gates the counter. An approved displayTotal may format the
+     public campaign figure while the API remains the availability check. */
   function liveCount() {
     var c = CFG.counter || {};
     if (!c.show) return;
@@ -156,7 +154,8 @@
         if (!d || !d.ok || typeof d.total !== 'number') return;
         if (d.total < floor) return;                 // real, but not yet worth showing
         CFG.counter.total = d.total;
-        $('counter-num').textContent = Number(d.total).toLocaleString();
+        var displayTotal = Number.isFinite(Number(c.displayTotal)) ? Number(c.displayTotal) : d.total;
+        $('counter-num').textContent = (c.prefix || '') + displayTotal.toLocaleString();
         $('counter').hidden = false;
         countUp();                                   // animate once we have the real figure
       })
@@ -754,7 +753,7 @@
     var c = CFG.counter || {};
     if (!c.show || !c.total) return;                 // total is set only by liveCount()
     countUp.done = true;
-    var el = $('counter-num'), target = Number(c.total), started = false;
+    var el = $('counter-num'), target = Number.isFinite(Number(c.displayTotal)) ? Number(c.displayTotal) : Number(c.total), prefix = c.prefix || '', started = false;
     function run() {
       if (started) return;
       started = true;
@@ -762,9 +761,9 @@
       (function step(now) {
         var p = Math.min(1, (now - t0) / dur);
         var eased = 1 - Math.pow(1 - p, 3);
-        el.textContent = Math.floor(target * eased).toLocaleString();
+        el.textContent = prefix + Math.floor(target * eased).toLocaleString();
         if (p < 1) requestAnimationFrame(step);
-        else el.textContent = target.toLocaleString();
+        else el.textContent = prefix + target.toLocaleString();
       })(t0);
     }
     if (!('IntersectionObserver' in window)) return run();

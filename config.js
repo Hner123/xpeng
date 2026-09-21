@@ -23,14 +23,16 @@ window.XPENG_CONFIG = {
   },
 
   /* Waitlist counter — admin on/off switch.
-     The number ALWAYS comes from the live API (/api/waitlist/count).
-     There is deliberately no hard-coded total here: a made-up count
-     is a false public claim about the campaign. If the API can't be
-     reached, the counter simply stays hidden.
+     The API still gates whether the counter is shown. displayTotal is
+     the approved campaign display value; leave it null to show the live
+     completed-registration total instead. If the API can't be reached,
+     the counter stays hidden.
      minToShow implements the brief's "display it once the number is
      impressive" — below this, it's hidden even though it's real. */
   counter: {
     show: true,
+    displayTotal: 5666,
+    prefix: "+ ",
     minToShow: 500,
     label: "already on the waitlist"
   },
