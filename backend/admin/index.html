@@ -413,8 +413,15 @@
       <button class="btn ghost" id="batch-clear-filters">Clear filters</button>
       <span class="count" id="batch-filter-count" role="status" aria-live="polite"></span>
     </div>
-    <p class="count" style="margin-bottom:12px">Filters only change this table. Sending still applies to all unsent recipients in the saved batch.</p>
-    <div class="tablewrap"><table><thead><tr><th>Registration</th><th>Name</th><th>Email</th><th>Score</th><th>Ticket type</th><th>Code</th><th>Email status</th><th>Attendance</th><th>Preview</th></tr></thead><tbody id="batch-rows"></tbody></table></div>
+    <div class="toolbar">
+      <button class="btn ghost" id="batch-select-matching">Select matching unassigned (up to 100)</button>
+      <button class="btn ghost" id="batch-clear-selection">Clear selection</button>
+      <select id="batch-assign-type" aria-label="Ticket type to assign"><option>VIP</option><option>General Public</option></select>
+      <button class="btn" id="batch-assign-selected" disabled>Assign available tickets</button>
+      <span class="count" id="batch-selection-count" role="status" aria-live="polite">0 selected</span>
+    </div>
+    <p class="count" style="margin-bottom:12px">Ticket assignment applies only to selected visible unassigned guests (up to 100 at a time). Guests hidden by filters are deselected. Assignment sends no emails. Sending still applies to all unsent recipients in the saved batch.</p>
+    <div class="tablewrap"><table><thead><tr><th>Select</th><th>Registration</th><th>Name</th><th>Email</th><th>Score</th><th>Ticket type</th><th>Code</th><th>Email status</th><th>Attendance</th><th>Preview</th></tr></thead><tbody id="batch-rows"></tbody></table></div>
     <div id="batch-preview" hidden></div>
     <dialog id="email-preview-dialog" aria-labelledby="email-preview-title">
       <div class="email-preview-heading"><h3 id="email-preview-title">Invitation preview</h3><button class="btn ghost" id="email-preview-close" type="button">Close</button></div>
@@ -972,13 +979,51 @@ function filterBatchRows(){
     const score=row.dataset.score===''?NaN:Number(row.dataset.score);
     const match=(!min || score>=Number(min)) && (!max || score<=Number(max)) && (!attendance || row.querySelector('[data-attendance]').dataset.status===attendance) && (!search || row.dataset.search.includes(search)) && (!type || row.dataset.ticketType===type) && (!status || row.querySelector('[data-email-status]').dataset.status===status);
     row.hidden=!match;if(match)shown++;
+    if(!match){const pick=row.querySelector('[data-batch-pick]');if(pick)pick.checked=false;}
   }
+  syncBatchSelection();
   $('batch-filter-count').textContent=shown+' of '+rows.length+' recipients';
   const empty=$('batch-filter-empty');if(empty){empty.hidden=shown>0;empty.firstChild.textContent=rows.length?'No recipients match these filters.':'Choose a saved batch or validate a CSV to view recipients.';}
 }
 for(const id of ['batch-search','batch-min-score','batch-max-score'])$(id).addEventListener('input',filterBatchRows);
 for(const id of ['batch-type-filter','batch-status-filter','batch-attendance-filter'])$(id).addEventListener('change',filterBatchRows);
 $('batch-clear-filters').addEventListener('click',()=>{for(const id of ['batch-search','batch-type-filter','batch-status-filter','batch-attendance-filter','batch-min-score','batch-max-score'])$(id).value='';filterBatchRows();});
+let batchAssignmentBusy=false;
+function selectedBatchGuests(){
+  return [...document.querySelectorAll('#batch-rows [data-batch-recipient]')].filter(row=>!row.hidden).flatMap(row=>{
+    const pick=row.querySelector('[data-batch-pick]');return pick && !pick.disabled && pick.checked ? [Number(row.dataset.batchRecipient)] : [];
+  });
+}
+function syncBatchSelection(){
+  const count=selectedBatchGuests().length;
+  $('batch-selection-count').textContent=count+' selected';
+  $('batch-assign-selected').disabled=batchAssignmentBusy || !activeEmailBatch || !count || count>100;
+  $('batch-select-matching').disabled=batchAssignmentBusy;
+}
+$('batch-select-matching').addEventListener('click',()=>{
+  let count=0;
+  for(const row of document.querySelectorAll('#batch-rows [data-batch-recipient]')){
+    const pick=row.querySelector('[data-batch-pick]');if(pick)pick.checked=!row.hidden && !pick.disabled && count++<100;
+  }
+  syncBatchSelection();
+});
+$('batch-clear-selection').addEventListener('click',()=>{for(const pick of document.querySelectorAll('[data-batch-pick]'))pick.checked=false;syncBatchSelection();});
+$('batch-assign-selected').addEventListener('click',async()=>{
+  const id=activeEmailBatch,ids=selectedBatchGuests(),type=$('batch-assign-type').value;
+  if(batchAssignmentBusy || !id || !ids.length || ids.length>100)return;
+  batchAssignmentBusy=true;syncBatchSelection();
+  try{
+    const approved=await ask({title:'Assign available tickets?',body:'Assign '+type+' codes to '+ids.length+' selected guests in '+$('batch-saved').selectedOptions[0].text+'? This reserves codes but sends no emails.',confirm:'Assign tickets'});
+    if(!approved || activeEmailBatch!==id)return;
+    const current=selectedBatchGuests();
+    if(JSON.stringify(current)!==JSON.stringify(ids))return toast('Selection changed. Review the guests and try again.');
+    const res=await api('/api/admin/invitations/batches',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'assign',id,ids,type})});
+    if(!res.ok)throw new Error(res.error);
+    if(activeEmailBatch===id)await loadBatches(id);
+    toast(res.added+' '+type+' codes assigned. No emails sent.');
+  }catch(e){toast(e.message || 'Unable to assign tickets. Refresh the batch and try again.');}
+  finally{batchAssignmentBusy=false;syncBatchSelection();}
+});
 let emailPreviewRequest=0;
 $('email-preview-close').addEventListener('click',()=>$('email-preview-dialog').close());
 $('email-preview-dialog').addEventListener('close',()=>{emailPreviewRequest++;$('email-preview-frame').srcdoc='';});
@@ -1004,6 +1049,7 @@ function renderBatchRows(rows,saved=false) {
         tr.dataset.batchRecipient=String(r.registration_id);
         tr.dataset.search=[r.registration_id,r.name,r.email,r.ticket_code].join(' ').toLowerCase().replace(/\s+/g,' ');
         tr.dataset.ticketType=r.ticket_type;tr.dataset.score=r.lead_score ?? '';
+        const pickCell=document.createElement('td'),pick=document.createElement('input');pick.type='checkbox';pick.dataset.batchPick=String(r.registration_id);pick.disabled=!saved || r.ticket_code!=='Unassigned';pick.setAttribute('aria-label','Select '+r.name+' for ticket assignment');pick.addEventListener('change',syncBatchSelection);pickCell.appendChild(pick);tr.appendChild(pickCell);
       for (const value of [r.registration_id, r.name, r.email, r.lead_score ?? '?', r.ticket_type, r.ticket_code]) { const td = document.createElement('td'); td.textContent = value; tr.appendChild(td); }
       const statusCell=document.createElement('td'),badge=document.createElement('span');
         badge.dataset.unassigned=String(r.ticket_code==='Unassigned');badge.dataset.emailStatus=String(r.registration_id);badge.dataset.status=saved?'UNKNOWN':'UNSENT';badge.className='pill '+badge.dataset.status;badge.textContent=saved?'Loading...':'Not sent';
@@ -1014,7 +1060,7 @@ function renderBatchRows(rows,saved=false) {
       btn.addEventListener('click', () => showEmailPreview(batchPreviewRows[i]));
       td.appendChild(btn); tr.appendChild(td); $('batch-rows').appendChild(tr);
       }
-    const empty=document.createElement('tr'),cell=document.createElement('td');empty.id='batch-filter-empty';cell.colSpan=9;cell.className='empty';empty.appendChild(cell);$('batch-rows').appendChild(empty);
+    const empty=document.createElement('tr'),cell=document.createElement('td');empty.id='batch-filter-empty';cell.colSpan=10;cell.className='empty';empty.appendChild(cell);$('batch-rows').appendChild(empty);
     filterBatchRows();
   }
 async function loadBatches(selected) {

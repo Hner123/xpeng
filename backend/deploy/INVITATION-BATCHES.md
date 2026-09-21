@@ -60,3 +60,7 @@ Validation uses synthetic SQLite registrations and fake SMTP. It covers preview 
 ## Correct an import into the wrong batch
 
 Open the source batch and use Select all unassigned (or check individual guests), choose the destination batch, then Move selected guests. Review the count and destination in the confirmation dialog. Only guests without an invitation can move; any stale or assigned selection cancels the entire transaction. Assigned guests, codes and sent emails are unaffected. No additional migration is needed beyond 2026-09-21-batch-guests.sql. This does not automatically move any production records during deployment.
+
+## Assign tickets from filtered recipients
+
+In Batch recipients, filter scores and other fields, then use Select matching unassigned (up to 100) or individual row checkboxes. Choose VIP or General Public and Assign available tickets. The confirmation shows the selected count, destination batch and ticket type. Hidden rows are deselected on filter changes; already assigned guests cannot be selected. Successful assignment clears selections on refresh. Insufficient codes or stale guest eligibility cancels the full assignment. No email is sent. Email sending still applies to all unsent assigned recipients in the batch, regardless of these table filters. No new migration required.
