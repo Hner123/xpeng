@@ -1,0 +1,27 @@
+const {test}=require('node:test'),a=require('node:assert/strict');
+const {open}=require('../lib/db');
+test('manual batches and guest assignment reserve unique inventory without sending',async()=>{
+ const db=open({DB_DRIVER:'sqlite',DB_FILE:':memory:'});
+ try{
+  await db.migrate();const vault=require('../lib/crypto').make('manual-batch-test-key-00000000000000');
+  const store=require('../lib/store').make(db,vault),batches=require('../lib/batches').make(db,store);
+  for(let id=1;id<=3;id++)await db.run(`INSERT INTO registrations(id,created_at,updated_at,name_enc,email_enc,mobile_enc,mobile_hash,email_hash,province,city,partial) VALUES (?,?,?,?,?,?,?,?,?,?,0)`,[id,'2026-09-21','2026-09-21',vault.encrypt('Guest '+id),vault.encrypt('guest'+id+'@example.com'),vault.encrypt('09000000000'),'m'+id,'e'+id,'Metro','Manila']);
+  for(let i=1;i<=2;i++)await db.run('INSERT INTO ticket_codes(ticket_code,ticket_type,imported_at,imported_by) VALUES (?,?,?,?)',['CODE00'+i,'VIP','2026-09-21','test']);
+  const b=await batches.create('Batch 2','admin'),c=await batches.create('Batch 3','admin');
+  a.equal((await batches.create('Batch 2','admin')).id,b.id);a.equal((await batches.detail(b.id)).total,0);
+  a.equal((await batches.candidates('guest1@')).rows[0].id,1);
+  await a.rejects(batches.add(b.id,[1,2,3],'VIP'));
+  a.equal((await batches.detail(b.id)).total,0);
+  await a.rejects(batches.add(b.id,[1,1],'VIP'));
+  a.equal((await batches.add(b.id,[1],'VIP')).added,1);
+  await db.run('INSERT INTO ticket_codes(ticket_code,ticket_type,imported_at,imported_by) VALUES (?,?,?,?)',['CODE003','VIP','2026-09-21','test']);
+  await a.rejects(batches.add(c.id,[2,1],'VIP'));
+  a.equal((await db.get('SELECT COUNT(*) AS n FROM invitations WHERE registration_id=2')).n,0);
+  a.equal((await batches.detail(c.id)).total,0);
+  a.equal((await batches.candidates('Guest 1')).total,0);
+  a.equal((await batches.add(c.id,[2],'VIP')).added,1);
+  a.notEqual((await batches.detail(b.id)).rows[0].ticket_code,(await batches.detail(c.id)).rows[0].ticket_code);
+  a.equal((await db.get('SELECT COUNT(*) AS n FROM batch_emails')).n,0);
+  a.equal((await db.get('SELECT COUNT(*) AS n FROM comms_queue')).n,0);
+ }finally{await db.close();}
+});

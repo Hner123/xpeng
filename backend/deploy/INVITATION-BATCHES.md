@@ -40,3 +40,9 @@ Reply tracking and message delivery are not part of this release.
 database and checks persistence, retry safety, conflicts/rollback, code
 reservation, deletion, and absence of queued messages. It does not access
 the production database or contact any messaging provider.
+
+## Create and populate batches in the dashboard
+
+Use Create a batch to save an empty named batch (for example Batch 2). Select it, then use Add guests to this batch to search by name, email or registration ID. Search shows up to 100 eligible registrations; refine the search to find others. Select guests and their ticket type, then Add selected guests. Available inventory codes are assigned atomically. Registrations with existing invitations are excluded. Conflicting assignments roll back the entire addition; refresh and retry. No messages are queued or sent by these actions.
+
+New guests change the email approval fingerprint, so send and review a new test before sending unsent invitations. Existing queued email snapshots and assignments remain unchanged. No additional schema migration is needed for manual batch creation.

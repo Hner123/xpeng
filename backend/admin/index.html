@@ -302,7 +302,11 @@
         <div class="saved-controls"><select id="batch-saved"><option value="">Choose a saved batch</option></select><button class="btn ghost" id="batch-refresh">Refresh list</button></div>
       </section>
       <section class="invite-card" aria-labelledby="new-batch-title">
-        <h3 id="new-batch-title">Prepare a new batch</h3>
+        <h3 id="new-batch-title">Create a batch</h3>
+        <label class="field-label" for="batch-new-name">Batch name</label>
+        <div class="toolbar"><input id="batch-new-name" placeholder="Batch 2" maxlength="120"><button class="btn" id="batch-create">Create batch</button></div>
+        <p>Create Batch 2, Batch 3, or any name you prefer, then add registered guests below. Creating a batch sends nothing.</p>
+        <h3>Or import a CSV</h3>
         <p>Choose your assigned-code CSV, check the recipients, then save to reserve their codes.</p>
         <label class="upload-field" for="batch-file"><span>1. Choose your batch file</span><input type="file" id="batch-file" accept=".csv,text/csv" aria-describedby="batch-save-help"></label>
         <div class="invite-actions"><button class="btn" id="batch-validate">2. Validate &amp; preview</button><button class="btn" id="batch-save" disabled>3. Save batch</button></div>
@@ -321,6 +325,11 @@
       <p id="batch-email-result" role="status" aria-live="polite"></p>
       <p id="batch-email-counts"></p>
       <p>Sent means accepted by the email provider, not delivered or read. Review/Sending records with uncertain outcomes are not automatically retried. No SMS is sent, and no ticket expiry is applied.</p>
+    </section>
+    <section class="invite-card" id="batch-add-panel" hidden>
+      <h3>Add guests to this batch</h3><p>Search registered guests who have no invitation yet. Adding guests reserves available ticket codes and sends no emails.</p>
+      <div class="toolbar"><input id="batch-guest-search" placeholder="Name, email or registration ID" aria-label="Search eligible guests"><button class="btn ghost" id="batch-guest-find">Find guests</button><select id="batch-guest-type" aria-label="Ticket type for selected guests"><option>VIP</option><option>General Public</option></select><button class="btn" id="batch-guest-add">Add selected guests</button></div>
+      <p id="batch-guest-result" role="status"></p><div id="batch-guest-options" style="max-height:320px;overflow:auto"></div>
     </section>
     <h3 class="batch-list-heading">Batch recipients</h3>
     <div class="toolbar">
@@ -784,7 +793,7 @@ function emailButtons(){
   $('batch-email-send').disabled=emailBusy || !emailState || !emailState.ready || !emailState.tested || !$('batch-email-reviewed').checked || !emailState.counts.UNSENT;
   $('batch-email-retry').disabled=emailBusy || !emailState || !emailState.ready || !emailState.counts.FAILED;
 }
-function resetEmailPanel(){activeEmailBatch='';emailState=null;$('batch-email-panel').hidden=true;$('batch-email-reviewed').checked=false;}
+function resetEmailPanel(){$('batch-add-panel').hidden=true;$('batch-guest-options').replaceChildren();activeEmailBatch='';emailState=null;$('batch-email-panel').hidden=true;$('batch-email-reviewed').checked=false;}
 async function loadEmailState(id){
   try{
     const res=await api('/api/admin/invitations/email?id='+encodeURIComponent(id));
@@ -948,6 +957,7 @@ async function loadBatches(selected) {
   } catch(e) { $('batch-result').textContent = e.message || 'Unable to load saved batches.'; }
 }
 async function openBatch(id) {
+  $('batch-add-panel').hidden=true;$('batch-guest-options').replaceChildren();$('batch-guest-result').textContent='';
   clearValidatedBatch(); renderBatchRows([]);
   if (!id) { $('batch-result').textContent = ''; return; }
   $('batch-result').textContent = 'Loading saved batch...';
@@ -956,7 +966,7 @@ async function openBatch(id) {
     if ($('batch-saved').value !== id) return;
     if (!res.ok) throw new Error(res.error);
     renderBatchRows(res.batch.rows,true);
-    activeEmailBatch=id;$('batch-email-panel').hidden=false;$('batch-email-result').textContent='';
+    activeEmailBatch=id;$('batch-add-panel').hidden=false;$('batch-email-panel').hidden=false;$('batch-email-result').textContent='';
     await loadEmailState(id);
     $('batch-result').textContent = res.batch.name + ': ' + res.batch.total + ' saved assignments. Codes reserved. No messages sent by saving this batch.';
   } catch(e) { $('batch-result').textContent = e.message || 'Unable to open batch.'; }
@@ -976,6 +986,35 @@ $('batch-save').addEventListener('click', async () => {
     for (const id of ['batch-file','batch-validate','batch-saved','batch-refresh']) $(id).disabled = false;
     $('batch-save').disabled = !validatedBatchCsv;
   }
+});
+$('batch-create').addEventListener('click',async()=>{
+  $('batch-create').disabled=true;
+  try{
+    const res=await api('/api/admin/invitations/batches',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'create',name:$('batch-new-name').value})});
+    if(!res.ok)throw new Error(res.error);await loadBatches(res.id);$('batch-new-name').value='';
+  }catch(e){$('batch-result').textContent=e.message;}finally{$('batch-create').disabled=false;}
+});
+let guestSearchRequest=0;
+$('batch-guest-find').addEventListener('click',async()=>{
+  const batch=activeEmailBatch,request=++guestSearchRequest;
+  $('batch-guest-options').replaceChildren();$('batch-guest-result').textContent='Searching...';
+  try{
+    const res=await api('/api/admin/invitations/batches?candidates=1&search='+encodeURIComponent($('batch-guest-search').value));
+    if(request!==guestSearchRequest || batch!==activeEmailBatch)return;
+    if(!res.ok)throw new Error(res.error);
+    $('batch-guest-result').textContent='Showing '+res.rows.length+' of '+res.total+' eligible guests. Narrow the search to find others.';
+    for(const row of res.rows){const label=document.createElement('label'),cb=document.createElement('input');cb.type='checkbox';cb.value=row.id;label.style.display='block';label.style.padding='8px';label.append(cb,document.createTextNode(' #'+row.id+' ? '+row.name+' ? '+row.email));$('batch-guest-options').appendChild(label);}
+  }catch(e){if(request===guestSearchRequest)$('batch-guest-result').textContent=e.message;}
+});
+$('batch-guest-add').addEventListener('click',async()=>{
+  const id=activeEmailBatch,ids=[...$('batch-guest-options').querySelectorAll('input:checked')].map(el=>Number(el.value));
+  if(!id || !ids.length){$('batch-guest-result').textContent='Select at least one guest.';return;}
+  $('batch-guest-add').disabled=true;
+  try{
+    const res=await api('/api/admin/invitations/batches',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'add',id,ids,type:$('batch-guest-type').value})});
+    if(!res.ok)throw new Error(res.error);
+    await loadBatches(id);toast(res.added+' guests added. Codes reserved; no emails sent.');
+  }catch(e){$('batch-guest-result').textContent=e.message;}finally{$('batch-guest-add').disabled=false;}
 });
 let nameSearchTimer;
 $('f-name').addEventListener('input', () => {

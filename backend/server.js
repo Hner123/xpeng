@@ -520,6 +520,7 @@ async function main() {
           res.setHeader('Cache-Control', 'no-store');
           try {
             if (req.method === 'GET') {
+              if(q.candidates==='1') return json(res,200,{ok:true,...await batches.candidates(q.search)});
               if (q.id) {
                 const batch = await batches.detail(q.id);
                 return json(res, batch ? 200 : 404, batch ? { ok: true, batch } : { ok: false, error: 'Batch not found.' });
@@ -528,13 +529,13 @@ async function main() {
             }
             if (req.method === 'POST') {
               const body = await readBody(req, 3 * 1024 * 1024);
-              const saved = await batches.save(body.csv, actor);
+              const saved = body.action==='create' ? await batches.create(body.name,actor) : body.action==='add' ? await batches.add(body.id,body.ids,body.type) : await batches.save(body.csv, actor);
               if (saved.valid === false) return json(res, 409, { ok: false, error: 'Batch validation failed. Revalidate the CSV.', errors: saved.errors });
               return json(res, 200, { ok: true, ...saved });
             }
           } catch (e) {
             console.error('[batches]', e.code || 'save_or_read_failed');
-            return json(res, 409, { ok: false, error: 'Could not read or save batch. Ensure the batch database migration is installed, then revalidate for changed recipients or reserved codes.' });
+            return json(res, 409, { ok: false, error: !e.code ? e.message : 'Could not read or save batch. Ensure the batch database migration is installed, then revalidate for changed recipients or reserved codes.' });
           }
         }
         if (p === '/api/admin/invitations/preview' && req.method === 'POST') {

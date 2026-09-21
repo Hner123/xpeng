@@ -45,6 +45,42 @@ function make(db, store) {
     }
     return { id, existing: false };
   }
-  return { list, detail, save };
+  async function create(name,actor){
+    name=String(name || '').trim();
+    if(!name || name.length>120)throw new Error('Enter a batch name (up to 120 characters).');
+    const key=crypto.createHash('sha256').update('manual-batch:'+name.toLowerCase()).digest('hex');
+    const prior=await db.get('SELECT id FROM invitation_batches WHERE import_key=?',[key]);
+    if(prior)return {id:prior.id,existing:true};
+    const id=crypto.randomUUID();
+    await db.run('INSERT INTO invitation_batches(id,import_key,name,created_at,created_by) VALUES (?,?,?,?,?)',[id,key,name,store.nowUTC(),actor]);
+    return {id};
+  }
+  async function candidates(search){
+    const query=String(search || '').trim().toLowerCase();
+    const rows=await db.all(`SELECT r.* FROM registrations r WHERE r.partial=0 AND r.status='REGISTERED'
+      AND NOT EXISTS (SELECT 1 FROM invitations v WHERE v.registration_id=r.id) ORDER BY r.id DESC`);
+    const matches=rows.map(r=>store.decorate(r)).filter(r=>r.email && (!query || [r.id,r.name,r.email].some(v=>String(v).toLowerCase().includes(query))));
+    return {total:matches.length,rows:matches.slice(0,100).map(r=>({id:r.id,name:r.name,email:r.email}))};
+  }
+  async function add(id,ids,type){
+    if(!await detail(id))throw new Error('Batch not found.');
+    if(!Array.isArray(ids) || !ids.length || ids.length>100 || ids.some(n=>!Number.isSafeInteger(n) || n<1) || new Set(ids).size!==ids.length)throw new Error('Select 1 to 100 guests.');
+    if(!['VIP','General Public'].includes(type))throw new Error('Select a ticket type.');
+    const codes=await db.all(`SELECT c.ticket_code FROM ticket_codes c WHERE c.ticket_type=?
+      AND NOT EXISTS (SELECT 1 FROM invitations v WHERE v.code=c.ticket_code) ORDER BY c.ticket_code LIMIT 100`,[type]);
+    if(codes.length<ids.length)throw new Error('Not enough available codes for this ticket type.');
+    const statements=[];
+    for(const [index,regId] of ids.entries()){
+      const reg=await db.get('SELECT * FROM registrations WHERE id=?',[regId]);
+      if(!reg || !store.decorate(reg).email)throw new Error('A guest has no email. Refresh the list.');
+      statements.push({sql:`INSERT INTO invitations(registration_id,code,status)
+        SELECT id,?,'ISSUED' FROM registrations WHERE id=? AND partial=0 AND status='REGISTERED' AND email_hash=?`,args:[codes[index].ticket_code,regId,reg.email_hash],expect:1});
+      statements.push({sql:`INSERT INTO invitation_batch_items(invitation_id,batch_id,ticket_type)
+        SELECT id,?,? FROM invitations WHERE registration_id=? AND code=?`,args:[id,type,regId,codes[index].ticket_code],expect:1});
+    }
+    await db.atomic(statements);
+    return {id,added:ids.length};
+  }
+  return { list, detail, save, create, candidates, add };
 }
 module.exports = { make };
