@@ -459,6 +459,7 @@
       <select id="codes-type" aria-label="Ticket type"><option value="">All ticket types</option><option>VIP</option><option>General Public</option></select>
       <select id="codes-status" aria-label="Ticket status"><option value="">All statuses</option><option value="AVAILABLE">Available</option><option value="RESERVED">Reserved</option><option value="SENT">Sent</option><option value="CLAIMED">Claimed</option><option value="EXPIRED">Expired</option></select>
       <button class="btn ghost" id="codes-refresh">Refresh codes</button>
+      <strong id="codes-matching" role="status" aria-live="polite" style="color:var(--amber)"></strong>
     </div>
     <p>Reserved means assigned, not sent. Sent reflects the invitation record, not confirmed delivery. Claimed reflects a recorded ticket claim, not an attendance reply. Expired codes remain assigned.</p>
     <div class="tablewrap"><table><thead><tr><th>Code</th><th>Type</th><th>Status</th><th>Registration</th><th>Guest</th><th>Batch</th></tr></thead><tbody id="codes-rows"></tbody></table></div>
@@ -833,12 +834,14 @@ async function loadExports() {
 let codesOffset=0, codesTotal=0, codesRequest=0, codesTimer, codesInventoryLoaded=false;
 async function loadCodes() {
   const request=++codesRequest;
+  $('codes-matching').textContent='Loading matching codes...';
   const query=new URLSearchParams({search:$('codes-search').value.trim(),type:$('codes-type').value,status:$('codes-status').value,offset:codesOffset});
   try {
     const res=await api('/api/admin/ticket-codes?'+query);
     if (request!==codesRequest) return;
     if (!res.ok) throw new Error(res.error);
     codesTotal=res.total;
+    $('codes-matching').textContent=Number(res.total).toLocaleString()+' matching '+(Number(res.total)===1?'code':'codes');
     const t=res.totals;
     if (!codesInventoryLoaded) {
       $('codes-import-panel').open = t.total === 0;
@@ -854,7 +857,7 @@ async function loadCodes() {
     }
     $('codes-range').textContent=res.total ? `${res.offset+1}-${Math.min(res.offset+res.limit,res.total)} of ${res.total}` : 'No matching codes';
     $('codes-prev').disabled=codesOffset===0; $('codes-next').disabled=codesOffset+res.limit>=res.total;
-  } catch(e) { if(request===codesRequest) {$('codes-totals').textContent=e.message || 'Unable to load codes.';$('codes-rows').replaceChildren();} }
+  } catch(e) { if(request===codesRequest) {$('codes-matching').textContent='Count unavailable';$('codes-totals').textContent=e.message || 'Unable to load codes.';$('codes-rows').replaceChildren();} }
 }
 for(const id of ['codes-type','codes-status']) $(id).addEventListener('change',()=>{codesOffset=0;loadCodes();});
 $('codes-search').addEventListener('input',()=>{clearTimeout(codesTimer);codesRequest++;codesOffset=0;codesTimer=setTimeout(loadCodes,300);});
