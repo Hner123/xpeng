@@ -408,7 +408,7 @@
       <div class="toolbar"><button class="btn ghost" id="guest-move-all">Select all unassigned</button><select id="guest-move-target" aria-label="Destination batch"><option value="">Move to batch...</option></select><button class="btn ghost" id="guest-move">Move selected guests</button></div>
       <div id="guest-unassigned" style="max-height:260px;overflow:auto"></div><p id="guest-assign-result" role="status"></p>
       <h3 style="margin-top:24px">Add guests with tickets</h3><p>Search registered guests who have no invitation yet. Adding guests reserves available ticket codes and sends no emails.</p>
-      <div class="toolbar"><input type="search" id="batch-guest-search" placeholder="Name, email or registration ID" aria-label="Search eligible guests"><button class="btn ghost" id="batch-guest-find">Find guests</button><select id="batch-guest-type" aria-label="Ticket type for selected guests"><option>VIP</option><option>General Public</option></select><button class="btn" id="batch-guest-add">Add selected guests</button></div>
+      <div class="toolbar"><input type="search" id="batch-guest-search" placeholder="Name, email or registration ID" aria-label="Search eligible guests"><button class="btn ghost" id="batch-guest-find">Find guests</button><button class="btn ghost" id="batch-guest-select-all" disabled>Select all shown</button><button class="btn ghost" id="batch-guest-clear">Clear selection</button><select id="batch-guest-type" aria-label="Ticket type for selected guests"><option>VIP</option><option>General Public</option></select><button class="btn" id="batch-guest-add">Add selected guests</button></div>
       <p id="batch-guest-result" role="status"></p><div id="batch-guest-options" style="max-height:320px;overflow:auto"></div>
       </div>
     </details>
@@ -421,6 +421,7 @@
       <input type="number" id="batch-min-score" min="0" max="100" step="1" placeholder="Min score" aria-label="Minimum lead score" style="width:110px"><input type="number" id="batch-max-score" min="0" max="100" step="1" placeholder="Max score" aria-label="Maximum lead score" style="width:110px">
       <button class="btn ghost" id="batch-clear-filters">Clear filters</button>
       <span class="count" id="batch-filter-count" role="status" aria-live="polite"></span>
+      <span class="count" id="batch-attendance-count" role="status" aria-live="polite"></span>
     </div>
     <div class="toolbar">
       <button class="btn ghost" id="batch-select-matching">Select matching unassigned (up to 100)</button>
@@ -886,7 +887,7 @@ function emailButtons(){
   $('batch-email-send').disabled=emailBusy || !emailState || !emailState.ready || !emailState.tested || !$('batch-email-reviewed').checked || !emailState.counts.UNSENT;
   $('batch-email-retry').disabled=emailBusy || !emailState || !emailState.ready || !emailState.counts.FAILED;
 }
-function resetEmailPanel(){guestImportDraft=null;$('guest-import-save').disabled=true;$('guest-import-result').textContent='';$('guest-import-issues').replaceChildren();$('guest-unassigned').replaceChildren();$('guest-assign-result').textContent='';$('batch-add-panel').hidden=true;$('batch-guest-options').replaceChildren();activeEmailBatch='';emailState=null;$('batch-email-panel').hidden=true;$('batch-email-reviewed').checked=false;}
+function resetEmailPanel(){guestImportDraft=null;$('guest-import-save').disabled=true;$('guest-import-result').textContent='';$('guest-import-issues').replaceChildren();$('guest-unassigned').replaceChildren();$('guest-assign-result').textContent='';$('batch-add-panel').hidden=true;$('batch-guest-options').replaceChildren();$('batch-guest-select-all').disabled=true;activeEmailBatch='';emailState=null;$('batch-email-panel').hidden=true;$('batch-email-reviewed').checked=false;}
 async function loadEmailState(id){
   try{
     const res=await api('/api/admin/invitations/email?id='+encodeURIComponent(id));
@@ -995,6 +996,24 @@ function filterBatchRows(){
   }
   syncBatchSelection();
   $('batch-filter-count').textContent=shown+' of '+rows.length+' recipients';
+  /* Counted over every row in the batch, not the filtered view: "how
+     many have confirmed" is a question about the batch, and a tally
+     that moved with the filters would answer a different one each
+     time. Unknown means progress has not been refreshed yet, and is
+     kept separate so it is never silently counted as not confirmed. */
+  const tally={CONFIRMED:0,AWAITING:0,UNKNOWN:0};
+  for(const row of rows){
+    const badge=row.querySelector('[data-attendance]');
+    const state=badge && badge.dataset.status;
+    if(Object.hasOwn(tally,state))tally[state]++;
+  }
+  const parts=[];
+  if(rows.length){
+    parts.push(tally.CONFIRMED+' confirmed');
+    parts.push(tally.AWAITING+' not confirmed');
+    if(tally.UNKNOWN)parts.push(tally.UNKNOWN+' unavailable');
+  }
+  $('batch-attendance-count').textContent=parts.join(' · ');
   const empty=$('batch-filter-empty');if(empty){empty.hidden=shown>0;empty.firstChild.textContent=rows.length?'No recipients match these filters.':'Choose a saved batch or validate a CSV to view recipients.';}
 }
 for(const id of ['batch-search','batch-min-score','batch-max-score'])$(id).addEventListener('input',filterBatchRows);
@@ -1180,14 +1199,21 @@ $('batch-create').addEventListener('click',async()=>{
 let guestSearchRequest=0;
 $('batch-guest-find').addEventListener('click',async()=>{
   const batch=activeEmailBatch,request=++guestSearchRequest;
-  $('batch-guest-options').replaceChildren();$('batch-guest-result').textContent='Searching...';
+  $('batch-guest-options').replaceChildren();$('batch-guest-select-all').disabled=true;$('batch-guest-result').textContent='Searching...';
   try{
     const res=await api('/api/admin/invitations/batches?candidates=1&search='+encodeURIComponent($('batch-guest-search').value));
     if(request!==guestSearchRequest || batch!==activeEmailBatch)return;
     if(!res.ok)throw new Error(res.error);
     $('batch-guest-result').textContent='Showing '+res.rows.length+' of '+res.total+' eligible guests. Narrow the search to find others.';
+    $('batch-guest-select-all').disabled=!res.rows.length;
     for(const row of res.rows){const label=document.createElement('label'),cb=document.createElement('input');cb.type='checkbox';cb.value=row.id;label.style.display='block';label.style.padding='8px';label.append(cb,document.createTextNode(' #'+row.id+' - '+row.name+' - '+row.email+' | Score: '+(row.lead_score ?? '?')));$('batch-guest-options').appendChild(label);}
   }catch(e){if(request===guestSearchRequest)$('batch-guest-result').textContent=e.message;}
+});
+$('batch-guest-select-all').addEventListener('click',()=>{
+  $('batch-guest-options').querySelectorAll('input[type="checkbox"]').forEach(cb=>cb.checked=true);
+});
+$('batch-guest-clear').addEventListener('click',()=>{
+  $('batch-guest-options').querySelectorAll('input[type="checkbox"]').forEach(cb=>cb.checked=false);
 });
 $('batch-guest-add').addEventListener('click',async()=>{
   const id=activeEmailBatch,ids=[...$('batch-guest-options').querySelectorAll('input:checked')].map(el=>Number(el.value));
