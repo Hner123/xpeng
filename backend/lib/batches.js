@@ -14,7 +14,7 @@ function make(db, store) {
     const records = await db.all(`SELECT r.*,v.code AS ticket_code,v.status AS invitation_status,i.ticket_type
       FROM invitation_batch_guests g JOIN registrations r ON r.id=g.registration_id
       LEFT JOIN invitations v ON v.registration_id=r.id LEFT JOIN invitation_batch_items i ON i.invitation_id=v.id WHERE g.batch_id=? ORDER BY r.id`, [id]);
-    return { ...batch, total: records.length, rows: records.map(r => ({ ...(r.ticket_code ? messageRow(store.decorate(r), r.ticket_type, r.ticket_code) : {registration_id:r.id,name:store.decorate(r).name,email:store.decorate(r).email,ticket_type:'Unassigned',ticket_code:'Unassigned'}), invitation_status: r.invitation_status })) };
+    return { ...batch, total: records.length, rows: records.map(r => ({ ...(r.ticket_code ? messageRow(store.decorate(r), r.ticket_type, r.ticket_code) : {registration_id:r.id,name:store.decorate(r).name,email:store.decorate(r).email,ticket_type:'Unassigned',ticket_code:'Unassigned'}), lead_score:r.lead_score, invitation_status: r.invitation_status })) };
   }
   async function save(csv, actor) {
     const input = parseCsv(csv);
@@ -61,7 +61,7 @@ function make(db, store) {
     const rows=await db.all(`SELECT r.* FROM registrations r WHERE r.partial=0 AND r.status='REGISTERED'
       AND NOT EXISTS (SELECT 1 FROM invitations v WHERE v.registration_id=r.id) AND NOT EXISTS (SELECT 1 FROM invitation_batch_guests g WHERE g.registration_id=r.id) ORDER BY r.id DESC`);
     const matches=rows.map(r=>store.decorate(r)).filter(r=>r.email && (!query || [r.id,r.name,r.email].some(v=>String(v).toLowerCase().includes(query))));
-    return {total:matches.length,rows:matches.slice(0,100).map(r=>({id:r.id,name:r.name,email:r.email}))};
+    return {total:matches.length,rows:matches.slice(0,100).map(r=>({id:r.id,name:r.name,email:r.email,lead_score:r.lead_score}))};
   }
   async function add(id,ids,type,assign=false){
     if(!await detail(id))throw new Error('Batch not found.');

@@ -413,7 +413,7 @@
       <span class="count" id="batch-filter-count" role="status" aria-live="polite"></span>
     </div>
     <p class="count" style="margin-bottom:12px">Filters only change this table. Sending still applies to all unsent recipients in the saved batch.</p>
-    <div class="tablewrap"><table><thead><tr><th>Registration</th><th>Name</th><th>Email</th><th>Ticket type</th><th>Code</th><th>Email status</th><th>Attendance</th><th>Preview</th></tr></thead><tbody id="batch-rows"></tbody></table></div>
+    <div class="tablewrap"><table><thead><tr><th>Registration</th><th>Name</th><th>Email</th><th>Score</th><th>Ticket type</th><th>Code</th><th>Email status</th><th>Attendance</th><th>Preview</th></tr></thead><tbody id="batch-rows"></tbody></table></div>
     <div id="batch-preview" hidden></div>
     <dialog id="email-preview-dialog" aria-labelledby="email-preview-title">
       <div class="email-preview-heading"><h3 id="email-preview-title">Invitation preview</h3><button class="btn ghost" id="email-preview-close" type="button">Close</button></div>
@@ -1001,7 +1001,7 @@ function renderBatchRows(rows,saved=false) {
         tr.dataset.batchRecipient=String(r.registration_id);
         tr.dataset.search=[r.registration_id,r.name,r.email,r.ticket_code].join(' ').toLowerCase().replace(/\s+/g,' ');
         tr.dataset.ticketType=r.ticket_type;
-      for (const value of [r.registration_id, r.name, r.email, r.ticket_type, r.ticket_code]) { const td = document.createElement('td'); td.textContent = value; tr.appendChild(td); }
+      for (const value of [r.registration_id, r.name, r.email, r.lead_score ?? '?', r.ticket_type, r.ticket_code]) { const td = document.createElement('td'); td.textContent = value; tr.appendChild(td); }
       const statusCell=document.createElement('td'),badge=document.createElement('span');
         badge.dataset.unassigned=String(r.ticket_code==='Unassigned');badge.dataset.emailStatus=String(r.registration_id);badge.dataset.status=saved?'UNKNOWN':'UNSENT';badge.className='pill '+badge.dataset.status;badge.textContent=saved?'Loading...':'Not sent';
       statusCell.appendChild(badge);tr.appendChild(statusCell);
@@ -1011,7 +1011,7 @@ function renderBatchRows(rows,saved=false) {
       btn.addEventListener('click', () => showEmailPreview(batchPreviewRows[i]));
       td.appendChild(btn); tr.appendChild(td); $('batch-rows').appendChild(tr);
       }
-    const empty=document.createElement('tr'),cell=document.createElement('td');empty.id='batch-filter-empty';cell.colSpan=8;cell.className='empty';empty.appendChild(cell);$('batch-rows').appendChild(empty);
+    const empty=document.createElement('tr'),cell=document.createElement('td');empty.id='batch-filter-empty';cell.colSpan=9;cell.className='empty';empty.appendChild(cell);$('batch-rows').appendChild(empty);
     filterBatchRows();
   }
 async function loadBatches(selected) {
@@ -1042,7 +1042,7 @@ async function openBatch(id) {
     renderBatchRows(res.batch.rows,true);
     $('guest-unassigned').replaceChildren();
     for(const r of res.batch.rows.filter(r=>r.ticket_code==='Unassigned')){
-      const label=document.createElement('label'),check=document.createElement('input');check.type='checkbox';check.value=r.registration_id;label.style.display='block';label.style.padding='8px';label.append(check,document.createTextNode(' #'+r.registration_id+' - '+r.name+' - '+r.email));$('guest-unassigned').appendChild(label);
+      const label=document.createElement('label'),check=document.createElement('input');check.type='checkbox';check.value=r.registration_id;label.style.display='block';label.style.padding='8px';label.append(check,document.createTextNode(' #'+r.registration_id+' - '+r.name+' - '+r.email+' | Score: '+(r.lead_score ?? '?')));$('guest-unassigned').appendChild(label);
     }
     if(!$('guest-unassigned').children.length)$('guest-unassigned').textContent='No unassigned guests in this batch.';
     $('guest-move-target').replaceChildren(new Option('Move to batch...',''));
@@ -1125,7 +1125,7 @@ $('batch-guest-find').addEventListener('click',async()=>{
     if(request!==guestSearchRequest || batch!==activeEmailBatch)return;
     if(!res.ok)throw new Error(res.error);
     $('batch-guest-result').textContent='Showing '+res.rows.length+' of '+res.total+' eligible guests. Narrow the search to find others.';
-    for(const row of res.rows){const label=document.createElement('label'),cb=document.createElement('input');cb.type='checkbox';cb.value=row.id;label.style.display='block';label.style.padding='8px';label.append(cb,document.createTextNode(' #'+row.id+' ? '+row.name+' ? '+row.email));$('batch-guest-options').appendChild(label);}
+    for(const row of res.rows){const label=document.createElement('label'),cb=document.createElement('input');cb.type='checkbox';cb.value=row.id;label.style.display='block';label.style.padding='8px';label.append(cb,document.createTextNode(' #'+row.id+' - '+row.name+' - '+row.email+' | Score: '+(row.lead_score ?? '?')));$('batch-guest-options').appendChild(label);}
   }catch(e){if(request===guestSearchRequest)$('batch-guest-result').textContent=e.message;}
 });
 $('batch-guest-add').addEventListener('click',async()=>{

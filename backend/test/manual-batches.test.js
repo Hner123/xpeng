@@ -27,6 +27,8 @@ test('manual batches and guest assignment reserve unique inventory without sendi
   a.equal((await batches.detail(d.id)).total,0);
   a.equal((await batches.importGuests(d.id,'sequence,email\n3,wrong@example.com',true)).imported,0);
   a.equal((await batches.importGuests(d.id,csv,true)).imported,1);
+  await db.run('UPDATE registrations SET lead_score=87 WHERE id=3');
+  a.equal((await batches.detail(d.id)).rows[0].lead_score,87);
   a.equal((await batches.detail(d.id)).rows[0].ticket_code,'Unassigned');
   a.equal((await db.get('SELECT COUNT(*) AS n FROM invitations')).n,2);
   a.equal((await batches.importGuests(d.id,csv,true)).imported,0);
@@ -45,6 +47,7 @@ test('manual batches and guest assignment reserve unique inventory without sendi
   await a.rejects(batches.add(c.id,[3],'VIP',true));
   a.equal((await batches.add(d.id,[3],'VIP',true)).added,1);
   a.notEqual((await batches.detail(d.id)).rows[0].ticket_code,'Unassigned');
+  a.equal((await batches.detail(d.id)).rows[0].lead_score,87);
   a.equal((await batches.list()).find(b=>b.id===d.id).total,1);
   a.equal((await db.get('SELECT COUNT(*) AS n FROM batch_emails')).n,0);
   a.equal((await db.get('SELECT COUNT(*) AS n FROM comms_queue')).n,0);
