@@ -406,9 +406,10 @@
     <h3 class="batch-list-heading">Batch recipients</h3>
     <div class="toolbar">
       <input type="search" id="batch-search" placeholder="Name, email, registration or code" aria-label="Search batch recipients" style="width:290px;max-width:100%" maxlength="200">
-      <select id="batch-type-filter" aria-label="Filter recipients by ticket type"><option value="">All ticket types</option><option>VIP</option><option>General Public</option></select>
+      <select id="batch-type-filter" aria-label="Filter recipients by ticket type"><option value="">All ticket types</option><option>VIP</option><option>General Public</option><option>Unassigned</option></select>
       <select id="batch-attendance-filter" aria-label="Filter by attendance"><option value="">All attendance</option><option value="CONFIRMED">Confirmed</option><option value="AWAITING">Not confirmed</option></select>
       <select id="batch-status-filter" aria-label="Filter recipients by email status"><option value="">All email statuses</option><option value="UNSENT">Not sent</option><option value="PENDING">Queued</option><option value="SENDING">Sending</option><option value="SENT">Sent</option><option value="FAILED">Rejected</option><option value="REVIEW">Needs review</option><option value="UNKNOWN">Unavailable</option><option value="UNASSIGNED">Assign ticket first</option></select>
+      <input type="number" id="batch-min-score" min="0" max="100" step="1" placeholder="Min score" aria-label="Minimum lead score" style="width:110px"><input type="number" id="batch-max-score" min="0" max="100" step="1" placeholder="Max score" aria-label="Maximum lead score" style="width:110px">
       <button class="btn ghost" id="batch-clear-filters">Clear filters</button>
       <span class="count" id="batch-filter-count" role="status" aria-live="polite"></span>
     </div>
@@ -963,19 +964,21 @@ function updateBatchEmailStatuses(rows,errors=[]) {
 function filterBatchRows(){
   const search=$('batch-search').value.trim().toLowerCase().replace(/\s+/g,' ');
   const type=$('batch-type-filter').value,status=$('batch-status-filter').value;
+  const min=$('batch-min-score').value,max=$('batch-max-score').value;
   const rows=[...document.querySelectorAll('#batch-rows [data-batch-recipient]')];
   let shown=0;
   for(const row of rows){
     const attendance=$('batch-attendance-filter').value;
-    const match=(!attendance || row.querySelector('[data-attendance]').dataset.status===attendance) && (!search || row.dataset.search.includes(search)) && (!type || row.dataset.ticketType===type) && (!status || row.querySelector('[data-email-status]').dataset.status===status);
+    const score=row.dataset.score===''?NaN:Number(row.dataset.score);
+    const match=(!min || score>=Number(min)) && (!max || score<=Number(max)) && (!attendance || row.querySelector('[data-attendance]').dataset.status===attendance) && (!search || row.dataset.search.includes(search)) && (!type || row.dataset.ticketType===type) && (!status || row.querySelector('[data-email-status]').dataset.status===status);
     row.hidden=!match;if(match)shown++;
   }
   $('batch-filter-count').textContent=shown+' of '+rows.length+' recipients';
   const empty=$('batch-filter-empty');if(empty){empty.hidden=shown>0;empty.firstChild.textContent=rows.length?'No recipients match these filters.':'Choose a saved batch or validate a CSV to view recipients.';}
 }
-$('batch-search').addEventListener('input',filterBatchRows);
+for(const id of ['batch-search','batch-min-score','batch-max-score'])$(id).addEventListener('input',filterBatchRows);
 for(const id of ['batch-type-filter','batch-status-filter','batch-attendance-filter'])$(id).addEventListener('change',filterBatchRows);
-$('batch-clear-filters').addEventListener('click',()=>{for(const id of ['batch-search','batch-type-filter','batch-status-filter','batch-attendance-filter'])$(id).value='';filterBatchRows();});
+$('batch-clear-filters').addEventListener('click',()=>{for(const id of ['batch-search','batch-type-filter','batch-status-filter','batch-attendance-filter','batch-min-score','batch-max-score'])$(id).value='';filterBatchRows();});
 let emailPreviewRequest=0;
 $('email-preview-close').addEventListener('click',()=>$('email-preview-dialog').close());
 $('email-preview-dialog').addEventListener('close',()=>{emailPreviewRequest++;$('email-preview-frame').srcdoc='';});
@@ -1000,7 +1003,7 @@ function renderBatchRows(rows,saved=false) {
         const tr = document.createElement('tr');
         tr.dataset.batchRecipient=String(r.registration_id);
         tr.dataset.search=[r.registration_id,r.name,r.email,r.ticket_code].join(' ').toLowerCase().replace(/\s+/g,' ');
-        tr.dataset.ticketType=r.ticket_type;
+        tr.dataset.ticketType=r.ticket_type;tr.dataset.score=r.lead_score ?? '';
       for (const value of [r.registration_id, r.name, r.email, r.lead_score ?? '?', r.ticket_type, r.ticket_code]) { const td = document.createElement('td'); td.textContent = value; tr.appendChild(td); }
       const statusCell=document.createElement('td'),badge=document.createElement('span');
         badge.dataset.unassigned=String(r.ticket_code==='Unassigned');badge.dataset.emailStatus=String(r.registration_id);badge.dataset.status=saved?'UNKNOWN':'UNSENT';badge.className='pill '+badge.dataset.status;badge.textContent=saved?'Loading...':'Not sent';
