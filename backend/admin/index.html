@@ -128,6 +128,14 @@
   .upload-field:focus-within{outline:2px solid var(--amber);outline-offset:3px}
   .invite-actions{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px}
   .invite-card .step-help{font-size:12px;color:#BFB4A7}
+  .batch-create-controls{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:stretch;margin-bottom:12px}
+  .batch-create-controls input{width:100%;min-width:0;min-height:46px;font-size:14px;border-color:#65503D}
+  .batch-create-controls input:focus{outline:2px solid var(--amber);outline-offset:2px}
+  .batch-import{border-top:1px solid #453426;margin-top:24px;padding-top:20px}
+  .batch-import>summary{cursor:pointer;font-size:14px;font-weight:700;color:var(--ink);padding:8px 0;min-height:36px}
+  .batch-import>summary:focus-visible{outline:2px solid var(--amber);outline-offset:3px}
+  .batch-import[open]>summary{margin-bottom:12px}
+  @media(max-width:520px){.batch-create-controls{grid-template-columns:1fr}.batch-create-controls .btn{width:100%}}
   .csv-help{margin-top:16px;font-size:12px;color:#BFB4A7;overflow-wrap:anywhere}
   .csv-help summary{cursor:pointer;min-height:30px}
   #batch-result{padding:16px 18px;background:#261E15;border:1px solid #74502C;border-left:4px solid var(--amber);border-radius:9px;margin:18px 0;font-size:14px;line-height:1.6;overflow-wrap:anywhere}
@@ -303,15 +311,17 @@
       </section>
       <section class="invite-card" aria-labelledby="new-batch-title">
         <h3 id="new-batch-title">Create a batch</h3>
+        <p>Name your next group, then choose the guests to include.</p>
         <label class="field-label" for="batch-new-name">Batch name</label>
-        <div class="toolbar"><input id="batch-new-name" placeholder="Batch 2" maxlength="120"><button class="btn" id="batch-create">Create batch</button></div>
-        <p>Create Batch 2, Batch 3, or any name you prefer, then add registered guests below. Creating a batch sends nothing.</p>
-        <h3>Or import a CSV</h3>
+        <div class="batch-create-controls"><input type="text" id="batch-new-name" placeholder="e.g. Batch 2 - VIP" maxlength="120" aria-describedby="batch-create-help"><button class="btn" id="batch-create">Create batch</button></div>
+        <p class="step-help" id="batch-create-help">Your batch is saved immediately. Add guests when you are ready.</p>
+        <details class="batch-import"><summary>Import a batch from CSV</summary>
         <p>Choose your assigned-code CSV, check the recipients, then save to reserve their codes.</p>
         <label class="upload-field" for="batch-file"><span>1. Choose your batch file</span><input type="file" id="batch-file" accept=".csv,text/csv" aria-describedby="batch-save-help"></label>
         <div class="invite-actions"><button class="btn" id="batch-validate">2. Validate &amp; preview</button><button class="btn" id="batch-save" disabled>3. Save batch</button></div>
         <p class="step-help" id="batch-save-help">Save becomes available after validation. Saving reserves codes; it does not send invitations.</p>
-        <details class="csv-help"><summary>CSV file requirements</summary><p>Required columns: batch, registration_id, email, ticket_type, ticket_code. Maximum file size: 2 MB. Reply tracking is not connected yet.</p></details>
+        <details class="csv-help"><summary>CSV file requirements</summary><p>Required columns: batch, registration_id, email, ticket_type, ticket_code. Maximum file size: 2 MB.</p></details>
+        </details>
       </section>
     </div>
     <p id="batch-result" role="status" aria-live="polite">Choose a saved batch or upload a CSV to get started.</p>
